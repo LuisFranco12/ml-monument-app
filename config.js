@@ -1,9 +1,9 @@
 window.ML_APP_CONFIG = {
   airtable: {
-    enabled: true,
+    enabled: false,
     baseId: 'appDEGBJxfr14dLbn',
     tableName: 'Saved Jobs',
-    personalAccessToken: 'patakqkIIKi0uYgzT.f106d4b263cd4850ef38b40f9b02ab1395f9a424d81c6642a2f440bc0f7b372c',
+    personalAccessToken: 'patakqkIIKi0uYgzT',
     fields: {
       jobName: 'Job Name',
       date: 'Date',
