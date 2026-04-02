@@ -3,7 +3,7 @@ window.ML_APP_CONFIG = {
     enabled: true,
     baseId: 'appDEGBJxfr14dLbn',
     tableName: 'Saved Jobs',
-    personalAccessToken: 'patakqkIIKi0uYgzT',
+    personalAccessToken: 'patBx4YWW6wATtuD3.80263f849ea7dfe89f8ebf484697ac590fbc7271159987980fcdcf84b544f83a',
     fields: {
       jobName: 'Job Name',
       date: 'Date',
