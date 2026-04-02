@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#0f1117"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="ML Monument Calc"/>
+  <title>ML Monument Calc</title>
+  <link rel="manifest" href="./manifest.webmanifest"/>
+  <link rel="apple-touch-icon" href="./icon-180.png"/>
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0f1117; --surface: #1a1d27; --surface2: #22263a; --border: #2e3350;
+      --accent: #3b82f6; --accent2: #10b981; --accent3: #8b5cf6; --danger: #ef4444;
+      --text: #e8eaf6; --muted: #8b93a7; --clean: #10b981; --ext: #3b82f6; --lf: #8b5cf6;
+      --flat: #ef4444; --final: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 100px; }
+    .header { background: linear-gradient(135deg, #1a1d27 0%, #0f1117 100%); padding: 20px 16px 16px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .header h1 { font-family: 'Rajdhani', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: 1px; }
+    .header h1 span { color: var(--accent); }
+    .header-sub { font-size: 11px; color: var(--muted); margin-top: 2px; letter-spacing: 0.5px; }
+    .tab-nav { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 73px; z-index: 99; }
+    .tab-btn { flex: 1; padding: 12px 4px; background: none; border: none; color: var(--muted); font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .5px; cursor: pointer; border-bottom: 2px solid transparent; }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .page { display:none; padding:16px; } .page.active { display:block; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+    .card-title { font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .badge { background: var(--accent); color:white; font-size:10px; padding:2px 7px; border-radius:20px; font-weight:600; }
+    .mode-toggle { display:flex; background: var(--bg); border-radius:8px; padding:3px; border:1px solid var(--border); gap:3px; }
+    .mode-btn { flex:1; padding:8px; border:none; background:none; color:var(--muted); font-size:13px; font-weight:600; border-radius:6px; cursor:pointer; }
+    .mode-btn.active { background: var(--accent); color:white; }
+    .field-row { margin-bottom:11px; }
+    .field-label { font-size:11px; font-weight:600; color:var(--muted); letter-spacing:.5px; text-transform:uppercase; margin-bottom:5px; }
+    input[type="number"], input[type="text"], input[type="file"], textarea {
+      width:100%; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:'Inter',sans-serif; font-size:16px; padding:11px 13px; outline:none;
+    }
+    textarea { min-height: 80px; resize: vertical; }
+    input:focus, textarea:focus { border-color: var(--accent); }
+    input::placeholder, textarea::placeholder { color: var(--muted); font-size:14px; }
+    .fi-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .piece-block { background: var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:10px; }
+    .piece-header { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
+    .piece-label { font-family:'Rajdhani', sans-serif; font-size:13px; font-weight:700; color:var(--accent); letter-spacing:1px; text-transform:uppercase; }
+    .piece-label.main { color: var(--accent2); }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:11px 16px; border:none; border-radius:8px; font-family:'Rajdhani',sans-serif; font-size:15px; font-weight:700; letter-spacing:.5px; cursor:pointer; text-decoration:none; }
+    .btn:active { transform: scale(.98); }
+    .btn-primary { background: var(--accent); color:white; }
+    .btn-success { background: var(--accent2); color:white; }
+    .btn-danger { background: transparent; border:1px solid var(--danger); color:var(--danger); padding:6px 12px; font-size:12px; }
+    .btn-ghost { background: var(--surface2); color:var(--text); }
+    .btn-sm { padding:6px 12px; font-size:12px; }
+    .btn-full { width:100%; }
+    .btn-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+    .btn-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:12px; }
+    .mult-toggle { background:var(--surface2); border:1px dashed var(--border); border-radius:8px; padding:9px 13px; font-size:13px; color:var(--muted); cursor:pointer; width:100%; text-align:left; margin-bottom:8px; }
+    .mult-toggle.active { border-color:var(--accent3); color:var(--accent3); }
+    .stepper { display:flex; align-items:center; background:var(--bg); border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+    .stepper-btn { width:44px; height:44px; background:var(--surface2); border:none; color:var(--text); font-size:20px; cursor:pointer; }
+    .stepper input { flex:1; text-align:center; border:none; border-radius:0; border-left:1px solid var(--border); border-right:1px solid var(--border); font-size:18px; padding:10px 4px; }
+    .result-section { border-radius:10px; padding:13px; margin-bottom:10px; border-left:3px solid; }
+    .result-section.clean { background: rgba(16,185,129,.08); border-color: var(--clean); }
+    .result-section.ext { background: rgba(59,130,246,.08); border-color: var(--ext); }
+    .result-section.lf { background: rgba(139,92,246,.08); border-color: var(--lf); }
+    .result-section.flat { background: rgba(239,68,68,.08); border-color: var(--flat); }
+    .result-section.final { background: rgba(245,158,11,.12); border-color: var(--final); }
+    .result-title { font-family:'Rajdhani',sans-serif; font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; opacity:.8; }
+    .result-row { display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-bottom:4px; }
+    .result-key { font-size:13px; color:var(--muted); }
+    .result-val { font-family:'Rajdhani',sans-serif; font-size:18px; font-weight:700; text-align:right; }
+    .green { color:var(--clean); } .blue { color:var(--ext); } .purple { color:var(--lf); } .red { color:var(--flat); } .gold { color:var(--final); }
+    .history-item { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:13px; margin-bottom:10px; }
+    .history-name { font-family:'Rajdhani',sans-serif; font-size:16px; font-weight:700; margin-bottom:4px; }
+    .history-date { font-size:11px; color:var(--muted); margin-bottom:8px; }
+    .history-totals { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+    .history-total-item { background:var(--bg); border-radius:6px; padding:6px 10px; }
+    .history-total-label { font-size:10px; color:var(--muted); }
+    .history-total-val { font-family:'Rajdhani',sans-serif; font-size:15px; font-weight:700; color:var(--accent2); }
+    .history-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .empty-state { text-align:center; padding:40px 20px; color:var(--muted); }
+    .empty-state .icon { font-size:40px; margin-bottom:10px; }
+    .empty-state p { font-size:14px; line-height:1.6; }
+    .action-bar { position:fixed; bottom:0; left:0; right:0; background:var(--surface); border-top:1px solid var(--border); padding:12px 16px; display:flex; gap:10px; z-index:200; }
+    .action-bar .btn { flex:1; }
+    .toast { position:fixed; top:80px; left:50%; transform:translateX(-50%) translateY(-10px); background:var(--accent2); color:white; padding:10px 20px; border-radius:20px; font-size:13px; font-weight:600; opacity:0; pointer-events:none; transition:all .3s; z-index:999; max-width:calc(100vw - 32px); text-align:center; }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    .install-hint, .status-card { border-radius:10px; padding:12px; font-size:12px; line-height:1.5; margin-bottom:14px; }
+    .install-hint { background:var(--surface2); border:1px dashed var(--border); color:var(--muted); }
+    .install-hint strong { color:var(--accent); }
+    .status-card { background: rgba(59,130,246,.08); border:1px solid rgba(59,130,246,.2); }
+    .hidden { display:none !important; }
+    .meta-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .photo-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-top:10px; }
+    .photo-item { position:relative; background:var(--bg); border:1px solid var(--border); border-radius:10px; overflow:hidden; aspect-ratio: 1 / 1; }
+    .photo-item img { width:100%; height:100%; object-fit:cover; display:block; }
+    .photo-remove { position:absolute; top:6px; right:6px; width:28px; height:28px; border:none; border-radius:999px; background:rgba(15,17,23,.85); color:white; cursor:pointer; }
+    .sync-pill { font-size:11px; padding:4px 8px; border-radius:999px; border:1px solid var(--border); color:var(--muted); }
+    .sync-pill.ok { color:var(--accent2); border-color: rgba(16,185,129,.4); }
+    .sync-pill.warn { color:#f59e0b; border-color: rgba(245,158,11,.4); }
+    .section-note { font-size:12px; color:var(--muted); line-height:1.5; margin-top:8px; }
+    @media (max-width: 380px) {
+      .result-row { flex-direction:column; align-items:flex-start; }
+      .result-val { text-align:left; }
+      .history-totals, .meta-grid, .btn-row, .btn-row-3 { grid-template-columns:1fr; }
+      .photo-grid { grid-template-columns:repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body>
+<div class="header">
+  <h1>ML <span>Monument</span> Calc</h1>
+  <div class="header-sub">FIELD MEASUREMENT TOOL</div>
+</div>
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('calc')">⚒ Calculator</button>
+  <button class="tab-btn" onclick="switchTab('saved')">🗂 Saved Jobs</button>
+</div>
+<div id="toast" class="toast"></div>
+<div id="page-calc" class="page active">
+  <div class="install-hint">📱 <strong>Install as app:</strong> Open the hosted HTTPS version in Safari, tap Share, then <strong>Add to Home Screen</strong>.</div>
+  <div class="status-card hidden" id="storageWarning"><strong>Storage warning:</strong> opening the file straight from Files can break saved jobs. Use the hosted version.</div>
+  <div class="card hidden" id="installCard">
+    <div class="card-title">Install App</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="installBtn">⬇ Install</button>
+      <button class="btn btn-ghost" onclick="dismissInstallCard()">Later</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Job Setup <span class="sync-pill" id="syncStatus">Local only</span></div>
+    <div class="field-row">
+      <div class="field-label">Owner Name & ID</div>
+      <input type="text" id="jobName" placeholder="e.g. John Smith #4821" autocomplete="off"/>
+    </div>
+    <div class="field-row">
+      <div class="field-label">Job Type</div>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="jobTypeMonument" onclick="setJobType('Monument')">Monument</button>
+        <button class="mode-btn" id="jobTypeMausoleum" onclick="setJobType('Mausoleum')">Mausoleum</button>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-label">Notes</div>
+      <textarea id="jobNotes" placeholder="Optional notes"></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Input Mode</div>
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="modeInches" onclick="setMode('inches')">Inches Only</button>
+      <button class="mode-btn" id="modeFeet" onclick="setMode('feetInches')">Feet & Inches</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span id="piecesTitle">Monument Pieces</span><span class="badge" id="pieceCount">1</span></div>
+    <div id="piecesContainer"></div>
+    <button class="btn btn-ghost btn-full" onclick="addPiece()">+ Add Piece</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Footstones</div>
+    <div class="field-row">
+      <div class="field-label">Flats</div>
+      <div class="stepper"><button class="stepper-btn" onclick="stepperChange('numFlats',-1)">−</button><input type="number" id="numFlats" value="0" min="0" inputmode="numeric"/><button class="stepper-btn" onclick="stepperChange('numFlats',1)">+</button></div>
+    </div>
+    <div class="field-row">
+      <div class="field-label">Slants</div>
+      <div class="stepper"><button class="stepper-btn" onclick="stepperChange('numSlants',-1)">−</button><input type="number" id="numSlants" value="0" min="0" inputmode="numeric"/><button class="stepper-btn" onclick="stepperChange('numSlants',1)">+</button></div>
+    </div>
+  </div>
+
+  <div class="card" id="repointingCard">
+    <div class="card-title">Re-pointing</div>
+    <div class="field-row">
+      <div class="field-label">LF (Linear Feet)</div>
+      <input type="number" id="lfPointing" placeholder="0" inputmode="decimal"/>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Photos <span class="badge" id="photoCount">0</span></div>
+    <div class="field-row">
+      <div class="field-label">Add up to 3 photos</div>
+      <input type="file" id="photoInput" accept="image/*" capture="environment" multiple />
+      <div class="section-note">Photos save in the app and JSON backup. They are not included in the CSV export.</div>
+    </div>
+    <div class="photo-grid" id="photoGrid"></div>
+  </div>
+
+  <div id="resultsContainer" class="hidden">
+    <div class="card"><div class="card-title">Results</div><div id="resultsInner"></div></div>
+  </div>
+  <div style="height:20px;"></div>
+</div>
+
+<div id="page-saved" class="page">
+  <div class="card">
+    <div class="card-title">Saved Jobs Tools</div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="exportBackup()">Export Backup</button>
+      <label class="btn btn-primary" for="importFile">Import Backup</label>
+    </div>
+    <div class="btn-row" style="margin-top:10px;">
+      <button class="btn btn-ghost" onclick="exportCsv()">Export CSV</button>
+      <button class="btn btn-danger" onclick="clearAllJobs()">Delete All</button>
+    </div>
+    <div class="section-note">CSV opens in Excel. If Airtable sync is turned on in <strong>config.js</strong>, your same jobs can show up on phone and PC.</div>
+    <input type="file" id="importFile" accept="application/json" class="hidden"/>
+  </div>
+  <div id="historyContainer"></div>
+</div>
+
+<div class="action-bar" id="calcActions">
+  <button class="btn btn-success" onclick="calculateML()">⚡ Calculate</button>
+  <button class="btn btn-ghost" onclick="saveJob()" id="saveBtn" style="display:none;">💾 Save</button>
+  <button class="btn btn-danger btn-sm" onclick="resetCalculator()" style="flex:0; min-width:68px;">↺ Reset</button>
+</div>
+
+<script src="./config.js"></script>
+<script>
+const CONFIG = window.ML_APP_CONFIG || {};
+const STORAGE_KEY = 'ml_saved_jobs_v3';
+let mode = 'inches';
+let jobType = 'Monument';
+let pieces = [];
+let photos = [];
+let pieceIdCounter = 0;
+let lastResults = null;
+let storageReady = false;
+let deferredPrompt = null;
+
+window.onload = async () => {
+  storageReady = canUseStorage();
+  document.getElementById('storageWarning').classList.toggle('hidden', storageReady);
+  bindImport();
+  bindPhotos();
+  updateSyncBadge();
+  registerServiceWorker();
+  addPiece(true);
+  renderPhotoGrid();
+  await renderHistory();
+  updateJobTypeUI();
+};
+
+function canUseStorage() {
+  try { localStorage.setItem('__ml_test__','1'); localStorage.removeItem('__ml_test__'); return true; } catch { return false; }
+}
+function safeLocalGet(key) { if (!storageReady) return null; try { return localStorage.getItem(key); } catch { return null; } }
+function safeLocalSet(key, value) { if (!storageReady) return false; try { localStorage.setItem(key, value); return true; } catch { return false; } }
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', ['calc','saved'][i] === tab));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  document.getElementById('calcActions').style.display = tab === 'calc' ? 'flex' : 'none';
+  if (tab === 'saved') renderHistory();
+}
+function setJobType(type) { if (jobType === type) return; jobType = type; updateJobTypeUI(); if (lastResults) renderResults(lastResults); }
+function updateJobTypeUI() {
+  document.getElementById('jobTypeMonument').classList.toggle('active', jobType === 'Monument');
+  document.getElementById('jobTypeMausoleum').classList.toggle('active', jobType === 'Mausoleum');
+  document.getElementById('piecesTitle').textContent = jobType === 'Monument' ? 'Monument Pieces' : 'Mausoleum Pieces';
+  document.getElementById('repointingCard').classList.toggle('hidden', jobType !== 'Mausoleum');
+  updatePieceLabels();
+}
+function setMode(newMode) {
+  if (mode === newMode) return;
+  const snapshot = getCurrentSnapshot();
+  mode = newMode;
+  document.getElementById('modeInches').classList.toggle('active', mode === 'inches');
+  document.getElementById('modeFeet').classList.toggle('active', mode === 'feetInches');
+  rebuildPieces(snapshot.pieces || []);
+}
+function rebuildPieces(savedPieces = []) {
+  document.getElementById('piecesContainer').innerHTML = '';
+  pieces = []; pieceIdCounter = 0;
+  if (!savedPieces.length) { addPiece(true); return; }
+  savedPieces.forEach((piece, index) => addPiece(index === 0, piece));
+  updatePieceLabels();
+}
+function addPiece(isMain = false, existingData = null) {
+  const id = pieceIdCounter++;
+  pieces.push({ id, isMain });
+  renderPiece(id, isMain, existingData || { l:0, w:0, h:0, mult:1, multOpen:false });
+  updatePieceCount();
+  updatePieceLabels();
+}
+function updatePieceCount() { document.getElementById('pieceCount').textContent = pieces.length; }
+function updatePieceLabels() {
+  let count = 0;
+  pieces.forEach(piece => {
+    const labelEl = document.querySelector('#piece-' + piece.id + ' .piece-label');
+    if (!labelEl) return;
+    if (piece.isMain) {
+      labelEl.textContent = jobType === 'Monument' ? 'Main Monument' : 'Main Mausoleum';
+      labelEl.classList.add('main');
+    } else {
+      count += 1;
+      labelEl.textContent = (jobType === 'Monument' ? 'Monument Piece ' : 'Mausoleum Piece ') + count;
+      labelEl.classList.remove('main');
+    }
+  });
+}
+function renderPiece(id, isMain, data) {
+  const div = document.createElement('div');
+  div.className = 'piece-block';
+  div.id = 'piece-' + id;
+  const removeBtn = isMain ? '' : '<button class="btn btn-danger btn-sm" onclick="removePiece(' + id + ')">Remove</button>';
+  function fiMarkup(prefix, totalInches) {
+    const total = Number(totalInches) || 0;
+    const ft = Math.floor(total / 12);
+    const inch = Number((total - ft * 12).toFixed(2));
+    return '<div class="fi-row"><input type="number" id="p' + id + '_' + prefix + 'ft" placeholder="Feet" inputmode="decimal" value="' + (ft || '') + '"/><input type="number" id="p' + id + '_' + prefix + 'in" placeholder="Inches" inputmode="decimal" value="' + (inch || '') + '"/></div>';
+  }
+  let dimFields = '';
+  if (mode === 'feetInches') {
+    dimFields = '<div class="field-row"><div class="field-label">Length</div>' + fiMarkup('l', data.l) + '</div>' +
+      '<div class="field-row"><div class="field-label">Width</div>' + fiMarkup('w', data.w) + '</div>' +
+      '<div class="field-row"><div class="field-label">Height</div>' + fiMarkup('h', data.h) + '</div>';
+  } else {
+    dimFields = '<div class="field-row"><div class="field-label">Length (in)</div><input type="number" id="p' + id + '_lin" placeholder="0" inputmode="decimal" value="' + (data.l || '') + '"/></div>' +
+      '<div class="field-row"><div class="field-label">Width (in)</div><input type="number" id="p' + id + '_win" placeholder="0" inputmode="decimal" value="' + (data.w || '') + '"/></div>' +
+      '<div class="field-row"><div class="field-label">Height (in)</div><input type="number" id="p' + id + '_hin" placeholder="0" inputmode="decimal" value="' + (data.h || '') + '"/></div>';
+  }
+  const multOpen = Boolean(data.multOpen) || Number(data.mult || 1) > 1;
+  div.innerHTML = '<div class="piece-header"><span class="piece-label"></span>' + removeBtn + '</div>' + dimFields +
+    '<button class="mult-toggle ' + (multOpen ? 'active' : '') + '" id="multtoggle' + id + '" onclick="toggleMult(' + id + ')">' +
+    (multOpen ? '✕ Hide multiplier' : '✕ Multiply this piece (tap to expand)') + '</button>' +
+    '<div id="multfield' + id + '" style="display:' + (multOpen ? 'block' : 'none') + ';"><div class="field-label">Quantity / Multiplier</div><input type="number" id="p' + id + '_mult" value="' + (data.mult || 1) + '" min="1" inputmode="numeric"/></div>';
+  document.getElementById('piecesContainer').appendChild(div);
+}
+function toggleMult(id) {
+  const field = document.getElementById('multfield' + id); const btn = document.getElementById('multtoggle' + id);
+  const visible = field.style.display !== 'none'; field.style.display = visible ? 'none' : 'block'; btn.classList.toggle('active', !visible); btn.textContent = visible ? '✕ Multiply this piece (tap to expand)' : '✕ Hide multiplier';
+}
+function removePiece(id) { pieces = pieces.filter(p => p.id !== id); const node = document.getElementById('piece-' + id); if (node) node.remove(); updatePieceCount(); updatePieceLabels(); }
+function stepperChange(fieldId, delta) { const el = document.getElementById(fieldId); el.value = Math.max(0, (parseInt(el.value || '0', 10) || 0) + delta); }
+function n(id) { const el = document.getElementById(id); return el ? parseFloat(el.value) || 0 : 0; }
+function getPieceDims(id) {
+  let l, w, h;
+  if (mode === 'feetInches') { l = n(`p${id}_lft`) * 12 + n(`p${id}_lin`); w = n(`p${id}_wft`) * 12 + n(`p${id}_win`); h = n(`p${id}_hft`) * 12 + n(`p${id}_hin`); }
+  else { l = n(`p${id}_lin`); w = n(`p${id}_win`); h = n(`p${id}_hin`); }
+  const mult = Math.max(1, n(`p${id}_mult`) || 1);
+  const multField = document.getElementById('multfield' + id);
+  return { l, w, h, mult, multOpen: multField ? multField.style.display !== 'none' : false };
+}
+function calculateML() {
+  let totalSqInches = 0; let mainL = 0; let mainH = 0; let mainW = 0;
+  pieces.forEach((p, idx) => {
+    const { l, w, h, mult } = getPieceDims(p.id);
+    if (idx === 0) { mainL = l; mainW = w; mainH = h; }
+    if (l > 0 && w > 0 && h > 0) { const area = (l * w) + (l * h * 2) + (w * h * 2); totalSqInches += area * mult; }
+  });
+  const totalSqFt = totalSqInches / 144; const hasDims = totalSqInches > 0;
+  const numFlats = parseInt(document.getElementById('numFlats').value || '0', 10) || 0;
+  const numSlants = parseInt(document.getElementById('numSlants').value || '0', 10) || 0;
+  const lfPointing = jobType === 'Mausoleum' ? n('lfPointing') : 0;
+  let mlClean = 0, priceClean = 0, cleanLabel = '';
+  if (hasDims) { mlClean = Math.max(parseFloat((totalSqFt / 25).toFixed(2)), 2); const isSpecial = mainL >= 72 || mainH >= 120; const rate = isSpecial ? 195 : 155; cleanLabel = isSpecial ? 'Standard Special @ $195' : 'Standard Upright @ $155'; priceClean = parseFloat((mlClean * rate).toFixed(2)); }
+  let mlExt = 0, priceExt = 0;
+  if (hasDims) { mlExt = parseFloat((totalSqFt / 50).toFixed(2)); priceExt = parseFloat((mlExt * 159).toFixed(2)); }
+  const mlLF = parseFloat((lfPointing / 50).toFixed(2)); const priceLF = parseFloat((mlLF * 564).toFixed(2));
+  const priceFlats = numFlats > 0 ? 155 + (numFlats - 1) * 77.5 : 0;
+  const priceSlants = numSlants > 0 ? 195 + (numSlants - 1) * 97.5 : 0;
+  const footTotal = parseFloat((priceFlats + priceSlants).toFixed(2));
+  const monumentTotal = parseFloat((priceClean + footTotal).toFixed(2));
+  const mausoleumTotal = parseFloat((priceExt + priceLF + footTotal).toFixed(2));
+  lastResults = { jobType, totalSqFt, hasDims, mainL, mainW, mainH, mlClean, priceClean, cleanLabel, mlExt, priceExt, lfPointing, mlLF, priceLF, numFlats, numSlants, priceFlats, priceSlants, footTotal, monumentTotal, mausoleumTotal, finalTotal: jobType === 'Monument' ? monumentTotal : mausoleumTotal };
+  renderResults(lastResults);
+  document.getElementById('saveBtn').style.display = 'flex';
+  document.getElementById('resultsContainer').classList.remove('hidden');
+  setTimeout(() => document.getElementById('resultsContainer').scrollIntoView({ behavior:'smooth', block:'start' }), 80);
+}
+function renderResults(r) {
+  const inner = document.getElementById('resultsInner');
+  let html = '';
+  if (!r.hasDims && !r.numFlats && !r.numSlants && !(r.jobType === 'Mausoleum' && r.lfPointing > 0)) {
+    inner.innerHTML = '<p style="color:var(--muted);font-size:14px;">Enter at least one measurement to calculate.</p>';
+    return;
+  }
+  if (r.hasDims && r.jobType === 'Monument') {
+    html += `<div class="result-section clean"><div class="result-title">🟢 Monument Cleaning</div><div class="result-row"><span class="result-key">Total Area</span><span class="result-val green">${r.totalSqFt.toFixed(2)} sq ft</span></div><div class="result-row"><span class="result-key">Clean ML</span><span class="result-val green">${r.mlClean.toFixed(2)}${r.mlClean === 2 ? ' (min)' : ''}</span></div><div class="result-row"><span class="result-key">${r.cleanLabel}</span><span class="result-val green">$${r.priceClean.toFixed(2)}</span></div></div>`;
+  }
+  if (r.hasDims && r.jobType === 'Mausoleum') {
+    html += `<div class="result-section ext"><div class="result-title">🔵 Mausoleum Exterior Cleaning</div><div class="result-row"><span class="result-key">Total Area</span><span class="result-val blue">${r.totalSqFt.toFixed(2)} sq ft</span></div><div class="result-row"><span class="result-key">Exterior ML</span><span class="result-val blue">${r.mlExt.toFixed(2)}</span></div><div class="result-row"><span class="result-key">Exterior Cleaning @ $159</span><span class="result-val blue">$${r.priceExt.toFixed(2)}</span></div></div>`;
+  }
+  if (r.jobType === 'Mausoleum' && r.lfPointing > 0) {
+    html += `<div class="result-section lf"><div class="result-title">🟣 Re-pointing</div><div class="result-row"><span class="result-key">LF</span><span class="result-val purple">${r.lfPointing.toFixed(2)}</span></div><div class="result-row"><span class="result-key">Re-pointing ML</span><span class="result-val purple">${r.mlLF.toFixed(2)}</span></div><div class="result-row"><span class="result-key">Re-pointing Total</span><span class="result-val purple">$${r.priceLF.toFixed(2)}</span></div></div>`;
+  }
+  if (r.numFlats > 0 || r.numSlants > 0) {
+    html += `<div class="result-section flat"><div class="result-title">🔴 Footstones</div>${r.numFlats > 0 ? `<div class="result-row"><span class="result-key">Flats (${r.numFlats})</span><span class="result-val red">$${r.priceFlats.toFixed(2)}</span></div>` : ''}${r.numSlants > 0 ? `<div class="result-row"><span class="result-key">Slants (${r.numSlants})</span><span class="result-val red">$${r.priceSlants.toFixed(2)}</span></div>` : ''}<div class="result-row"><span class="result-key">Footstones Total</span><span class="result-val red">$${r.footTotal.toFixed(2)}</span></div></div>`;
+  }
+  html += `<div class="result-section final"><div class="result-title">⭐ Final Total</div><div class="result-row"><span class="result-key">${r.jobType === 'Monument' ? 'Monument Total' : 'Mausoleum Total'}</span><span class="result-val gold" style="font-size:24px;">$${r.finalTotal.toFixed(2)}</span></div></div>`;
+  inner.innerHTML = html;
+}
+function getCurrentSnapshot() {
+  return {
+    mode, jobType,
+    jobName: document.getElementById('jobName').value.trim(),
+    notes: document.getElementById('jobNotes').value.trim(),
+    lfPointing: n('lfPointing'), numFlats: parseInt(document.getElementById('numFlats').value || '0', 10) || 0, numSlants: parseInt(document.getElementById('numSlants').value || '0', 10) || 0,
+    pieces: pieces.map(p => ({ ...getPieceDims(p.id), isMain: p.isMain })),
+    photos: photos
+  };
+}
+function makeJobRecord(existingRecordId = '') {
+  const snapshot = getCurrentSnapshot();
+  return { id: existingRecordId || ('local-' + Date.now()), airtableRecordId: existingRecordId || '', name: snapshot.jobName || 'Unnamed Job', date: new Date().toISOString(), snapshot, results: { ...lastResults } };
+}
+async function saveJob() {
+  if (!lastResults) { showToast('Calculate first'); return; }
+  const job = makeJobRecord();
+  if (airtableReady()) {
+    try {
+      const recordId = await airtableCreateRecord(job);
+      job.airtableRecordId = recordId || '';
+      await cacheMergedJob(job);
+      showToast('Saved to Airtable');
+    } catch (err) {
+      console.error(err);
+      await cacheMergedJob(job);
+      showToast('Saved locally. Airtable sync failed');
+    }
+  } else {
+    await cacheMergedJob(job);
+    showToast('Job saved');
+  }
+  document.getElementById('saveBtn').style.display = 'none';
+  await renderHistory();
+}
+async function cacheMergedJob(job) {
+  const jobs = getLocalJobs().filter(j => j.id !== job.id && j.airtableRecordId !== job.airtableRecordId);
+  jobs.unshift(job);
+  safeLocalSet(STORAGE_KEY, JSON.stringify(jobs));
+}
+function getLocalJobs() { try { return JSON.parse(safeLocalGet(STORAGE_KEY) || '[]') || []; } catch { return []; } }
+async function getJobs() {
+  if (airtableReady() && navigator.onLine) {
+    try {
+      const remote = await airtableFetchJobs();
+      safeLocalSet(STORAGE_KEY, JSON.stringify(remote));
+      return remote;
+    } catch (err) {
+      console.error(err);
+      return getLocalJobs();
+    }
+  }
+  return getLocalJobs();
+}
+async function deleteJob(id, event) {
+  if (event) event.stopPropagation();
+  const jobs = await getJobs();
+  const job = jobs.find(j => j.id === id);
+  if (job?.airtableRecordId && airtableReady()) {
+    try { await airtableDeleteRecord(job.airtableRecordId); } catch (err) { console.error(err); }
+  }
+  safeLocalSet(STORAGE_KEY, JSON.stringify(jobs.filter(j => j.id !== id)));
+  await renderHistory();
+  showToast('Saved job deleted');
+}
+async function clearAllJobs() {
+  const jobs = await getJobs();
+  if (!jobs.length) { showToast('No saved jobs to delete'); return; }
+  if (!window.confirm('Delete all saved jobs? This cannot be undone.')) return;
+  if (airtableReady()) {
+    for (const job of jobs) { if (job.airtableRecordId) { try { await airtableDeleteRecord(job.airtableRecordId); } catch (err) { console.error(err); } } }
+  }
+  safeLocalSet(STORAGE_KEY, JSON.stringify([]));
+  await renderHistory();
+  showToast('All saved jobs deleted');
+}
+function loadJob(id, event) {
+  if (event) event.stopPropagation();
+  const job = getLocalJobs().find(j => j.id === id);
+  if (!job) return;
+  const snap = job.snapshot || {};
+  mode = snap.mode || 'inches'; jobType = snap.jobType || 'Monument'; photos = Array.isArray(snap.photos) ? snap.photos : [];
+  document.getElementById('modeInches').classList.toggle('active', mode === 'inches');
+  document.getElementById('modeFeet').classList.toggle('active', mode === 'feetInches');
+  document.getElementById('jobName').value = snap.jobName || job.name || '';
+  document.getElementById('jobNotes').value = snap.notes || '';
+  document.getElementById('lfPointing').value = snap.lfPointing || '';
+  document.getElementById('numFlats').value = snap.numFlats || 0;
+  document.getElementById('numSlants').value = snap.numSlants || 0;
+  updateJobTypeUI(); rebuildPieces(snap.pieces || []); renderPhotoGrid();
+  lastResults = job.results || null;
+  if (lastResults) { document.getElementById('resultsContainer').classList.remove('hidden'); renderResults(lastResults); }
+  else { document.getElementById('resultsContainer').classList.add('hidden'); }
+  document.getElementById('saveBtn').style.display = 'none';
+  switchTab('calc'); window.scrollTo({ top:0, behavior:'smooth' }); showToast('Loaded saved job');
+}
+async function renderHistory() {
+  const container = document.getElementById('historyContainer');
+  if (!storageReady) { container.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>Saved jobs can break when this file is opened directly from Files.<br>Use the hosted PWA version.</p></div>'; return; }
+  const jobs = await getJobs();
+  if (!jobs.length) { container.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>No saved jobs yet.<br>Calculate and save a job to see it here.</p></div>'; return; }
+  container.innerHTML = jobs.map(job => {
+    const r = job.results || {}; const snap = job.snapshot || {}; const date = new Date(job.date).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) + ' • ' + new Date(job.date).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+    return `<div class="history-item"><div class="history-name">${escapeHtml(job.name || 'Unnamed Job')}</div><div class="history-date">${date} • ${escapeHtml(snap.jobType || 'Monument')}</div><div class="history-totals">${(snap.jobType || 'Monument') === 'Monument' ? `<div class="history-total-item"><div class="history-total-label">Clean ML</div><div class="history-total-val">${Number(r.mlClean || 0).toFixed(2)}</div></div><div class="history-total-item"><div class="history-total-label">Clean Total</div><div class="history-total-val">$${Number(r.priceClean || 0).toFixed(2)}</div></div>` : `<div class="history-total-item"><div class="history-total-label">Exterior ML</div><div class="history-total-val">${Number(r.mlExt || 0).toFixed(2)}</div></div><div class="history-total-item"><div class="history-total-label">Exterior Total</div><div class="history-total-val">$${Number(r.priceExt || 0).toFixed(2)}</div></div>`}<div class="history-total-item"><div class="history-total-label">Flats / Slants</div><div class="history-total-val">${Number(r.numFlats || 0)} / ${Number(r.numSlants || 0)}</div></div>${(snap.jobType || 'Monument') === 'Mausoleum' ? `<div class="history-total-item"><div class="history-total-label">Re-pointing</div><div class="history-total-val">$${Number(r.priceLF || 0).toFixed(2)}</div></div>` : `<div class="history-total-item"><div class="history-total-label">Job Total</div><div class="history-total-val">$${Number(r.finalTotal || 0).toFixed(2)}</div></div>`}</div><div class="history-actions"><button class="btn btn-ghost btn-sm" onclick="loadJob('${escapeJs(job.id)}', event)">Open</button><button class="btn btn-danger btn-sm" onclick="deleteJob('${escapeJs(job.id)}', event)">Delete</button></div></div>`;
+  }).join('');
+}
+function resetCalculator() {
+  document.getElementById('jobName').value = ''; document.getElementById('jobNotes').value = ''; document.getElementById('lfPointing').value = ''; document.getElementById('numFlats').value = '0'; document.getElementById('numSlants').value = '0';
+  mode = 'inches'; jobType = 'Monument'; photos = []; pieces = []; pieceIdCounter = 0; lastResults = null;
+  document.getElementById('modeInches').classList.add('active'); document.getElementById('modeFeet').classList.remove('active');
+  updateJobTypeUI(); rebuildPieces([]); renderPhotoGrid(); document.getElementById('resultsContainer').classList.add('hidden'); document.getElementById('saveBtn').style.display = 'none'; window.scrollTo({ top:0, behavior:'smooth' });
+}
+function bindPhotos() {
+  document.getElementById('photoInput').addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    const remaining = Math.max(0, 3 - photos.length);
+    if (remaining <= 0) { showToast('You can save up to 3 photos'); e.target.value = ''; return; }
+    const selected = files.slice(0, remaining);
+    for (const file of selected) {
+      const compressed = await compressImage(file, 1200, .72);
+      photos.push({ name: file.name, type: file.type, dataUrl: compressed });
+    }
+    renderPhotoGrid();
+    e.target.value = '';
+  });
+}
+function renderPhotoGrid() {
+  const grid = document.getElementById('photoGrid');
+  document.getElementById('photoCount').textContent = photos.length;
+  grid.innerHTML = photos.map((p, i) => `<div class="photo-item"><img src="${p.dataUrl}" alt="Photo ${i+1}"/><button class="photo-remove" onclick="removePhoto(${i})">✕</button></div>`).join('');
+}
+function removePhoto(index) { photos.splice(index, 1); renderPhotoGrid(); }
+function compressImage(file, maxSide, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const ratio = Math.min(1, maxSide / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * ratio); canvas.height = Math.round(img.height * ratio);
+        const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject; img.src = reader.result;
+    };
+    reader.onerror = reject; reader.readAsDataURL(file);
+  });
+}
+function exportBackup() {
+  const jobs = getLocalJobs(); if (!jobs.length) { showToast('No saved jobs to export'); return; }
+  downloadBlob(new Blob([JSON.stringify(jobs, null, 2)], { type:'application/json' }), 'ml-monument-saved-jobs-backup.json'); showToast('Backup exported');
+}
+function bindImport() {
+  document.getElementById('importFile').addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0]; if (!file) return;
+    try {
+      const text = await file.text(); const incoming = JSON.parse(text); if (!Array.isArray(incoming)) throw new Error('Invalid backup');
+      const current = getLocalJobs(); const map = new Map(); [...incoming, ...current].forEach(job => map.set(job.id, job));
+      const merged = Array.from(map.values()).sort((a, b) => new Date(b.date) - new Date(a.date));
+      safeLocalSet(STORAGE_KEY, JSON.stringify(merged)); await renderHistory(); showToast('Backup imported');
+    } catch (err) { console.error(err); showToast('Import failed'); }
+    e.target.value = '';
+  });
+}
+function csvEscape(value) { const str = String(value ?? ''); return '"' + str.replace(/"/g, '""') + '"'; }
+function exportCsv() {
+  const jobs = getLocalJobs(); if (!jobs.length) { showToast('No saved jobs to export'); return; }
+  const headers = ['Saved At','Job Name','Job Type','Mode','Main Length In','Main Width In','Main Height In','Area Sq Ft','Clean ML','Clean Total','Exterior ML','Exterior Total','Re-pointing LF','Re-pointing ML','Re-pointing Total','Flats','Flats Total','Slants','Slants Total','Footstones Total','Job Total','Notes','Photo Count'];
+  const rows = jobs.map(job => {
+    const snap = job.snapshot || {}; const main = (snap.pieces || [])[0] || {}; const r = job.results || {};
+    return [job.date || '', job.name || '', snap.jobType || '', snap.mode || '', Number(main.l || 0).toFixed(2), Number(main.w || 0).toFixed(2), Number(main.h || 0).toFixed(2), Number(r.totalSqFt || 0).toFixed(2), Number(r.mlClean || 0).toFixed(2), Number(r.priceClean || 0).toFixed(2), Number(r.mlExt || 0).toFixed(2), Number(r.priceExt || 0).toFixed(2), Number(r.lfPointing || 0).toFixed(2), Number(r.mlLF || 0).toFixed(2), Number(r.priceLF || 0).toFixed(2), Number(r.numFlats || 0), Number(r.priceFlats || 0).toFixed(2), Number(r.numSlants || 0), Number(r.priceSlants || 0).toFixed(2), Number(r.footTotal || 0).toFixed(2), Number(r.finalTotal || 0).toFixed(2), snap.notes || '', Array.isArray(snap.photos) ? snap.photos.length : 0];
+  });
+  let csv = headers.map(csvEscape).join(',') + '\n' + rows.map(row => row.map(csvEscape).join(',')).join('\n');
+  const pieceLines = [];
+  jobs.forEach(job => (job.snapshot?.pieces || []).forEach((piece, idx) => pieceLines.push([job.name || '', idx === 0 ? (job.snapshot?.jobType === 'Mausoleum' ? 'Main Mausoleum' : 'Main Monument') : `Piece ${idx}`, Number(piece.l || 0).toFixed(2), Number(piece.w || 0).toFixed(2), Number(piece.h || 0).toFixed(2), Number(piece.mult || 1)])));
+  if (pieceLines.length) {
+    csv += '\n\n' + ['Piece Details'].map(csvEscape).join(',') + '\n';
+    csv += ['Job Name','Piece Label','Length In','Width In','Height In','Multiplier'].map(csvEscape).join(',') + '\n';
+    csv += pieceLines.map(row => row.map(csvEscape).join(',')).join('\n');
+  }
+  downloadBlob(new Blob([csv], { type:'text/csv;charset=utf-8;' }), 'ml-monument-saved-jobs.csv'); showToast('CSV exported');
+}
+function downloadBlob(blob, filename) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click(); URL.revokeObjectURL(a.href); }
+function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+function escapeHtml(str) { return String(str).replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+function escapeJs(str) { return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
+async function registerServiceWorker() { if (!('serviceWorker' in navigator)) return; try { await navigator.serviceWorker.register('./service-worker.js'); } catch (err) { console.warn('SW registration failed', err); } }
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('installCard').classList.remove('hidden'); });
+document.getElementById('installBtn').addEventListener('click', async () => { if (!deferredPrompt) { showToast('On iPhone: Share → Add to Home Screen'); return; } deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; dismissInstallCard(); });
+function dismissInstallCard() { document.getElementById('installCard').classList.add('hidden'); }
+
+function updateSyncBadge() {
+  const badge = document.getElementById('syncStatus');
+  if (airtableReady()) { badge.textContent = 'Airtable ready'; badge.className = 'sync-pill ok'; }
+  else if (CONFIG && CONFIG.airtable && CONFIG.airtable.enabled) { badge.textContent = 'Airtable incomplete'; badge.className = 'sync-pill warn'; }
+  else { badge.textContent = 'Local only'; badge.className = 'sync-pill'; }
+}
+function airtableReady() {
+  const a = CONFIG.airtable || {};
+  return Boolean(a.enabled && a.personalAccessToken && a.baseId && a.tableName);
+}
+function getFieldMap() {
+  return Object.assign({
+    jobName:'Job Name', date:'Date', jobType:'Job Type', cleanML:'Clean ML', cleanTotal:'Clean Total', exteriorML:'Exterior ML', exteriorTotal:'Exterior Total', repointingLF:'Re-pointing LF', repointingML:'Re-pointing ML', repointingTotal:'Re-pointing Total', flats:'Flats', slants:'Slants', jobTotal:'Job Total', notes:'Notes', detailsJson:'Details JSON', photoCount:'Photo Count'
+  }, (CONFIG.airtable && CONFIG.airtable.fields) || {});
+}
+function airtableHeaders() { return { 'Authorization': 'Bearer ' + CONFIG.airtable.personalAccessToken, 'Content-Type':'application/json' }; }
+function airtableUrl() { return `https://api.airtable.com/v0/${CONFIG.airtable.baseId}/${encodeURIComponent(CONFIG.airtable.tableName)}`; }
+function toAirtableFields(job) {
+  const f = getFieldMap(); const snap = job.snapshot || {}; const r = job.results || {};
+  return {
+    [f.jobName]: job.name || '', [f.date]: job.date || new Date().toISOString(), [f.jobType]: snap.jobType || 'Monument', [f.cleanML]: Number(r.mlClean || 0), [f.cleanTotal]: Number(r.priceClean || 0), [f.exteriorML]: Number(r.mlExt || 0), [f.exteriorTotal]: Number(r.priceExt || 0), [f.repointingLF]: Number(r.lfPointing || 0), [f.repointingML]: Number(r.mlLF || 0), [f.repointingTotal]: Number(r.priceLF || 0), [f.flats]: Number(r.numFlats || 0), [f.slants]: Number(r.numSlants || 0), [f.jobTotal]: Number(r.finalTotal || 0), [f.notes]: snap.notes || '', [f.detailsJson]: JSON.stringify(job), [f.photoCount]: Array.isArray(snap.photos) ? snap.photos.length : 0
+  };
+}
+async function airtableCreateRecord(job) {
+  const res = await fetch(airtableUrl(), { method:'POST', headers:airtableHeaders(), body: JSON.stringify({ records:[{ fields: toAirtableFields(job) }] }) });
+  if (!res.ok) throw new Error('Airtable save failed');
+  const data = await res.json(); return data.records?.[0]?.id || '';
+}
+async function airtableDeleteRecord(recordId) {
+  const res = await fetch(airtableUrl() + '/' + recordId, { method:'DELETE', headers:airtableHeaders() });
+  if (!res.ok) throw new Error('Airtable delete failed');
+}
+async function airtableFetchJobs() {
+  const f = getFieldMap();
+  let url = airtableUrl() + '?pageSize=100&sort%5B0%5D%5Bfield%5D=' + encodeURIComponent(f.date) + '&sort%5B0%5D%5Bdirection%5D=desc';
+  const all = [];
+  while (url) {
+    const res = await fetch(url, { headers: airtableHeaders() }); if (!res.ok) throw new Error('Airtable load failed');
+    const data = await res.json();
+    (data.records || []).forEach(record => {
+      const fields = record.fields || {};
+      let parsed = null;
+      try { parsed = JSON.parse(fields[f.detailsJson] || '{}'); } catch {}
+      const job = parsed && parsed.snapshot ? parsed : { id: 'at-' + record.id, name: fields[f.jobName] || 'Unnamed Job', date: fields[f.date] || new Date().toISOString(), snapshot: { jobName: fields[f.jobName] || '', jobType: fields[f.jobType] || 'Monument', mode: 'inches', notes: fields[f.notes] || '', lfPointing: Number(fields[f.repointingLF] || 0), numFlats: Number(fields[f.flats] || 0), numSlants: Number(fields[f.slants] || 0), pieces: [], photos: [] }, results: { jobType: fields[f.jobType] || 'Monument', mlClean: Number(fields[f.cleanML] || 0), priceClean: Number(fields[f.cleanTotal] || 0), mlExt: Number(fields[f.exteriorML] || 0), priceExt: Number(fields[f.exteriorTotal] || 0), lfPointing: Number(fields[f.repointingLF] || 0), mlLF: Number(fields[f.repointingML] || 0), priceLF: Number(fields[f.repointingTotal] || 0), numFlats: Number(fields[f.flats] || 0), numSlants: Number(fields[f.slants] || 0), finalTotal: Number(fields[f.jobTotal] || 0) } };
+      job.airtableRecordId = record.id; if (!job.id) job.id = 'at-' + record.id; all.push(job);
+    });
+    url = data.offset ? airtableUrl() + '?pageSize=100&offset=' + encodeURIComponent(data.offset) + '&sort%5B0%5D%5Bfield%5D=' + encodeURIComponent(f.date) + '&sort%5B0%5D%5Bdirection%5D=desc' : '';
+  }
+  return all;
+}
+</script>
+</body>
+</html>
