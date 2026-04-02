@@ -426,7 +426,7 @@ async function saveJob() {
     } catch (err) {
       console.error(err);
       await cacheMergedJob(job);
-      showToast('Saved locally. Airtable sync failed');
+      showToast('Saved locally. Airtable sync failed: ' + (err.message || 'unknown error'));
     }
   } else {
     await cacheMergedJob(job);
@@ -613,12 +613,19 @@ function airtableUrl() { return `https://api.airtable.com/v0/${CONFIG.airtable.b
 function toAirtableFields(job) {
   const f = getFieldMap(); const snap = job.snapshot || {}; const r = job.results || {};
   return {
-    [f.jobName]: job.name || '', [f.date]: job.date || new Date().toISOString(), [f.jobType]: snap.jobType || 'Monument', [f.cleanML]: Number(r.mlClean || 0), [f.cleanTotal]: Number(r.priceClean || 0), [f.exteriorML]: Number(r.mlExt || 0), [f.exteriorTotal]: Number(r.priceExt || 0), [f.repointingLF]: Number(r.lfPointing || 0), [f.repointingML]: Number(r.mlLF || 0), [f.repointingTotal]: Number(r.priceLF || 0), [f.flats]: Number(r.numFlats || 0), [f.slants]: Number(r.numSlants || 0), [f.jobTotal]: Number(r.finalTotal || 0), [f.notes]: snap.notes || '', [f.detailsJson]: JSON.stringify(job), [f.photoCount]: Array.isArray(snap.photos) ? snap.photos.length : 0
+    [f.jobName]: job.name || '', [f.date]: (job.date || new Date().toISOString()).slice(0,10), [f.jobType]: snap.jobType || 'Monument', [f.cleanML]: Number(r.mlClean || 0), [f.cleanTotal]: Number(r.priceClean || 0), [f.exteriorML]: Number(r.mlExt || 0), [f.exteriorTotal]: Number(r.priceExt || 0), [f.repointingLF]: Number(r.lfPointing || 0), [f.repointingML]: Number(r.mlLF || 0), [f.repointingTotal]: Number(r.priceLF || 0), [f.flats]: Number(r.numFlats || 0), [f.slants]: Number(r.numSlants || 0), [f.jobTotal]: Number(r.finalTotal || 0), [f.notes]: snap.notes || '', [f.detailsJson]: JSON.stringify({ ...job, snapshot: { ...snap, photos: [], photoCount: Array.isArray(snap.photos) ? snap.photos.length : 0 } }), [f.photoCount]: Array.isArray(snap.photos) ? snap.photos.length : 0
   };
 }
 async function airtableCreateRecord(job) {
   const res = await fetch(airtableUrl(), { method:'POST', headers:airtableHeaders(), body: JSON.stringify({ records:[{ fields: toAirtableFields(job) }] }) });
-  if (!res.ok) throw new Error('Airtable save failed');
+  if (!res.ok) {
+    let detail = '';
+    try {
+      const data = await res.json();
+      detail = data?.error?.message || data?.error?.type || JSON.stringify(data);
+    } catch {}
+    throw new Error(detail ? ('Airtable save failed: ' + detail) : 'Airtable save failed');
+  }
   const data = await res.json(); return data.records?.[0]?.id || '';
 }
 async function airtableDeleteRecord(recordId) {
