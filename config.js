@@ -8,20 +8,27 @@ window.ML_APP_CONFIG = {
       jobName: 'Job Name',
       date: 'Date',
       jobType: 'Job Type',
-      areaSqFt: 'Area Sq Ft',
+
       cleanML: 'Clean ML',
       cleanTotal: 'Clean Total',
+
       exteriorML: 'Exterior ML',
       exteriorTotal: 'Exterior Total',
+
       repointingLF: 'Re-pointing LF',
       repointingML: 'Re-pointing ML',
       repointingTotal: 'Re-pointing Total',
+
       flats: 'Flats',
       slants: 'Slants',
+
       jobTotal: 'Job Total',
       notes: 'Notes',
+
       detailsJson: 'Details JSON',
-      photoCount: 'Photo Count'
+      photoCount: 'Photo Count',
+
+      areaSqFt: 'Area Sq Ft'
     }
   }
 };
