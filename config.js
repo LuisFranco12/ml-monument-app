@@ -8,6 +8,7 @@ window.ML_APP_CONFIG = {
       jobName: 'Job Name',
       date: 'Date',
       jobType: 'Job Type',
+      areaSqFt: 'Area Sq Ft',
       cleanML: 'Clean ML',
       cleanTotal: 'Clean Total',
       exteriorML: 'Exterior ML',
