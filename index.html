@@ -441,18 +441,31 @@ async function cacheMergedJob(job) {
   safeLocalSet(STORAGE_KEY, JSON.stringify(jobs));
 }
 function getLocalJobs() { try { return JSON.parse(safeLocalGet(STORAGE_KEY) || '[]') || []; } catch { return []; } }
+function mergeJobs(localJobs, remoteJobs) {
+  const merged = [];
+  const seen = new Set();
+  [...remoteJobs, ...localJobs].forEach(job => {
+    const key = job.airtableRecordId || job.id;
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    merged.push(job);
+  });
+  return merged.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+}
 async function getJobs() {
+  const localJobs = getLocalJobs();
   if (airtableReady() && navigator.onLine) {
     try {
       const remote = await airtableFetchJobs();
-      safeLocalSet(STORAGE_KEY, JSON.stringify(remote));
-      return remote;
+      const merged = mergeJobs(localJobs, remote);
+      safeLocalSet(STORAGE_KEY, JSON.stringify(merged));
+      return merged;
     } catch (err) {
       console.error(err);
-      return getLocalJobs();
+      return localJobs;
     }
   }
-  return getLocalJobs();
+  return localJobs;
 }
 async function deleteJob(id, event) {
   if (event) event.stopPropagation();
