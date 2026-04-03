@@ -173,8 +173,13 @@
   <div class="card">
     <div class="card-title">Job Setup <span class="sync-pill" id="syncStatus">Local only</span></div>
     <div class="field-row">
-      <div class="field-label">Owner Name & ID</div>
-      <input type="text" id="jobName" placeholder="e.g. John Smith #4821" autocomplete="off"/>
+    <div class="field-label">Owner Name</div>
+    <input type="text" id="ownerName" placeholder="e.g. John Smith" autocomplete="off"/>
+    </div>
+    
+    <div class="field-row">
+      <div class="field-label">Owner ID</div>
+      <input type="text" id="ownerId" placeholder="e.g. #4821" autocomplete="off"/>
     </div>
     <div class="field-row">
       <div class="field-label">Job Type</div>
@@ -440,21 +445,42 @@ function renderResults(r) {
 }
 function getCurrentSnapshot() {
   return {
-    mode, jobType,
-    jobName: document.getElementById('jobName').value.trim(),
+    mode,
+    jobType,
+    ownerName: document.getElementById('ownerName').value.trim(),
+    ownerId: document.getElementById('ownerId').value.trim(),
     notes: document.getElementById('jobNotes').value.trim(),
-    lfPointing: n('lfPointing'), numFlats: parseInt(document.getElementById('numFlats').value || '0', 10) || 0, numSlants: parseInt(document.getElementById('numSlants').value || '0', 10) || 0,
+    lfPointing: n('lfPointing'),
+    numFlats: parseInt(document.getElementById('numFlats').value || '0', 10) || 0,
+    numSlants: parseInt(document.getElementById('numSlants').value || '0', 10) || 0,
     pieces: pieces.map(p => ({ ...getPieceDims(p.id), isMain: p.isMain })),
     photos: photos
   };
 }
 function makeJobRecord(existingRecordId = '') {
   const snapshot = getCurrentSnapshot();
-  return { id: existingRecordId || ('local-' + Date.now()), airtableRecordId: existingRecordId || '', name: snapshot.jobName || 'Unnamed Job', date: new Date().toISOString(), snapshot, results: { ...lastResults } };
+  const displayName = `${snapshot.ownerName} ${snapshot.ownerId}`.trim();
+
+  return {
+    id: existingRecordId || ('local-' + Date.now()),
+    airtableRecordId: existingRecordId || '',
+    name: displayName || 'Unnamed Job',
+    date: new Date().toISOString(),
+    snapshot,
+    results: { ...lastResults }
+  };
 }
 async function saveJob() {
   if (!lastResults) {
     showToast('Calculate first');
+    return;
+  }
+
+  const ownerName = document.getElementById('ownerName')?.value.trim();
+  const ownerId = document.getElementById('ownerId')?.value.trim();
+
+  if (!ownerName || !ownerId) {
+    showToast('Owner Name and ID required');
     return;
   }
 
@@ -473,17 +499,13 @@ async function saveJob() {
     }
   }
 
-  // Always save locally
   await cacheMergedJob(job);
 
-  // Update UI
   document.getElementById('saveBtn').style.display = 'none';
   await renderHistory();
 
-  // 🔥 CLEAR EVERYTHING (this is what you wanted)
   resetCalculator();
 
-  // Final message (only once)
   if (savedToAirtable) {
     showToast('Saved to Airtable & cleared');
   } else {
@@ -546,23 +568,43 @@ async function clearAllJobs() {
 }
 function loadJob(id, event) {
   if (event) event.stopPropagation();
+
   const job = getLocalJobs().find(j => j.id === id);
   if (!job) return;
+
   const snap = job.snapshot || {};
-  mode = snap.mode || 'inches'; jobType = snap.jobType || 'Monument'; photos = Array.isArray(snap.photos) ? snap.photos : [];
+
+  mode = snap.mode || 'inches';
+  jobType = snap.jobType || 'Monument';
+  photos = Array.isArray(snap.photos) ? snap.photos : [];
+
   document.getElementById('modeInches').classList.toggle('active', mode === 'inches');
   document.getElementById('modeFeet').classList.toggle('active', mode === 'feetInches');
-  document.getElementById('jobName').value = snap.jobName || job.name || '';
+
+  document.getElementById('ownerName').value = snap.ownerName || '';
+  document.getElementById('ownerId').value = snap.ownerId || '';
   document.getElementById('jobNotes').value = snap.notes || '';
   document.getElementById('lfPointing').value = snap.lfPointing || '';
   document.getElementById('numFlats').value = snap.numFlats || 0;
   document.getElementById('numSlants').value = snap.numSlants || 0;
-  updateJobTypeUI(); rebuildPieces(snap.pieces || []); renderPhotoGrid();
+
+  updateJobTypeUI();
+  rebuildPieces(snap.pieces || []);
+  renderPhotoGrid();
+
   lastResults = job.results || null;
-  if (lastResults) { document.getElementById('resultsContainer').classList.remove('hidden'); renderResults(lastResults); }
-  else { document.getElementById('resultsContainer').classList.add('hidden'); }
+
+  if (lastResults) {
+    document.getElementById('resultsContainer').classList.remove('hidden');
+    renderResults(lastResults);
+  } else {
+    document.getElementById('resultsContainer').classList.add('hidden');
+  }
+
   document.getElementById('saveBtn').style.display = 'none';
-  switchTab('calc'); window.scrollTo({ top:0, behavior:'smooth' }); showToast('Loaded saved job');
+  switchTab('calc');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  showToast('Loaded saved job');
 }
 async function renderHistory() {
   const container = document.getElementById('historyContainer');
@@ -571,14 +613,34 @@ async function renderHistory() {
   if (!jobs.length) { container.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>No saved jobs yet.<br>Calculate and save a job to see it here.</p></div>'; return; }
   container.innerHTML = jobs.map(job => {
     const r = job.results || {}; const snap = job.snapshot || {}; const date = new Date(job.date).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) + ' • ' + new Date(job.date).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
-    return `<div class="history-item"><div class="history-name">${escapeHtml(job.name || 'Unnamed Job')}</div><div class="history-date">${date} • ${escapeHtml(snap.jobType || 'Monument')}</div><div class="history-totals">${(snap.jobType || 'Monument') === 'Monument' ? `<div class="history-total-item"><div class="history-total-label">Clean ML</div><div class="history-total-val">${Number(r.mlClean || 0).toFixed(2)}</div></div><div class="history-total-item"><div class="history-total-label">Clean Total</div><div class="history-total-val">$${Number(r.priceClean || 0).toFixed(2)}</div></div>` : `<div class="history-total-item"><div class="history-total-label">Exterior ML</div><div class="history-total-val">${Number(r.mlExt || 0).toFixed(2)}</div></div><div class="history-total-item"><div class="history-total-label">Exterior Total</div><div class="history-total-val">$${Number(r.priceExt || 0).toFixed(2)}</div></div>`}<div class="history-total-item"><div class="history-total-label">Flats / Slants</div><div class="history-total-val">${Number(r.numFlats || 0)} / ${Number(r.numSlants || 0)}</div></div>${(snap.jobType || 'Monument') === 'Mausoleum' ? `<div class="history-total-item"><div class="history-total-label">Re-pointing</div><div class="history-total-val">$${Number(r.priceLF || 0).toFixed(2)}</div></div>` : `<div class="history-total-item"><div class="history-total-label">Job Total</div><div class="history-total-val">$${Number(r.finalTotal || 0).toFixed(2)}</div></div>`}</div><div class="history-actions"><button class="btn btn-ghost btn-sm" onclick="loadJob('${escapeJs(job.id)}', event)">Open</button><button class="btn btn-danger btn-sm" onclick="deleteJob('${escapeJs(job.id)}', event)">Delete</button></div></div>`;
-  }).join('');
+  return `<div class="history-item"><div class="history-name">${escapeHtml((((job.snapshot?.ownerName || '') + ' ' + (job.snapshot?.ownerId || '')).trim()) || job.name || 'Unnamed Job')}</div>  }).join('');
 }
 function resetCalculator() {
-  document.getElementById('jobName').value = ''; document.getElementById('jobNotes').value = ''; document.getElementById('lfPointing').value = ''; document.getElementById('numFlats').value = '0'; document.getElementById('numSlants').value = '0';
-  mode = 'inches'; jobType = 'Monument'; photos = []; pieces = []; pieceIdCounter = 0; lastResults = null;
-  document.getElementById('modeInches').classList.add('active'); document.getElementById('modeFeet').classList.remove('active');
-  updateJobTypeUI(); rebuildPieces([]); renderPhotoGrid(); document.getElementById('resultsContainer').classList.add('hidden'); document.getElementById('saveBtn').style.display = 'none'; window.scrollTo({ top:0, behavior:'smooth' });
+  document.getElementById('ownerName').value = '';
+  document.getElementById('ownerId').value = '';
+  document.getElementById('jobNotes').value = '';
+  document.getElementById('lfPointing').value = '';
+  document.getElementById('numFlats').value = '0';
+  document.getElementById('numSlants').value = '0';
+
+  mode = 'inches';
+  jobType = 'Monument';
+  photos = [];
+  pieces = [];
+  pieceIdCounter = 0;
+  lastResults = null;
+
+  document.getElementById('modeInches').classList.add('active');
+  document.getElementById('modeFeet').classList.remove('active');
+
+  updateJobTypeUI();
+  rebuildPieces([]);
+  renderPhotoGrid();
+
+  document.getElementById('resultsContainer').classList.add('hidden');
+  document.getElementById('saveBtn').style.display = 'none';
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 function bindPhotos() {
   document.getElementById('photoInput').addEventListener('change', async (e) => {
@@ -637,11 +699,36 @@ function bindImport() {
 function csvEscape(value) { const str = String(value ?? ''); return '"' + str.replace(/"/g, '""') + '"'; }
 function exportCsv() {
   const jobs = getLocalJobs(); if (!jobs.length) { showToast('No saved jobs to export'); return; }
-  const headers = ['Saved At','Job Name','Job Type','Mode','Main Length In','Main Width In','Main Height In','Area Sq Ft','Clean ML','Clean Total','Exterior ML','Exterior Total','Re-pointing LF','Re-pointing ML','Re-pointing Total','Flats','Flats Total','Slants','Slants Total','Footstones Total','Job Total','Notes','Photo Count'];
-  const rows = jobs.map(job => {
+const headers = ['Saved At','Owner Name','Owner ID','Job Name','Job Type','Mode','Main Length In','Main Width In','Main Height In','Area Sq Ft','Clean ML','Clean Total','Exterior ML','Exterior Total','Re-pointing LF','Re-pointing ML','Re-pointing Total','Flats','Flats Total','Slants','Slants Total','Footstones Total','Job Total','Notes','Photo Count'];  const rows = jobs.map(job => {
     const snap = job.snapshot || {}; const main = (snap.pieces || [])[0] || {}; const r = job.results || {};
-    return [job.date || '', job.name || '', snap.jobType || '', snap.mode || '', Number(main.l || 0).toFixed(2), Number(main.w || 0).toFixed(2), Number(main.h || 0).toFixed(2), Number(r.totalSqFt || 0).toFixed(2), Number(r.mlClean || 0).toFixed(2), Number(r.priceClean || 0).toFixed(2), Number(r.mlExt || 0).toFixed(2), Number(r.priceExt || 0).toFixed(2), Number(r.lfPointing || 0).toFixed(2), Number(r.mlLF || 0).toFixed(2), Number(r.priceLF || 0).toFixed(2), Number(r.numFlats || 0), Number(r.priceFlats || 0).toFixed(2), Number(r.numSlants || 0), Number(r.priceSlants || 0).toFixed(2), Number(r.footTotal || 0).toFixed(2), Number(r.finalTotal || 0).toFixed(2), snap.notes || '', Array.isArray(snap.photos) ? snap.photos.length : 0];
-  });
+    return [
+      job.date || '',
+      snap.ownerName || '',
+      snap.ownerId || '',
+      job.name || '',
+      snap.jobType || '',
+      snap.mode || '',
+      Number(main.l || 0).toFixed(2),
+      Number(main.w || 0).toFixed(2),
+      Number(main.h || 0).toFixed(2),
+      Number(r.totalSqFt || 0).toFixed(2),
+      Number(r.mlClean || 0).toFixed(2),
+      Number(r.priceClean || 0).toFixed(2),
+      Number(r.mlExt || 0).toFixed(2),
+      Number(r.priceExt || 0).toFixed(2),
+      Number(r.lfPointing || 0).toFixed(2),
+      Number(r.mlLF || 0).toFixed(2),
+      Number(r.priceLF || 0).toFixed(2),
+      Number(r.numFlats || 0),
+      Number(r.priceFlats || 0).toFixed(2),
+      Number(r.numSlants || 0),
+      Number(r.priceSlants || 0).toFixed(2),
+      Number(r.footTotal || 0).toFixed(2),
+      Number(r.finalTotal || 0).toFixed(2),
+      snap.notes || '',
+      Array.isArray(snap.photos) ? snap.photos.length : 0
+    ];  
+});
   let csv = headers.map(csvEscape).join(',') + '\n' + rows.map(row => row.map(csvEscape).join(',')).join('\n');
   const pieceLines = [];
   jobs.forEach(job => (job.snapshot?.pieces || []).forEach((piece, idx) => pieceLines.push([job.name || '', idx === 0 ? (job.snapshot?.jobType === 'Mausoleum' ? 'Main Mausoleum' : 'Main Monument') : `Piece ${idx}`, Number(piece.l || 0).toFixed(2), Number(piece.w || 0).toFixed(2), Number(piece.h || 0).toFixed(2), Number(piece.mult || 1)])));
@@ -687,17 +774,40 @@ function airtableReady() {
 }
 function getFieldMap() {
   return Object.assign({
-    jobName:'Job Name', date:'Date', jobType:'Job Type', areaSqFt:'Area Sq Ft', cleanML:'Clean ML', cleanTotal:'Clean Total', exteriorML:'Exterior ML', exteriorTotal:'Exterior Total', repointingLF:'Re-pointing LF', repointingML:'Re-pointing ML', repointingTotal:'Re-pointing Total', flats:'Flats', slants:'Slants', jobTotal:'Job Total', notes:'Notes', detailsJson:'Details JSON', photoCount:'Photo Count'
+    ownerName: 'Owner Name',
+    ownerId: 'Owner ID',
+    jobName: 'Job Name',
+    date: 'Date',
+    jobType: 'Job Type',
+    areaSqFt: 'Area Sq Ft',
+    cleanML: 'Clean ML',
+    cleanTotal: 'Clean Total',
+    exteriorML: 'Exterior ML',
+    exteriorTotal: 'Exterior Total',
+    repointingLF: 'Re-pointing LF',
+    repointingML: 'Re-pointing ML',
+    repointingTotal: 'Re-pointing Total',
+    flats: 'Flats',
+    slants: 'Slants',
+    jobTotal: 'Job Total',
+    notes: 'Notes',
+    detailsJson: 'Details JSON',
+    photoCount: 'Photo Count'
   }, (CONFIG.airtable && CONFIG.airtable.fields) || {});
 }
 function airtableHeaders() { return { 'Authorization': 'Bearer ' + CONFIG.airtable.personalAccessToken, 'Content-Type':'application/json' }; }
 function airtableUrl() { return `https://api.airtable.com/v0/${CONFIG.airtable.baseId}/${encodeURIComponent(CONFIG.airtable.tableName)}`; }
 function toAirtableFields(job) {
-  const f = getFieldMap(); const snap = job.snapshot || {}; const r = job.results || {};
+  const f = getFieldMap();
+  const snap = job.snapshot || {};
+  const r = job.results || {};
   const isMonument = (snap.jobType || 'Monument') === 'Monument';
+
   return {
+    [f.ownerName]: snap.ownerName || '',
+    [f.ownerId]: snap.ownerId || '',
     [f.jobName]: job.name || '',
-    [f.date]: (job.date || new Date().toISOString()).slice(0,10),
+    [f.date]: (job.date || new Date().toISOString()).slice(0, 10),
     [f.jobType]: snap.jobType || 'Monument',
     [f.areaSqFt]: Number(r.totalSqFt || 0),
     [f.cleanML]: isMonument ? Number(r.mlClean || 0) : 0,
@@ -711,7 +821,14 @@ function toAirtableFields(job) {
     [f.slants]: Number(r.numSlants || 0),
     [f.jobTotal]: Number(r.finalTotal || 0),
     [f.notes]: snap.notes || '',
-    [f.detailsJson]: JSON.stringify({ ...job, snapshot: { ...snap, photos: [], photoCount: Array.isArray(snap.photos) ? snap.photos.length : 0 } }),
+    [f.detailsJson]: JSON.stringify({
+      ...job,
+      snapshot: {
+        ...snap,
+        photos: [],
+        photoCount: Array.isArray(snap.photos) ? snap.photos.length : 0
+      }
+    }),
     [f.photoCount]: Array.isArray(snap.photos) ? snap.photos.length : 0
   };
 }
@@ -742,7 +859,39 @@ async function airtableFetchJobs() {
       const fields = record.fields || {};
       let parsed = null;
       try { parsed = JSON.parse(fields[f.detailsJson] || '{}'); } catch {}
-      const job = parsed && parsed.snapshot ? parsed : { id: 'at-' + record.id, name: fields[f.jobName] || 'Unnamed Job', date: fields[f.date] || new Date().toISOString(), snapshot: { jobName: fields[f.jobName] || '', jobType: fields[f.jobType] || 'Monument', mode: 'inches', notes: fields[f.notes] || '', lfPointing: Number(fields[f.repointingLF] || 0), numFlats: Number(fields[f.flats] || 0), numSlants: Number(fields[f.slants] || 0), pieces: [], photos: [] }, results: { jobType: fields[f.jobType] || 'Monument', totalSqFt: Number(fields[f.areaSqFt] || 0), mlClean: Number(fields[f.cleanML] || 0), priceClean: Number(fields[f.cleanTotal] || 0), mlExt: Number(fields[f.exteriorML] || 0), priceExt: Number(fields[f.exteriorTotal] || 0), lfPointing: Number(fields[f.repointingLF] || 0), mlLF: Number(fields[f.repointingML] || 0), priceLF: Number(fields[f.repointingTotal] || 0), numFlats: Number(fields[f.flats] || 0), numSlants: Number(fields[f.slants] || 0), finalTotal: Number(fields[f.jobTotal] || 0) } };
+      
+      const job = parsed && parsed.snapshot ? parsed : {
+        id: 'at-' + record.id,
+        name: fields[f.jobName] || 'Unnamed Job',
+        date: fields[f.date] || new Date().toISOString(),
+        snapshot: {
+          ownerName: fields[f.ownerName] || '',
+          ownerId: fields[f.ownerId] || '',
+          jobType: fields[f.jobType] || 'Monument',
+          mode: 'inches',
+          notes: fields[f.notes] || '',
+          lfPointing: Number(fields[f.repointingLF] || 0),
+          numFlats: Number(fields[f.flats] || 0),
+          numSlants: Number(fields[f.slants] || 0),
+          pieces: [],
+          photos: []
+        },
+        results: {
+          jobType: fields[f.jobType] || 'Monument',
+          totalSqFt: Number(fields[f.areaSqFt] || 0),
+          mlClean: Number(fields[f.cleanML] || 0),
+          priceClean: Number(fields[f.cleanTotal] || 0),
+          mlExt: Number(fields[f.exteriorML] || 0),
+          priceExt: Number(fields[f.exteriorTotal] || 0),
+          lfPointing: Number(fields[f.repointingLF] || 0),
+          mlLF: Number(fields[f.repointingML] || 0),
+          priceLF: Number(fields[f.repointingTotal] || 0),
+          numFlats: Number(fields[f.flats] || 0),
+          numSlants: Number(fields[f.slants] || 0),
+          finalTotal: Number(fields[f.jobTotal] || 0)
+        }
+      };
+      
       job.airtableRecordId = record.id; if (!job.id) job.id = 'at-' + record.id; all.push(job);
     });
     url = data.offset ? airtableUrl() + '?pageSize=100&offset=' + encodeURIComponent(data.offset) + '&sort%5B0%5D%5Bfield%5D=' + encodeURIComponent(f.date) + '&sort%5B0%5D%5Bdirection%5D=desc' : '';
