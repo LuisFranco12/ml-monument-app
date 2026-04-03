@@ -228,7 +228,7 @@
 <script src="./config.js"></script>
 <script>
 const CONFIG = window.ML_APP_CONFIG || {};
-const STORAGE_KEY = 'ml_saved_jobs_v3';
+const STORAGE_KEY = 'ml_saved_jobs_v4';
 let mode = 'inches';
 let jobType = 'Monument';
 let pieces = [];
@@ -633,15 +633,32 @@ function airtableReady() {
 }
 function getFieldMap() {
   return Object.assign({
-    jobName:'Job Name', date:'Date', jobType:'Job Type', cleanML:'Clean ML', cleanTotal:'Clean Total', exteriorML:'Exterior ML', exteriorTotal:'Exterior Total', repointingLF:'Re-pointing LF', repointingML:'Re-pointing ML', repointingTotal:'Re-pointing Total', flats:'Flats', slants:'Slants', jobTotal:'Job Total', notes:'Notes', detailsJson:'Details JSON', photoCount:'Photo Count'
+    jobName:'Job Name', date:'Date', jobType:'Job Type', areaSqFt:'Area Sq Ft', cleanML:'Clean ML', cleanTotal:'Clean Total', exteriorML:'Exterior ML', exteriorTotal:'Exterior Total', repointingLF:'Re-pointing LF', repointingML:'Re-pointing ML', repointingTotal:'Re-pointing Total', flats:'Flats', slants:'Slants', jobTotal:'Job Total', notes:'Notes', detailsJson:'Details JSON', photoCount:'Photo Count'
   }, (CONFIG.airtable && CONFIG.airtable.fields) || {});
 }
 function airtableHeaders() { return { 'Authorization': 'Bearer ' + CONFIG.airtable.personalAccessToken, 'Content-Type':'application/json' }; }
 function airtableUrl() { return `https://api.airtable.com/v0/${CONFIG.airtable.baseId}/${encodeURIComponent(CONFIG.airtable.tableName)}`; }
 function toAirtableFields(job) {
   const f = getFieldMap(); const snap = job.snapshot || {}; const r = job.results || {};
+  const isMonument = (snap.jobType || 'Monument') === 'Monument';
   return {
-    [f.jobName]: job.name || '', [f.date]: (job.date || new Date().toISOString()).slice(0,10), [f.jobType]: snap.jobType || 'Monument', [f.cleanML]: Number(r.mlClean || 0), [f.cleanTotal]: Number(r.priceClean || 0), [f.exteriorML]: Number(r.mlExt || 0), [f.exteriorTotal]: Number(r.priceExt || 0), [f.repointingLF]: Number(r.lfPointing || 0), [f.repointingML]: Number(r.mlLF || 0), [f.repointingTotal]: Number(r.priceLF || 0), [f.flats]: Number(r.numFlats || 0), [f.slants]: Number(r.numSlants || 0), [f.jobTotal]: Number(r.finalTotal || 0), [f.notes]: snap.notes || '', [f.detailsJson]: JSON.stringify({ ...job, snapshot: { ...snap, photos: [], photoCount: Array.isArray(snap.photos) ? snap.photos.length : 0 } }), [f.photoCount]: Array.isArray(snap.photos) ? snap.photos.length : 0
+    [f.jobName]: job.name || '',
+    [f.date]: (job.date || new Date().toISOString()).slice(0,10),
+    [f.jobType]: snap.jobType || 'Monument',
+    [f.areaSqFt]: Number(r.totalSqFt || 0),
+    [f.cleanML]: isMonument ? Number(r.mlClean || 0) : 0,
+    [f.cleanTotal]: isMonument ? Number(r.priceClean || 0) : 0,
+    [f.exteriorML]: isMonument ? 0 : Number(r.mlExt || 0),
+    [f.exteriorTotal]: isMonument ? 0 : Number(r.priceExt || 0),
+    [f.repointingLF]: isMonument ? 0 : Number(r.lfPointing || 0),
+    [f.repointingML]: isMonument ? 0 : Number(r.mlLF || 0),
+    [f.repointingTotal]: isMonument ? 0 : Number(r.priceLF || 0),
+    [f.flats]: Number(r.numFlats || 0),
+    [f.slants]: Number(r.numSlants || 0),
+    [f.jobTotal]: Number(r.finalTotal || 0),
+    [f.notes]: snap.notes || '',
+    [f.detailsJson]: JSON.stringify({ ...job, snapshot: { ...snap, photos: [], photoCount: Array.isArray(snap.photos) ? snap.photos.length : 0 } }),
+    [f.photoCount]: Array.isArray(snap.photos) ? snap.photos.length : 0
   };
 }
 async function airtableCreateRecord(job) {
@@ -671,7 +688,7 @@ async function airtableFetchJobs() {
       const fields = record.fields || {};
       let parsed = null;
       try { parsed = JSON.parse(fields[f.detailsJson] || '{}'); } catch {}
-      const job = parsed && parsed.snapshot ? parsed : { id: 'at-' + record.id, name: fields[f.jobName] || 'Unnamed Job', date: fields[f.date] || new Date().toISOString(), snapshot: { jobName: fields[f.jobName] || '', jobType: fields[f.jobType] || 'Monument', mode: 'inches', notes: fields[f.notes] || '', lfPointing: Number(fields[f.repointingLF] || 0), numFlats: Number(fields[f.flats] || 0), numSlants: Number(fields[f.slants] || 0), pieces: [], photos: [] }, results: { jobType: fields[f.jobType] || 'Monument', mlClean: Number(fields[f.cleanML] || 0), priceClean: Number(fields[f.cleanTotal] || 0), mlExt: Number(fields[f.exteriorML] || 0), priceExt: Number(fields[f.exteriorTotal] || 0), lfPointing: Number(fields[f.repointingLF] || 0), mlLF: Number(fields[f.repointingML] || 0), priceLF: Number(fields[f.repointingTotal] || 0), numFlats: Number(fields[f.flats] || 0), numSlants: Number(fields[f.slants] || 0), finalTotal: Number(fields[f.jobTotal] || 0) } };
+      const job = parsed && parsed.snapshot ? parsed : { id: 'at-' + record.id, name: fields[f.jobName] || 'Unnamed Job', date: fields[f.date] || new Date().toISOString(), snapshot: { jobName: fields[f.jobName] || '', jobType: fields[f.jobType] || 'Monument', mode: 'inches', notes: fields[f.notes] || '', lfPointing: Number(fields[f.repointingLF] || 0), numFlats: Number(fields[f.flats] || 0), numSlants: Number(fields[f.slants] || 0), pieces: [], photos: [] }, results: { jobType: fields[f.jobType] || 'Monument', totalSqFt: Number(fields[f.areaSqFt] || 0), mlClean: Number(fields[f.cleanML] || 0), priceClean: Number(fields[f.cleanTotal] || 0), mlExt: Number(fields[f.exteriorML] || 0), priceExt: Number(fields[f.exteriorTotal] || 0), lfPointing: Number(fields[f.repointingLF] || 0), mlLF: Number(fields[f.repointingML] || 0), priceLF: Number(fields[f.repointingTotal] || 0), numFlats: Number(fields[f.flats] || 0), numSlants: Number(fields[f.slants] || 0), finalTotal: Number(fields[f.jobTotal] || 0) } };
       job.airtableRecordId = record.id; if (!job.id) job.id = 'at-' + record.id; all.push(job);
     });
     url = data.offset ? airtableUrl() + '?pageSize=100&offset=' + encodeURIComponent(data.offset) + '&sort%5B0%5D%5Bfield%5D=' + encodeURIComponent(f.date) + '&sort%5B0%5D%5Bdirection%5D=desc' : '';
