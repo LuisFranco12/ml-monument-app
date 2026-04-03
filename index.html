@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <meta name="theme-color" content="#0f1117"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="apple-mobile-web-app-title" content="ML Monument Calc"/>
   <title>ML Monument Calc</title>
@@ -601,7 +602,21 @@ function downloadBlob(blob, filename) { const a = document.createElement('a'); a
 function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
 function escapeHtml(str) { return String(str).replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 function escapeJs(str) { return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
-async function registerServiceWorker() { if (!('serviceWorker' in navigator)) return; try { await navigator.serviceWorker.register('./service-worker.js'); } catch (err) { console.warn('SW registration failed', err); } }
+async function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
+    const reg = await navigator.serviceWorker.register('./service-worker.js?v=6');
+    await reg.update();
+  } catch (err) {
+    console.warn('SW registration failed', err);
+  }
+}
 window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('installCard').classList.remove('hidden'); });
 document.getElementById('installBtn').addEventListener('click', async () => { if (!deferredPrompt) { showToast('On iPhone: Share → Add to Home Screen'); return; } deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; dismissInstallCard(); });
 function dismissInstallCard() { document.getElementById('installCard').classList.add('hidden'); }
