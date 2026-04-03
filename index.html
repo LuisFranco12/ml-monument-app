@@ -608,12 +608,100 @@ function loadJob(id, event) {
 }
 async function renderHistory() {
   const container = document.getElementById('historyContainer');
-  if (!storageReady) { container.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>Saved jobs can break when this file is opened directly from Files.<br>Use the hosted PWA version.</p></div>'; return; }
+
+  if (!storageReady) {
+    container.innerHTML =
+      '<div class="empty-state"><div class="icon">⚠️</div><p>Saved jobs can break when this file is opened directly from Files.<br>Use the hosted PWA version.</p></div>';
+    return;
+  }
+
   const jobs = await getJobs();
-  if (!jobs.length) { container.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>No saved jobs yet.<br>Calculate and save a job to see it here.</p></div>'; return; }
+
+  if (!jobs.length) {
+    container.innerHTML =
+      '<div class="empty-state"><div class="icon">📋</div><p>No saved jobs yet.<br>Calculate and save a job to see it here.</p></div>';
+    return;
+  }
+
   container.innerHTML = jobs.map(job => {
-    const r = job.results || {}; const snap = job.snapshot || {}; const date = new Date(job.date).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) + ' • ' + new Date(job.date).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
-  return `<div class="history-item"><div class="history-name">${escapeHtml((((job.snapshot?.ownerName || '') + ' ' + (job.snapshot?.ownerId || '')).trim()) || job.name || 'Unnamed Job')}</div>  }).join('');
+    const r = job.results || {};
+    const snap = job.snapshot || {};
+    const date =
+      new Date(job.date).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      }) +
+      ' • ' +
+      new Date(job.date).toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+    const displayName =
+      (((snap.ownerName || '') + ' ' + (snap.ownerId || '')).trim()) ||
+      job.name ||
+      'Unnamed Job';
+
+    return `
+      <div class="history-item">
+        <div class="history-name">${escapeHtml(displayName)}</div>
+        <div class="history-date">${date} • ${escapeHtml(snap.jobType || 'Monument')}</div>
+
+        <div class="history-totals">
+          ${
+            (snap.jobType || 'Monument') === 'Monument'
+              ? `
+                <div class="history-total-item">
+                  <div class="history-total-label">Clean ML</div>
+                  <div class="history-total-val">${Number(r.mlClean || 0).toFixed(2)}</div>
+                </div>
+                <div class="history-total-item">
+                  <div class="history-total-label">Clean Total</div>
+                  <div class="history-total-val">$${Number(r.priceClean || 0).toFixed(2)}</div>
+                </div>
+              `
+              : `
+                <div class="history-total-item">
+                  <div class="history-total-label">Exterior ML</div>
+                  <div class="history-total-val">${Number(r.mlExt || 0).toFixed(2)}</div>
+                </div>
+                <div class="history-total-item">
+                  <div class="history-total-label">Exterior Total</div>
+                  <div class="history-total-val">$${Number(r.priceExt || 0).toFixed(2)}</div>
+                </div>
+              `
+          }
+
+          <div class="history-total-item">
+            <div class="history-total-label">Flats / Slants</div>
+            <div class="history-total-val">${Number(r.numFlats || 0)} / ${Number(r.numSlants || 0)}</div>
+          </div>
+
+          ${
+            (snap.jobType || 'Monument') === 'Mausoleum'
+              ? `
+                <div class="history-total-item">
+                  <div class="history-total-label">Re-pointing</div>
+                  <div class="history-total-val">$${Number(r.priceLF || 0).toFixed(2)}</div>
+                </div>
+              `
+              : `
+                <div class="history-total-item">
+                  <div class="history-total-label">Job Total</div>
+                  <div class="history-total-val">$${Number(r.finalTotal || 0).toFixed(2)}</div>
+                </div>
+              `
+          }
+        </div>
+
+        <div class="history-actions">
+          <button class="btn btn-ghost btn-sm" onclick="loadJob('${escapeJs(job.id)}', event)">Open</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteJob('${escapeJs(job.id)}', event)">Delete</button>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 function resetCalculator() {
   document.getElementById('ownerName').value = '';
