@@ -435,6 +435,8 @@ async function saveJob() {
   }
   document.getElementById('saveBtn').style.display = 'none';
   await renderHistory();
+  resetCalculator();
+  showToast('Job saved and form cleared');
 }
 async function cacheMergedJob(job) {
   const jobs = getLocalJobs().filter(j => j.id !== job.id && j.airtableRecordId !== job.airtableRecordId);
