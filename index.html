@@ -416,27 +416,42 @@ function makeJobRecord(existingRecordId = '') {
   return { id: existingRecordId || ('local-' + Date.now()), airtableRecordId: existingRecordId || '', name: snapshot.jobName || 'Unnamed Job', date: new Date().toISOString(), snapshot, results: { ...lastResults } };
 }
 async function saveJob() {
-  if (!lastResults) { showToast('Calculate first'); return; }
+  if (!lastResults) {
+    showToast('Calculate first');
+    return;
+  }
+
   const job = makeJobRecord();
+
+  let savedToAirtable = false;
+
   if (airtableReady()) {
     try {
       const recordId = await airtableCreateRecord(job);
       job.airtableRecordId = recordId || '';
-      await cacheMergedJob(job);
-      showToast('Saved to Airtable');
+      savedToAirtable = true;
     } catch (err) {
       console.error(err);
-      await cacheMergedJob(job);
-      showToast('Saved locally. Airtable sync failed: ' + (err.message || 'unknown error'));
+      showToast('Airtable failed — saved locally');
     }
-  } else {
-    await cacheMergedJob(job);
-    showToast('Job saved');
   }
+
+  // Always save locally
+  await cacheMergedJob(job);
+
+  // Update UI
   document.getElementById('saveBtn').style.display = 'none';
   await renderHistory();
+
+  // 🔥 CLEAR EVERYTHING (this is what you wanted)
   resetCalculator();
-  showToast('Job saved and form cleared');
+
+  // Final message (only once)
+  if (savedToAirtable) {
+    showToast('Saved to Airtable & cleared');
+  } else {
+    showToast('Saved locally & cleared');
+  }
 }
 async function cacheMergedJob(job) {
   const jobs = getLocalJobs().filter(j => j.id !== job.id && j.airtableRecordId !== job.airtableRecordId);
