@@ -21,6 +21,8 @@ window.ML_APP_CONFIG = {
       photoUrls: "Photo URLs",
       photos: "Photos",
 
+      date: "Date",
+      jobType: "Job Type",
       areaSqFt: "Area Sq Ft",
 
       cleanML: "Clean ML",
