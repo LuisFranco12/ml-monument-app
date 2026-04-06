@@ -507,6 +507,30 @@
       max-width: 900px;
       margin-left: auto;
       margin-right: auto;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .plot-chevron {
+      font-size: 14px;
+      color: var(--muted);
+      margin-right: 8px;
+    }
+
+    .plot-group-body.hidden {
+      display: none;
+    }
+
+    .saved-toolbar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .saved-toolbar input,
+    .saved-toolbar select {
+      width: 100%;
     }
 
     .empty-state {
@@ -670,7 +694,8 @@
       }
 
       .history-totals,
-      .btn-row {
+      .btn-row,
+      .saved-toolbar {
         grid-template-columns: 1fr;
       }
 
@@ -792,7 +817,7 @@
         <div class="field-label">Flats</div>
         <div class="stepper">
           <button class="stepper-btn" onclick="stepperChange('numFlats',-1)">−</button>
-          <input type="number" id="numFlats" value="0" min="0" inputmode="numeric"/>
+          <input type="number" id="numFlats" value="" placeholder="0" min="0" inputmode="numeric"/>
           <button class="stepper-btn" onclick="stepperChange('numFlats',1)">+</button>
         </div>
       </div>
@@ -801,7 +826,7 @@
         <div class="field-label">Slants</div>
         <div class="stepper">
           <button class="stepper-btn" onclick="stepperChange('numSlants',-1)">−</button>
-          <input type="number" id="numSlants" value="0" min="0" inputmode="numeric"/>
+          <input type="number" id="numSlants" value="" placeholder="0" min="0" inputmode="numeric"/>
           <button class="stepper-btn" onclick="stepperChange('numSlants',1)">+</button>
         </div>
       </div>
@@ -811,7 +836,7 @@
       <div class="card-title">Re-pointing</div>
       <div class="field-row">
         <div class="field-label">LF (Linear Feet)</div>
-        <input type="number" id="lfPointing" placeholder="0" inputmode="decimal"/>
+        <input type="number" id="lfPointing" value="" placeholder="0" inputmode="decimal"/>
       </div>
     </div>
 
@@ -838,15 +863,29 @@
   <div id="page-saved" class="page">
     <div class="card">
       <div class="card-title">Saved Jobs Tools</div>
+
+      <div class="saved-toolbar">
+        <div>
+          <div class="field-label">Filter by Plot</div>
+          <select id="savedPlotFilter" onchange="renderHistory()"></select>
+        </div>
+        <div>
+          <div class="field-label">Search Owner Name / ID</div>
+          <input type="text" id="savedSearch" placeholder="Type to search..." oninput="renderHistory()"/>
+        </div>
+      </div>
+
       <div class="btn-row">
         <button class="btn btn-ghost" onclick="exportBackup()">Export Backup</button>
         <label class="btn btn-primary" for="importFile">Import Backup</label>
       </div>
+
       <div class="btn-row" style="margin-top:10px;">
         <button class="btn btn-ghost" onclick="exportCsv()">Export CSV</button>
         <button class="btn btn-danger" onclick="clearAllJobs()">Delete All</button>
       </div>
-      <div class="section-note">CSV opens in Excel. If Airtable sync is turned on in <strong>config.js</strong>, your same jobs can show up on phone and PC.</div>
+
+      <div class="section-note">Filter by plot, search by owner, and open one plot section at a time.</div>
       <input type="file" id="importFile" accept="application/json" class="hidden"/>
     </div>
 
@@ -892,6 +931,7 @@ let pieceIdCounter = 0;
 let lastResults = null;
 let storageReady = false;
 let deferredPrompt = null;
+let openPlotName = '';
 
 window.onload = async () => {
   storageReady = canUseStorage();
@@ -903,6 +943,7 @@ window.onload = async () => {
   renderPlotOptions(getLastSelectedPlot());
   addPiece(true);
   renderPhotoGrid();
+  renderSavedPlotFilterOptions();
   await renderHistory();
   updateJobTypeUI();
 };
@@ -1018,6 +1059,32 @@ function resetDefaultPlots() {
   showToast('Default plots restored');
 }
 
+function renderSavedPlotFilterOptions() {
+  const select = document.getElementById('savedPlotFilter');
+  if (!select) return;
+
+  const jobs = getLocalJobs();
+  const plotNames = Array.from(
+    new Set(
+      jobs.map(job => (job.snapshot?.plot || 'Unassigned Plot').trim() || 'Unassigned Plot')
+    )
+  ).sort((a, b) => a.localeCompare(b));
+
+  const current = select.value || '';
+  select.innerHTML =
+    '<option value="">All Plots</option>' +
+    plotNames.map(plot => `<option value="${escapeHtml(plot)}">${escapeHtml(plot)}</option>`).join('');
+
+  if (current && plotNames.includes(current)) {
+    select.value = current;
+  }
+}
+
+function togglePlotSection(plotName) {
+  openPlotName = openPlotName === plotName ? '' : plotName;
+  renderHistory();
+}
+
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', ['calc','saved'][i] === tab));
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1065,7 +1132,7 @@ function rebuildPieces(savedPieces = []) {
 function addPiece(isMain = false, existingData = null) {
   const id = pieceIdCounter++;
   pieces.push({ id, isMain });
-  renderPiece(id, isMain, existingData || { l:0, w:0, h:0, mult:1, multOpen:false });
+  renderPiece(id, isMain, existingData || { l:'', w:'', h:'', mult:'', multOpen:false });
   updatePieceCount();
   updatePieceLabels();
 }
@@ -1098,13 +1165,13 @@ function renderPiece(id, isMain, data) {
   const removeBtn = isMain ? '' : `<button class="btn btn-danger btn-sm" onclick="removePiece(${id})">Remove</button>`;
 
   function fiMarkup(prefix, totalInches) {
-    const total = Number(totalInches) || 0;
-    const ft = Math.floor(total / 12);
-    const inch = Number((total - ft * 12).toFixed(2));
+    const total = totalInches === '' || totalInches === null || typeof totalInches === 'undefined' ? '' : Number(totalInches);
+    const ft = total === '' ? '' : Math.floor(total / 12);
+    const inch = total === '' ? '' : Number((total - ft * 12).toFixed(2));
     return `
       <div class="fi-row">
-        <input type="number" id="p${id}_${prefix}ft" placeholder="Feet" inputmode="decimal" value="${ft || ''}"/>
-        <input type="number" id="p${id}_${prefix}in" placeholder="Inches" inputmode="decimal" value="${inch || ''}"/>
+        <input type="number" id="p${id}_${prefix}ft" placeholder="Feet" inputmode="decimal" value="${ft === '' ? '' : ft}"/>
+        <input type="number" id="p${id}_${prefix}in" placeholder="Inches" inputmode="decimal" value="${inch === '' ? '' : inch}"/>
       </div>
     `;
   }
@@ -1118,13 +1185,13 @@ function renderPiece(id, isMain, data) {
     `;
   } else {
     dimFields = `
-      <div class="field-row"><div class="field-label">Length (in)</div><input type="number" id="p${id}_lin" placeholder="0" inputmode="decimal" value="${data.l || ''}"/></div>
-      <div class="field-row"><div class="field-label">Width (in)</div><input type="number" id="p${id}_win" placeholder="0" inputmode="decimal" value="${data.w || ''}"/></div>
-      <div class="field-row"><div class="field-label">Height (in)</div><input type="number" id="p${id}_hin" placeholder="0" inputmode="decimal" value="${data.h || ''}"/></div>
+      <div class="field-row"><div class="field-label">Length (in)</div><input type="number" id="p${id}_lin" placeholder="0" inputmode="decimal" value="${data.l ?? ''}"/></div>
+      <div class="field-row"><div class="field-label">Width (in)</div><input type="number" id="p${id}_win" placeholder="0" inputmode="decimal" value="${data.w ?? ''}"/></div>
+      <div class="field-row"><div class="field-label">Height (in)</div><input type="number" id="p${id}_hin" placeholder="0" inputmode="decimal" value="${data.h ?? ''}"/></div>
     `;
   }
 
-  const multOpen = Boolean(data.multOpen) || Number(data.mult || 1) > 1;
+  const multOpen = Boolean(data.multOpen) || Number(data.mult || 0) > 1;
 
   div.innerHTML = `
     <div class="piece-header">
@@ -1137,7 +1204,7 @@ function renderPiece(id, isMain, data) {
     </button>
     <div id="multfield${id}" style="display:${multOpen ? 'block' : 'none'};">
       <div class="field-label">Quantity / Multiplier</div>
-      <input type="number" id="p${id}_mult" value="${data.mult || 1}" min="1" inputmode="numeric"/>
+      <input type="number" id="p${id}_mult" value="${data.mult ?? ''}" placeholder="1" min="1" inputmode="numeric"/>
     </div>
   `;
 
@@ -1437,6 +1504,7 @@ async function cacheMergedJob(job) {
   const jobs = getLocalJobs().filter(j => j.id !== job.id && j.airtableRecordId !== job.airtableRecordId);
   jobs.unshift(job);
   safeLocalSet(STORAGE_KEY, JSON.stringify(jobs));
+  renderSavedPlotFilterOptions();
 }
 
 function getLocalJobs() {
@@ -1493,6 +1561,7 @@ async function deleteJob(id, event) {
   }
 
   safeLocalSet(STORAGE_KEY, JSON.stringify(jobs.filter(j => j.id !== id)));
+  renderSavedPlotFilterOptions();
   await renderHistory();
   showToast('Saved job deleted');
 }
@@ -1520,6 +1589,8 @@ async function clearAllJobs() {
   }
 
   safeLocalSet(STORAGE_KEY, JSON.stringify([]));
+  openPlotName = '';
+  renderSavedPlotFilterOptions();
   await renderHistory();
   showToast('All saved jobs deleted');
 }
@@ -1543,8 +1614,8 @@ function loadJob(id, event) {
   renderPlotOptions(snap.plot || getLastSelectedPlot());
   document.getElementById('jobNotes').value = snap.notes || '';
   document.getElementById('lfPointing').value = snap.lfPointing || '';
-  document.getElementById('numFlats').value = snap.numFlats || 0;
-  document.getElementById('numSlants').value = snap.numSlants || 0;
+  document.getElementById('numFlats').value = snap.numFlats || '';
+  document.getElementById('numSlants').value = snap.numSlants || '';
 
   if (snap.plot) saveLastSelectedPlot(snap.plot);
 
@@ -1577,6 +1648,7 @@ async function renderHistory() {
   }
 
   const jobs = await getJobs();
+  renderSavedPlotFilterOptions();
 
   if (!jobs.length) {
     container.innerHTML =
@@ -1584,8 +1656,30 @@ async function renderHistory() {
     return;
   }
 
+  const selectedPlot = (document.getElementById('savedPlotFilter')?.value || '').trim();
+  const searchTerm = (document.getElementById('savedSearch')?.value || '').trim().toLowerCase();
+
+  let filteredJobs = jobs.filter(job => {
+    const snap = job.snapshot || {};
+    const plot = (snap.plot || 'Unassigned Plot').trim() || 'Unassigned Plot';
+    const ownerName = (snap.ownerName || '').toLowerCase();
+    const ownerId = (snap.ownerId || '').toLowerCase();
+    const combined = `${ownerName} ${ownerId}`.trim();
+
+    const plotMatch = !selectedPlot || plot === selectedPlot;
+    const searchMatch = !searchTerm || ownerName.includes(searchTerm) || ownerId.includes(searchTerm) || combined.includes(searchTerm);
+
+    return plotMatch && searchMatch;
+  });
+
+  if (!filteredJobs.length) {
+    container.innerHTML =
+      '<div class="empty-state"><div class="icon">🔍</div><p>No jobs matched your filter or search.</p></div>';
+    return;
+  }
+
   const grouped = {};
-  jobs.forEach(job => {
+  filteredJobs.forEach(job => {
     const plot = (job.snapshot?.plot || 'Unassigned Plot').trim() || 'Unassigned Plot';
     if (!grouped[plot]) grouped[plot] = [];
     grouped[plot].push(job);
@@ -1593,92 +1687,105 @@ async function renderHistory() {
 
   const plotNames = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
 
+  if (!openPlotName || !plotNames.includes(openPlotName)) {
+    openPlotName = plotNames[0];
+  }
+
   container.innerHTML = plotNames.map(plotName => {
     const plotJobs = grouped[plotName];
+    const isOpen = openPlotName === plotName;
 
     return `
       <div class="plot-group">
-        <div class="plot-group-title">${escapeHtml(plotName)} <span class="badge">${plotJobs.length}</span></div>
+        <div class="plot-group-title" onclick="togglePlotSection('${escapeJs(plotName)}')">
+          <span>
+            <span class="plot-chevron">${isOpen ? '▼' : '▶'}</span>
+            ${escapeHtml(plotName)}
+          </span>
+          <span class="badge">${plotJobs.length}</span>
+        </div>
 
-        ${plotJobs.map(job => {
-          const r = job.results || {};
-          const snap = job.snapshot || {};
-          const date =
-            new Date(job.date).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric'
-            }) +
-            ' • ' +
-            new Date(job.date).toLocaleTimeString('en-US', {
-              hour: '2-digit',
-              minute: '2-digit'
-            });
+        <div class="plot-group-body ${isOpen ? '' : 'hidden'}">
+          ${plotJobs.map(job => {
+            const r = job.results || {};
+            const snap = job.snapshot || {};
+            const date =
+              new Date(job.date).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+              }) +
+              ' • ' +
+              new Date(job.date).toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit'
+              });
 
-          const displayName =
-            (((snap.ownerName || '') + ' ' + (snap.ownerId || '')).trim()) ||
-            job.name ||
-            'Unnamed Job';
+            const displayName =
+              (((snap.ownerName || '') + ' ' + (snap.ownerId || '')).trim()) ||
+              job.name ||
+              'Unnamed Job';
 
-          return `
-            <div class="history-item">
-              <div class="history-name">${escapeHtml(displayName)}</div>
-              <div class="history-date">${date} • ${escapeHtml(snap.jobType || 'Monument')}</div>
+            return `
+              <div class="history-item">
+                <div class="history-name">${escapeHtml(displayName)}</div>
+                <div class="history-date">${date} • ${escapeHtml(snap.jobType || 'Monument')}</div>
 
-              <div class="history-totals">
-                ${
-                  (snap.jobType || 'Monument') === 'Monument'
-                    ? `
-                      <div class="history-total-item">
-                        <div class="history-total-label">Clean ML</div>
-                        <div class="history-total-val">${Number(r.mlClean || 0).toFixed(2)}</div>
-                      </div>
-                      <div class="history-total-item">
-                        <div class="history-total-label">Clean Total</div>
-                        <div class="history-total-val">$${Number(r.priceClean || 0).toFixed(2)}</div>
-                      </div>
-                    `
-                    : `
-                      <div class="history-total-item">
-                        <div class="history-total-label">Exterior ML</div>
-                        <div class="history-total-val">${Number(r.mlExt || 0).toFixed(2)}</div>
-                      </div>
-                      <div class="history-total-item">
-                        <div class="history-total-label">Exterior Total</div>
-                        <div class="history-total-val">$${Number(r.priceExt || 0).toFixed(2)}</div>
-                      </div>
-                    `
-                }
+                <div class="history-totals">
+                  ${
+                    (snap.jobType || 'Monument') === 'Monument'
+                      ? `
+                        <div class="history-total-item">
+                          <div class="history-total-label">Clean ML</div>
+                          <div class="history-total-val">${Number(r.mlClean || 0).toFixed(2)}</div>
+                        </div>
+                        <div class="history-total-item">
+                          <div class="history-total-label">Clean Total</div>
+                          <div class="history-total-val">$${Number(r.priceClean || 0).toFixed(2)}</div>
+                        </div>
+                      `
+                      : `
+                        <div class="history-total-item">
+                          <div class="history-total-label">Exterior ML</div>
+                          <div class="history-total-val">${Number(r.mlExt || 0).toFixed(2)}</div>
+                        </div>
+                        <div class="history-total-item">
+                          <div class="history-total-label">Exterior Total</div>
+                          <div class="history-total-val">$${Number(r.priceExt || 0).toFixed(2)}</div>
+                        </div>
+                      `
+                  }
 
-                <div class="history-total-item">
-                  <div class="history-total-label">Flats / Slants</div>
-                  <div class="history-total-val">${Number(r.numFlats || 0)} / ${Number(r.numSlants || 0)}</div>
+                  <div class="history-total-item">
+                    <div class="history-total-label">Flats / Slants</div>
+                    <div class="history-total-val">${Number(r.numFlats || 0)} / ${Number(r.numSlants || 0)}</div>
+                  </div>
+
+                  ${
+                    (snap.jobType || 'Monument') === 'Mausoleum'
+                      ? `
+                        <div class="history-total-item">
+                          <div class="history-total-label">Re-pointing</div>
+                          <div class="history-total-val">$${Number(r.priceLF || 0).toFixed(2)}</div>
+                        </div>
+                      `
+                      : `
+                        <div class="history-total-item">
+                          <div class="history-total-label">Job Total</div>
+                          <div class="history-total-val">$${Number(r.finalTotal || 0).toFixed(2)}</div>
+                        </div>
+                      `
+                  }
                 </div>
 
-                ${
-                  (snap.jobType || 'Monument') === 'Mausoleum'
-                    ? `
-                      <div class="history-total-item">
-                        <div class="history-total-label">Re-pointing</div>
-                        <div class="history-total-val">$${Number(r.priceLF || 0).toFixed(2)}</div>
-                      </div>
-                    `
-                    : `
-                      <div class="history-total-item">
-                        <div class="history-total-label">Job Total</div>
-                        <div class="history-total-val">$${Number(r.finalTotal || 0).toFixed(2)}</div>
-                      </div>
-                    `
-                }
+                <div class="history-actions">
+                  <button class="btn btn-ghost btn-sm" onclick="loadJob('${escapeJs(job.id)}', event)">Open</button>
+                  <button class="btn btn-danger btn-sm" onclick="deleteJob('${escapeJs(job.id)}', event)">Delete</button>
+                </div>
               </div>
-
-              <div class="history-actions">
-                <button class="btn btn-ghost btn-sm" onclick="loadJob('${escapeJs(job.id)}', event)">Open</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteJob('${escapeJs(job.id)}', event)">Delete</button>
-              </div>
-            </div>
-          `;
-        }).join('')}
+            `;
+          }).join('')}
+        </div>
       </div>
     `;
   }).join('');
@@ -1690,8 +1797,8 @@ function resetCalculator() {
   renderPlotOptions(getLastSelectedPlot());
   document.getElementById('jobNotes').value = '';
   document.getElementById('lfPointing').value = '';
-  document.getElementById('numFlats').value = '0';
-  document.getElementById('numSlants').value = '0';
+  document.getElementById('numFlats').value = '';
+  document.getElementById('numSlants').value = '';
 
   mode = 'inches';
   jobType = 'Monument';
@@ -1797,6 +1904,7 @@ function bindImport() {
       [...incoming, ...current].forEach(job => map.set(job.id, job));
       const merged = Array.from(map.values()).sort((a, b) => new Date(b.date) - new Date(a.date));
       safeLocalSet(STORAGE_KEY, JSON.stringify(merged));
+      renderSavedPlotFilterOptions();
       await renderHistory();
       showToast('Backup imported');
     } catch (err) {
