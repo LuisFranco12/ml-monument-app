@@ -1,945 +1,316 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <meta name="theme-color" content="#0f1117"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-  <meta name="apple-mobile-web-app-title" content="ML Monument Calc"/>
-  <title>ML Monument Calc</title>
-  <link rel="manifest" href="./manifest.webmanifest"/>
-  <link rel="apple-touch-icon" href="./icon-180.png"/>
-  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png"/>
+  <meta name="theme-color" content="#3b82f6"/>
+  <title>ML Monument App</title>
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
-    :root {
-      --bg:#0f1117;
-      --surface:#1a1d27;
-      --surface2:#22263a;
-      --border:#2e3350;
-      --accent:#3b82f6;
-      --accent2:#10b981;
-      --accent3:#8b5cf6;
-      --danger:#ef4444;
-      --text:#e8eaf6;
-      --muted:#8b93a7;
-      --clean:#10b981;
-      --ext:#3b82f6;
-      --lf:#8b5cf6;
-      --flat:#ef4444;
-      --final:#f59e0b;
-      --warning:#f59e0b;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding-bottom: 100px;
-    }
-
-    .app-container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 0 16px;
-    }
-
-    .header {
-      background: linear-gradient(135deg, #1a1d27 0%, #0f1117 100%);
-      padding: 20px 16px 16px;
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .header h1 {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: 1px;
-    }
-
-    .header h1 span {
-      color: var(--accent);
-    }
-
-    .header-sub {
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 2px;
-      letter-spacing: .5px;
-    }
-
-    .tab-nav {
-      display: flex;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 73px;
-      z-index: 99;
-    }
-
-    .tab-btn {
-      flex: 1;
-      padding: 12px 4px;
-      background: none;
-      border: none;
-      color: var(--muted);
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: .5px;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-    }
-
-    .tab-btn.active {
-      color: var(--accent);
-      border-bottom-color: var(--accent);
-    }
-
-    .page {
-      display: none;
-      padding: 16px;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-
-    .page.active {
-      display: block;
-    }
-
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 12px;
-      max-width: 900px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .card-title {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: var(--muted);
-      text-transform: uppercase;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-
-    .badge {
-      background: var(--accent);
-      color: white;
-      font-size: 10px;
-      padding: 2px 7px;
-      border-radius: 20px;
-      font-weight: 600;
-    }
-
-    .mode-toggle {
-      display: flex;
-      background: var(--bg);
-      border-radius: 8px;
-      padding: 3px;
-      border: 1px solid var(--border);
-      gap: 3px;
-    }
-
-    .mode-btn {
-      flex: 1;
-      padding: 8px;
-      border: none;
-      background: none;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 600;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    .mode-btn.active {
-      background: var(--accent);
-      color: white;
-    }
-
-    .field-row {
-      margin-bottom: 11px;
-    }
-
-    .field-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--muted);
-      letter-spacing: .5px;
-      text-transform: uppercase;
-      margin-bottom: 5px;
-    }
-
-    input[type="number"],
-    input[type="text"],
-    input[type="file"],
-    textarea,
-    select {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      font-size: 16px;
-      padding: 11px 13px;
-      outline: none;
-    }
-
-    textarea {
-      min-height: 80px;
-      resize: vertical;
-    }
-
-    input:focus,
-    textarea:focus,
-    select:focus {
-      border-color: var(--accent);
-    }
-
-    input::placeholder,
-    textarea::placeholder {
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .fi-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .piece-block {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
-      margin-bottom: 10px;
-    }
-
-    .piece-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
-    .piece-label {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--accent);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-
-    .piece-label.main {
-      color: var(--accent2);
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 11px 16px;
-      border: none;
-      border-radius: 8px;
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: .5px;
-      cursor: pointer;
-      text-decoration: none;
-    }
-
-    .btn:active {
-      transform: scale(.98);
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: white;
-    }
-
-    .btn-success {
-      background: var(--accent2);
-      color: white;
-    }
-
-    .btn-danger {
-      background: transparent;
-      border: 1px solid var(--danger);
-      color: var(--danger);
-      padding: 6px 12px;
-      font-size: 12px;
-    }
-
-    .btn-ghost {
-      background: var(--surface2);
-      color: var(--text);
-    }
-
-    .btn-sm {
-      padding: 6px 12px;
-      font-size: 12px;
-    }
-
-    .btn-full {
-      width: 100%;
-    }
-
-    .btn-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    .mult-toggle {
-      background: var(--surface2);
-      border: 1px dashed var(--border);
-      border-radius: 8px;
-      padding: 9px 13px;
-      font-size: 13px;
-      color: var(--muted);
-      cursor: pointer;
-      width: 100%;
-      text-align: left;
-      margin-bottom: 8px;
-    }
-
-    .mult-toggle.active {
-      border-color: var(--accent3);
-      color: var(--accent3);
-    }
-
-    .stepper {
-      display: flex;
-      align-items: center;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
-    .stepper-btn {
-      width: 44px;
-      height: 44px;
-      background: var(--surface2);
-      border: none;
-      color: var(--text);
-      font-size: 20px;
-      cursor: pointer;
-    }
-
-    .stepper input {
-      flex: 1;
-      text-align: center;
-      border: none;
-      border-radius: 0;
-      border-left: 1px solid var(--border);
-      border-right: 1px solid var(--border);
-      font-size: 18px;
-      padding: 10px 4px;
-    }
-
-    .result-section {
-      border-radius: 10px;
-      padding: 13px;
-      margin-bottom: 10px;
-      border-left: 3px solid;
-    }
-
-    .result-section.clean { background: rgba(16,185,129,.08); border-color: var(--clean); }
-    .result-section.ext { background: rgba(59,130,246,.08); border-color: var(--ext); }
-    .result-section.lf { background: rgba(139,92,246,.08); border-color: var(--lf); }
-    .result-section.flat { background: rgba(239,68,68,.08); border-color: var(--flat); }
-    .result-section.final { background: rgba(245,158,11,.12); border-color: var(--final); }
-
-    .result-title {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-      opacity: .8;
-    }
-
-    .result-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      gap: 12px;
-      margin-bottom: 4px;
-    }
-
-    .result-key { font-size: 13px; color: var(--muted); }
-    .result-val {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 18px;
-      font-weight: 700;
-      text-align: right;
-    }
-
-    .green { color: var(--clean); }
-    .blue { color: var(--ext); }
-    .purple { color: var(--lf); }
-    .red { color: var(--flat); }
-    .gold { color: var(--final); }
-
-    .history-item {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 13px;
-      margin-bottom: 10px;
-    }
-
-    .history-name {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .history-date {
-      font-size: 11px;
-      color: var(--muted);
-      margin-bottom: 8px;
-    }
-
-    .history-issue {
-      display: inline-block;
-      margin-bottom: 8px;
-      padding: 5px 9px;
-      border-radius: 999px;
-      background: rgba(245, 158, 11, .12);
-      border: 1px solid rgba(245, 158, 11, .35);
-      color: var(--warning);
-      font-size: 11px;
-      font-weight: 600;
-    }
-
-    .history-totals {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-    }
-
-    .history-total-item {
-      background: var(--bg);
-      border-radius: 6px;
-      padding: 6px 10px;
-    }
-
-    .history-total-label {
-      font-size: 10px;
-      color: var(--muted);
-    }
-
-    .history-total-val {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--accent2);
-    }
-
-    .history-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-    }
-
-    .plot-group {
-      margin-bottom: 18px;
-    }
-
-    .plot-group-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: var(--accent);
-      margin: 10px 0 8px;
-      padding-bottom: 6px;
-      border-bottom: 1px solid var(--border);
-      max-width: 900px;
-      margin-left: auto;
-      margin-right: auto;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .plot-chevron {
-      font-size: 14px;
-      color: var(--muted);
-      margin-right: 8px;
-    }
-
-    .plot-group-body.hidden {
-      display: none;
-    }
-
-    .saved-toolbar {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .saved-toolbar input,
-    .saved-toolbar select {
-      width: 100%;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--muted);
-    }
-
-    .empty-state .icon {
-      font-size: 40px;
-      margin-bottom: 10px;
-    }
-
-    .empty-state p {
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    .action-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: var(--surface);
-      border-top: 1px solid var(--border);
-      padding: 12px 16px;
-      display: flex;
-      gap: 10px;
-      z-index: 200;
-    }
-
-    .action-bar .btn {
-      flex: 1;
-    }
-
-    .toast {
-      position: fixed;
-      top: 80px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-10px);
-      background: var(--accent2);
-      color: white;
-      padding: 10px 20px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
-      opacity: 0;
-      pointer-events: none;
-      transition: all .3s;
-      z-index: 999;
-      max-width: calc(100vw - 32px);
-      text-align: center;
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    .install-hint,
-    .status-card {
-      border-radius: 10px;
-      padding: 12px;
-      font-size: 12px;
-      line-height: 1.5;
-      margin-bottom: 14px;
-    }
-
-    .install-hint {
-      background: var(--surface2);
-      border: 1px dashed var(--border);
-      color: var(--muted);
-    }
-
-    .install-hint strong {
-      color: var(--accent);
-    }
-
-    .status-card {
-      background: rgba(59,130,246,.08);
-      border: 1px solid rgba(59,130,246,.2);
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .photo-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .photo-item {
-      position: relative;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      overflow: hidden;
-      aspect-ratio: 1 / 1;
-    }
-
-    .photo-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      cursor: pointer;
-    }
-
-    .photo-remove {
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      width: 28px;
-      height: 28px;
-      border: none;
-      border-radius: 999px;
-      background: rgba(15,17,23,.85);
-      color: white;
-      cursor: pointer;
-    }
-
-    .sync-pill {
-      font-size: 11px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      color: var(--muted);
-    }
-
-    .sync-pill.ok {
-      color: var(--accent2);
-      border-color: rgba(16,185,129,.4);
-    }
-
-    .sync-pill.warn {
-      color: #f59e0b;
-      border-color: rgba(245,158,11,.4);
-    }
-
-    .section-note {
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.5;
-      margin-top: 8px;
-    }
-
-    #resultsInner {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    @media (max-width: 380px) {
-      .result-row {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .result-val {
-        text-align: left;
-      }
-
-      .history-totals,
-      .btn-row,
-      .saved-toolbar {
-        grid-template-columns: 1fr;
-      }
-
-      .photo-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (min-width: 900px) {
-      body {
-        padding-top: 20px;
-      }
-
-      .card {
-        padding: 18px;
-      }
+    :root{
+      --bg:#f6f8fc; --surface:#ffffff; --surface2:#eef3ff; --border:#d8e0f0; --text:#122033; --muted:#627086;
+      --accent:#3b82f6; --accent2:#10b981; --accent3:#8b5cf6; --danger:#ef4444; --warning:#f59e0b;
+      --shadow:0 10px 28px rgba(15,23,42,.08);
+    }
+    body.theme-dark{
+      --bg:#0f1117; --surface:#1a1d27; --surface2:#22263a; --border:#2e3350; --text:#e8eaf6; --muted:#8b93a7;
+      --accent:#60a5fa; --accent2:#10b981; --accent3:#a78bfa; --danger:#f87171; --warning:#fbbf24;
+      --shadow:none;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    .app{max-width:1100px;margin:0 auto;padding-bottom:90px}
+    .header{position:sticky;top:0;z-index:100;background:linear-gradient(135deg,var(--surface) 0%,var(--bg) 100%);border-bottom:1px solid var(--border);padding:16px}
+    .header-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    h1{font-family:Rajdhani,sans-serif;font-weight:700;font-size:24px;letter-spacing:1px}
+    h1 span{color:var(--accent)}
+    .sub{font-size:11px;color:var(--muted);letter-spacing:.5px}
+    .icon-btn,.btn{border:none;border-radius:14px;padding:11px 14px;background:var(--surface2);color:var(--text);cursor:pointer;font-weight:600}
+    .btn{font-family:Rajdhani,sans-serif;font-size:15px;letter-spacing:.5px}
+    .btn.primary{background:var(--accent);color:#fff}
+    .btn.success{background:var(--accent2);color:#fff}
+    .btn.ghost{background:var(--surface2)}
+    .btn.danger{background:transparent;border:1px solid var(--danger);color:var(--danger)}
+    .btn.small{padding:8px 12px;font-size:13px}
+    .topnav{display:flex;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:78px;z-index:99}
+    .tab{flex:1;border:none;background:none;padding:12px 4px;color:var(--muted);font-family:Rajdhani,sans-serif;font-weight:700;cursor:pointer;border-bottom:2px solid transparent}
+    .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+    .page{display:none;padding:16px}
+    .page.active{display:block}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
+    .title{font-family:Rajdhani,sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+    .field{margin-bottom:12px}
+    .label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:5px}
+    input,textarea,select{
+      width:100%;background:var(--bg);border:1px solid var(--border);border-radius:14px;color:var(--text);
+      font:inherit;padding:12px 13px;outline:none
+    }
+    textarea{min-height:90px;resize:vertical}
+    input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .search{position:relative}
+    .search input{padding-left:40px}
+    .search .sicon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted)}
+    .list{overflow:hidden;border:1px solid var(--border);border-radius:18px;background:var(--surface)}
+    .rowbtn{width:100%;display:flex;justify-content:space-between;align-items:center;padding:15px 16px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);cursor:pointer;text-align:left}
+    .rowbtn:last-child{border-bottom:none}
+    .rowbtn:hover{background:var(--surface2)}
+    .meta{font-size:12px;color:var(--muted)}
+    .name{font-weight:600}
+    .badge{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:3px 8px;font-size:11px;background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+    .issue-badge{display:inline-block;margin-top:6px;padding:5px 9px;border-radius:999px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.35);color:var(--warning);font-size:11px;font-weight:600}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .stat{background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:12px}
+    .stat .k{font-size:11px;color:var(--muted)}
+    .stat .v{font-family:Rajdhani,sans-serif;font-size:22px;font-weight:700}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .photo{aspect-ratio:1/1;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--bg);position:relative}
+    .photo img{width:100%;height:100%;object-fit:cover;display:block}
+    .photo button{position:absolute;top:6px;right:6px;width:28px;height:28px;border:none;border-radius:999px;background:rgba(0,0,0,.72);color:#fff;cursor:pointer}
+    .hidden{display:none!important}
+    .muted{color:var(--muted)}
+    .toolbar{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .backrow{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+    .pillrow{display:flex;gap:8px;flex-wrap:wrap}
+    .sticky-actions{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 16px;display:flex;gap:10px;z-index:90}
+    .sticky-actions .btn{flex:1}
+    .toast{position:fixed;top:88px;left:50%;transform:translateX(-50%) translateY(-10px);background:var(--accent2);color:#fff;padding:10px 18px;border-radius:999px;opacity:0;transition:.25s;pointer-events:none;z-index:999}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    @media (max-width:780px){
+      .stats,.grid2,.toolbar,.photo-grid{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width:560px){
+      .grid2,.toolbar,.stats,.photo-grid{grid-template-columns:1fr}
+      .page{padding:12px}
+      .header{padding:12px}
+      .topnav{top:70px}
     }
   </style>
 </head>
-<body>
-<div class="app-container">
+<body class="theme-light">
+<div class="app">
   <div class="header">
-    <h1>ML <span>Monument</span> Calc</h1>
-    <div class="header-sub">FIELD MEASUREMENT TOOL</div>
+    <div class="header-row">
+      <div>
+        <h1>ML <span>Monument</span> App</h1>
+        <div class="sub">HOME • PLOTS • EDIT IN FIELD • DIRECTIONS</div>
+      </div>
+      <button class="icon-btn" id="themeToggle" onclick="toggleTheme()">🌙 Dark</button>
+    </div>
   </div>
 
-  <div class="tab-nav">
-    <button class="tab-btn active" onclick="switchTab('calc')">⚒ Calculator</button>
-    <button class="tab-btn" onclick="switchTab('saved')">🗂 Saved Jobs</button>
+  <div class="topnav">
+    <button class="tab active" onclick="switchView('home')">🏠 Home</button>
+    <button class="tab" onclick="switchView('plots')">🗂 Plots</button>
   </div>
 
   <div id="toast" class="toast"></div>
 
-  <div id="page-calc" class="page active">
-    <div class="install-hint">📱 <strong>Install as app:</strong> Open the hosted HTTPS version in Safari, tap Share, then <strong>Add to Home Screen</strong>.</div>
-    <div class="status-card hidden" id="storageWarning"><strong>Storage warning:</strong> opening the file straight from Files can break saved jobs. Use the hosted version.</div>
-
-    <div class="card hidden" id="installCard">
-      <div class="card-title">Install App</div>
-      <div class="btn-row">
-        <button class="btn btn-primary" id="installBtn">⬇ Install</button>
-        <button class="btn btn-ghost" onclick="dismissInstallCard()">Later</button>
+  <div id="page-home" class="page active">
+    <div class="card">
+      <div class="title">Search or Create</div>
+      <div class="toolbar">
+        <div class="search">
+          <span class="sicon">🔎</span>
+          <input id="homeSearch" type="text" placeholder="Search Owner Name or Owner ID" oninput="renderHomeSearch()">
+        </div>
+        <button class="btn primary" onclick="startNewRecord()">＋ New Job</button>
       </div>
+      <div class="muted" style="margin-top:10px;font-size:13px">You can create a record here without measurements, then edit it later in the field from your phone.</div>
+    </div>
+
+    <div id="newRecordCard" class="card hidden">
+      <div class="title">Create New Record</div>
+      <div class="grid2">
+        <div class="field"><div class="label">Owner Name</div><input id="newOwnerName" type="text" placeholder="Enter owner name"></div>
+        <div class="field"><div class="label">Owner ID</div><input id="newOwnerId" type="text" placeholder="Enter owner ID"></div>
+        <div class="field"><div class="label">Plot</div><select id="newPlot"></select></div>
+        <div class="field"><div class="label">Status</div>
+          <select id="newStatus">
+            <option>Not measured yet</option>
+            <option>Needs field edit</option>
+            <option>Issue recorded</option>
+            <option>Completed</option>
+            <option>Verified</option>
+          </select>
+        </div>
+        <div class="field"><div class="label">Location Label</div><input id="newLocationLabel" type="text" placeholder="Plot / row / section"></div>
+        <div class="field"><div class="label">Google Maps Link</div><input id="newMapsUrl" type="text" placeholder="Paste Google Maps link"></div>
+      </div>
+      <div class="actions">
+        <button class="btn ghost" onclick="cancelNewRecord()">Cancel</button>
+        <button class="btn success" onclick="createRecordShell()">Create Record</button>
+      </div>
+    </div>
+
+    <div id="homeSearchResults" class="card hidden">
+      <div class="title">Search Results</div>
+      <div id="homeResultsList" class="list"></div>
     </div>
 
     <div class="card">
-      <div class="card-title">Job Setup <span class="sync-pill" id="syncStatus">Local only</span></div>
-
-      <div class="field-row">
-        <div class="field-label">Owner Name</div>
-        <input type="text" id="ownerName" placeholder="e.g. John Smith" autocomplete="off"/>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">Owner ID</div>
-        <input type="text" id="ownerId" placeholder="e.g. #4821" autocomplete="off"/>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">Plot</div>
-        <select id="plotSelect"></select>
-        <button class="btn btn-ghost btn-sm" style="margin-top:8px;" onclick="togglePlotEditor()">Edit Plots</button>
-      </div>
-
-      <div class="card hidden" id="plotEditorCard" style="margin-top:10px;">
-        <div class="card-title">Manage Plots</div>
-
-        <div class="field-row">
-          <div class="field-label">Add Plot</div>
-          <input type="text" id="newPlotInput" placeholder="e.g. Poplar"/>
-        </div>
-
-        <div class="btn-row">
-          <button class="btn btn-primary" onclick="addPlotOption()">Add Plot</button>
-          <button class="btn btn-danger" onclick="removeSelectedPlot()">Remove Selected</button>
-        </div>
-
-        <div class="btn-row" style="margin-top:10px;">
-          <button class="btn btn-ghost" onclick="resetDefaultPlots()">Reset Default Plots</button>
-          <button class="btn btn-ghost" onclick="togglePlotEditor()">Close</button>
-        </div>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">Issue Type</div>
-        <select id="issueType">
-          <option value="">None</option>
-          <option>Fallen / Cracked Monument or Headstone</option>
-          <option>Inscription Different From Owner</option>
-          <option>Multiple Headstones, Different Names, Same Owner</option>
-          <option>No Monument At All</option>
-        </select>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">Issue Note</div>
-        <textarea id="issueNote" placeholder="Describe the issue if needed"></textarea>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">Job Type</div>
-        <div class="mode-toggle">
-          <button class="mode-btn active" id="jobTypeMonument" onclick="setJobType('Monument')">Monument</button>
-          <button class="mode-btn" id="jobTypeMausoleum" onclick="setJobType('Mausoleum')">Mausoleum</button>
-        </div>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">Notes</div>
-        <textarea id="jobNotes" placeholder="Optional notes"></textarea>
-      </div>
+      <div class="title">Recent Records</div>
+      <div id="recentList" class="list"></div>
     </div>
+  </div>
 
-    <div class="card">
-      <div class="card-title">Input Mode</div>
-      <div class="mode-toggle">
-        <button class="mode-btn active" id="modeInches" onclick="setMode('inches')">Inches Only</button>
-        <button class="mode-btn" id="modeFeet" onclick="setMode('feetInches')">Feet & Inches</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">
-        <span id="piecesTitle">Monument Pieces</span>
-        <span class="badge" id="pieceCount">1</span>
-      </div>
-      <div id="piecesContainer"></div>
-      <button class="btn btn-ghost btn-full" onclick="addPiece()">+ Add Piece</button>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Footstones</div>
-
-      <div class="field-row">
-        <div class="field-label">Flats</div>
-        <div class="stepper">
-          <button class="stepper-btn" onclick="stepperChange('numFlats',-1)">−</button>
-          <input type="number" id="numFlats" value="" placeholder="0" min="0" inputmode="numeric"/>
-          <button class="stepper-btn" onclick="stepperChange('numFlats',1)">+</button>
-        </div>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">Slants</div>
-        <div class="stepper">
-          <button class="stepper-btn" onclick="stepperChange('numSlants',-1)">−</button>
-          <input type="number" id="numSlants" value="" placeholder="0" min="0" inputmode="numeric"/>
-          <button class="stepper-btn" onclick="stepperChange('numSlants',1)">+</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="card" id="repointingCard">
-      <div class="card-title">Re-pointing</div>
-      <div class="field-row">
-        <div class="field-label">LF (Linear Feet)</div>
-        <input type="number" id="lfPointing" value="" placeholder="0" inputmode="decimal"/>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Photos <span class="badge" id="photoCount">0</span></div>
-
-      <div class="field-row">
-        <div class="field-label">Add up to 3 photos</div>
-
-        <div class="btn-row">
-          <button type="button" class="btn btn-primary" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
-          <button type="button" class="btn btn-ghost" onclick="document.getElementById('photoLibraryInput').click()">🖼 Choose From Library</button>
-        </div>
-
-        <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden"/>
-        <input type="file" id="photoLibraryInput" accept="image/*" multiple class="hidden"/>
-
-        <div class="section-note">Photos upload to Cloudinary on save and can be loaded on your phone or PC later.</div>
-      </div>
-
-      <div class="photo-grid" id="photoGrid"></div>
-    </div>
-
-    <div id="resultsContainer" class="hidden">
+  <div id="page-plots" class="page">
+    <div id="plotsView">
       <div class="card">
-        <div class="card-title">Results</div>
+        <div class="title">Plots</div>
+        <div id="plotList" class="list"></div>
+      </div>
+    </div>
+
+    <div id="plotDetailView" class="hidden">
+      <div class="backrow">
+        <button class="btn ghost small" onclick="backToPlots()">← Back</button>
+        <div>
+          <div id="plotDetailTitle" style="font-weight:700"></div>
+          <div class="meta">Browse names in this plot</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="search">
+          <span class="sicon">🔎</span>
+          <input id="plotSearch" type="text" placeholder="Search inside this plot" oninput="renderPlotDetail()">
+        </div>
+      </div>
+      <div class="card">
+        <div id="plotOwnerList" class="list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="recordPage" class="page hidden">
+    <div class="backrow">
+      <button class="btn ghost small" onclick="backFromRecord()">← Back</button>
+      <div>
+        <div id="recordHeaderTitle" style="font-weight:700"></div>
+        <div class="meta">Editable record view</div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="k">Status</div><div class="v" id="statStatus">-</div></div>
+      <div class="stat"><div class="k">Clean ML</div><div class="v" id="statML">0.00</div></div>
+      <div class="stat"><div class="k">Job Total</div><div class="v" id="statTotal">$0.00</div></div>
+      <div class="stat"><div class="k">Photos</div><div class="v" id="statPhotos">0</div></div>
+    </div>
+
+    <div class="card">
+      <div class="title">Owner / Location</div>
+      <div class="grid2">
+        <div class="field"><div class="label">Owner Name</div><input id="ownerName" type="text"></div>
+        <div class="field"><div class="label">Owner ID</div><input id="ownerId" type="text"></div>
+        <div class="field"><div class="label">Plot</div><select id="plotSelect"></select></div>
+        <div class="field"><div class="label">Status</div>
+          <select id="statusSelect">
+            <option>Not measured yet</option>
+            <option>Needs field edit</option>
+            <option>Issue recorded</option>
+            <option>Completed</option>
+            <option>Verified</option>
+          </select>
+        </div>
+        <div class="field"><div class="label">Location Label</div><input id="locationLabel" type="text" placeholder="Plot / row / section"></div>
+        <div class="field"><div class="label">Google Maps Link</div><input id="mapsUrl" type="text" placeholder="Paste Google Maps link"></div>
+      </div>
+      <div class="actions">
+        <button class="btn ghost" onclick="openDirections()">🧭 Directions</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="title">Issue / Notes</div>
+      <div class="grid2">
+        <div class="field"><div class="label">Issue Type</div>
+          <select id="issueType">
+            <option value="">None</option>
+            <option>Fallen / Cracked Monument or Headstone</option>
+            <option>Inscription Different From Owner</option>
+            <option>Multiple Headstones, Different Names, Same Owner</option>
+            <option>No Monument At All</option>
+          </select>
+        </div>
+        <div class="field"><div class="label">Job Type</div>
+          <div class="pillrow">
+            <button id="jobTypeMonument" class="btn small primary" onclick="setJobType('Monument')">Monument</button>
+            <button id="jobTypeMausoleum" class="btn small ghost" onclick="setJobType('Mausoleum')">Mausoleum</button>
+          </div>
+        </div>
+      </div>
+      <div class="field"><div class="label">Issue Note</div><textarea id="issueNote" placeholder="Describe the issue"></textarea></div>
+      <div class="field"><div class="label">General Notes</div><textarea id="jobNotes" placeholder="Optional notes"></textarea></div>
+    </div>
+
+    <div class="card">
+      <div class="title">Measurements / Calculator</div>
+      <div class="field"><div class="label">Input Mode</div>
+        <div class="pillrow">
+          <button id="modeInches" class="btn small primary" onclick="setMode('inches')">Inches Only</button>
+          <button id="modeFeet" class="btn small ghost" onclick="setMode('feetInches')">Feet & Inches</button>
+        </div>
+      </div>
+
+      <div class="field"><div class="label" id="piecesTitle">Monument Pieces</div>
+        <div id="piecesContainer"></div>
+        <button class="btn ghost" onclick="addPiece()">＋ Add Piece</button>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <div class="label">Flats</div>
+          <input type="number" id="numFlats" placeholder="0">
+        </div>
+        <div class="field">
+          <div class="label">Slants</div>
+          <input type="number" id="numSlants" placeholder="0">
+        </div>
+      </div>
+
+      <div id="repointingCard" class="field hidden">
+        <div class="label">Re-pointing LF</div>
+        <input type="number" id="lfPointing" placeholder="0">
+      </div>
+
+      <div class="actions">
+        <button class="btn success" onclick="calculateML()">⚡ Calculate</button>
+      </div>
+
+      <div id="resultsContainer" class="hidden" style="margin-top:12px">
         <div id="resultsInner"></div>
       </div>
     </div>
 
-    <div style="height:20px;"></div>
-  </div>
-
-  <div id="page-saved" class="page">
     <div class="card">
-      <div class="card-title">Saved Jobs Tools</div>
-
-      <div class="saved-toolbar">
-        <div>
-          <div class="field-label">Filter by Plot</div>
-          <select id="savedPlotFilter" onchange="renderHistory()"></select>
-        </div>
-        <div>
-          <div class="field-label">Search Owner Name / ID</div>
-          <input type="text" id="savedSearch" placeholder="Type to search..." oninput="renderHistory()"/>
-        </div>
+      <div class="title">Photos <span id="photoCount" class="badge">0</span></div>
+      <div class="actions" style="margin-bottom:12px">
+        <button class="btn primary" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
+        <button class="btn ghost" onclick="document.getElementById('photoLibraryInput').click()">🖼 Choose From Library</button>
       </div>
-
-      <div class="btn-row">
-        <button class="btn btn-ghost" onclick="exportBackup()">Export Backup</button>
-        <label class="btn btn-primary" for="importFile">Import Backup</label>
-      </div>
-
-      <div class="btn-row" style="margin-top:10px;">
-        <button class="btn btn-ghost" onclick="exportCsv()">Export CSV</button>
-        <button class="btn btn-danger" onclick="clearAllJobs()">Delete All</button>
-      </div>
-
-      <div class="section-note">Filter by plot, search by owner, and open one plot section at a time.</div>
-      <input type="file" id="importFile" accept="application/json" class="hidden"/>
+      <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden">
+      <input type="file" id="photoLibraryInput" accept="image/*" multiple class="hidden">
+      <div id="photoGrid" class="photo-grid"></div>
     </div>
-
-    <div id="historyContainer"></div>
   </div>
 
-  <div class="action-bar" id="calcActions">
-    <button class="btn btn-success" onclick="calculateML()">⚡ Calculate</button>
-    <button class="btn btn-ghost" onclick="saveJob()" id="saveBtn" style="display:none;">💾 Save</button>
-    <button class="btn btn-danger btn-sm" onclick="resetCalculator()" style="flex:0; min-width:68px;">↺ Reset</button>
+  <div class="sticky-actions" id="recordActions" style="display:none">
+    <button class="btn ghost" onclick="resetRecordForm()">Reset Form</button>
+    <button class="btn success" onclick="saveCurrentRecord()">Save Record</button>
   </div>
 </div>
 
 <script src="./config.js"></script>
 <script>
 const CONFIG = window.ML_APP_CONFIG || {};
-const STORAGE_KEY = 'ml_saved_jobs_v4';
+const STORAGE_KEY = 'ml_saved_jobs_v6';
 const PLOTS_STORAGE_KEY = 'ml_plot_options_v1';
-const LAST_SELECTED_PLOT_KEY = 'ml_last_selected_plot_v1';
+const THEME_KEY = 'ml_theme_v1';
 
-const DEFAULT_PLOTS = [
-  '0','Acacia','ALP HILL','Alpine Hill','Althea','Arbor','Arbutus','Ash','ASTER','Aurora Hill',
-  'Azalea','Balsam','Beech','Birch Hill','Bluebell','Brookside','Butternut','Canna','Catalpa','Cedar',
-  'Chapel Hill','Cherry','Chestnut Hill','Cliff','Cliff Singles','Clover','Columbine','Cosmos',
-  'Cosmos Singles','Crocus','Crocus South','Crown Grove','Cypress','Dahlia','Daisy','Dalia','Dogwood',
-  'Elder','Elm','Evergreen','Fairview','Fern','Filbert','Fir','Forest','Gentian','Golden Rod',
-  'Hawthorn','Hazel','Heather','Heliotrope','Hemlock','Hickory Knoll','Highland','Hillcrest',
-  'Hillcrest, Sec-80, Lot-18332','Hillside','Holly','Honeysuckle','Hyacinth','Iris','Ivy','Juniper',
-  'Knollwood','Lake','Lakeside','Lakeview','Larch','Laurel','Lawn','Lilac','Linden','Locust',
-  'Lot 1','Lot 3','Lot 4','Lot A','Lot B','Lotus','Magnolia','Maple','Myosotis','Myrtle',
-  'Narcissus','North Border','Oak','Oak Hill','Oakwood','Observatory','Pansy','Park View','Parkview',
-  'Phlox','Pine','Poplar','Primrose','Prospect','Ravine','Receiving Plot','Rhododendron','Rose Hill',
-  'Rutgers','Salvia','Sassafras','Spiraea','Spring Lake','Spruce','Summit','Sunnyside','Sycamore',
-  'Sylvan Dell','Sylvan Dell Singles','Syringa','Tulip','Violet','Walnut','Webster','Weigelia',
-  'White Oak','Whitewood','Wild Rose','Wintergreen','Wistaria','Woodbine','Woodlawn','Yew','Zinnia'
-];
+const DEFAULT_PLOTS = ['Acacia','ALP HILL','Alpine Hill','Althea','Arbor','Ash','Beech','Cedar','Cherry','Crocus','Dogwood','Elm','Evergreen','Fir','Forest','Hazel','Hillcrest','Holly','Iris','Juniper','Lakeview','Lilac','Magnolia','Maple','Oak','Oak Hill','Parkview','Pine','Poplar','Primrose','Rose Hill','Spruce','Summit','Sunnyside','Sycamore','Tulip','Walnut','Webster','White Oak','Woodbine','Woodlawn','Yew'];
 
 let mode = 'inches';
 let jobType = 'Monument';
@@ -947,932 +318,553 @@ let pieces = [];
 let photos = [];
 let pieceIdCounter = 0;
 let lastResults = null;
-let storageReady = false;
-let deferredPrompt = null;
-let openPlotName = '';
+let currentView = 'home';
+let currentPlotName = '';
+let currentRecordId = '';
+let currentBackContext = 'home';
 
 window.onload = async () => {
-  storageReady = canUseStorage();
-  document.getElementById('storageWarning').classList.toggle('hidden', storageReady);
-  bindImport();
+  applyTheme(getSavedTheme() || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
   bindPhotos();
-  updateSyncBadge();
-  registerServiceWorker();
-  renderPlotOptions(getLastSelectedPlot());
+  bindThemeMedia();
+  populatePlotSelects();
   addPiece(true);
   renderPhotoGrid();
-  renderSavedPlotFilterOptions();
-  await renderHistory();
+  renderHome();
+  renderPlots();
   updateJobTypeUI();
+  updateModeUI();
 };
 
-function canUseStorage() {
-  try {
-    localStorage.setItem('__ml_test__', '1');
-    localStorage.removeItem('__ml_test__');
-    return true;
-  } catch {
-    return false;
+function getLocalJobs(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') || []; } catch { return []; } }
+function saveLocalJobs(jobs){ localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs)); }
+function getPlots(){ try { const s=JSON.parse(localStorage.getItem(PLOTS_STORAGE_KEY)||'null'); if(Array.isArray(s)&&s.length) return s; } catch{} return [...DEFAULT_PLOTS]; }
+function savePlots(plots){ localStorage.setItem(PLOTS_STORAGE_KEY, JSON.stringify(plots)); }
+function getSavedTheme(){ return localStorage.getItem(THEME_KEY) || ''; }
+function saveTheme(theme){ localStorage.setItem(THEME_KEY, theme); }
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+function switchView(view){
+  currentView = view;
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',['home','plots'][i]===view));
+  document.getElementById('page-home').classList.toggle('active', view==='home');
+  document.getElementById('page-plots').classList.toggle('active', view==='plots');
+  document.getElementById('recordPage').classList.add('hidden');
+  document.getElementById('recordActions').style.display = 'none';
+  if(view==='home') renderHome();
+  if(view==='plots') renderPlots();
+}
+
+function renderHome(){
+  const jobs = getLocalJobs().sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
+  const recent = jobs.slice(0,8);
+  const list = document.getElementById('recentList');
+  if(!recent.length){
+    list.innerHTML = `<div class="rowbtn"><div><div class="name">No records yet</div><div class="meta">Create a new job from Home.</div></div></div>`;
+  } else {
+    list.innerHTML = recent.map(job => {
+      const s = job.snapshot || {};
+      return `<button class="rowbtn" onclick="openRecord('${escapeJs(job.id)}','home')">
+        <div>
+          <div class="name">${escapeHtml(s.ownerName || 'Unnamed')} (${escapeHtml(s.ownerId || '-')})</div>
+          <div class="meta">${escapeHtml(s.plot || 'No Plot')} • ${escapeHtml(s.status || 'Not measured yet')}</div>
+        </div>
+        <span>›</span>
+      </button>`;
+    }).join('');
   }
+  renderHomeSearch();
 }
 
-function safeLocalGet(key) {
-  if (!storageReady) return null;
-  try { return localStorage.getItem(key); } catch { return null; }
-}
-
-function safeLocalSet(key, value) {
-  if (!storageReady) return false;
-  try { localStorage.setItem(key, value); return true; } catch { return false; }
-}
-
-function getPlots() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(PLOTS_STORAGE_KEY) || 'null');
-    if (Array.isArray(saved) && saved.length) return saved;
-  } catch {}
-  return [...DEFAULT_PLOTS];
-}
-
-function savePlots(plots) {
-  safeLocalSet(PLOTS_STORAGE_KEY, JSON.stringify(plots));
-}
-
-function getLastSelectedPlot() {
-  return safeLocalGet(LAST_SELECTED_PLOT_KEY) || '';
-}
-
-function saveLastSelectedPlot(plot) {
-  safeLocalSet(LAST_SELECTED_PLOT_KEY, plot || '');
-}
-
-function renderPlotOptions(selectedValue = '') {
-  const select = document.getElementById('plotSelect');
-  if (!select) return;
-
-  const plots = getPlots().slice().sort((a, b) => a.localeCompare(b));
-  select.innerHTML =
-    '<option value="">Select a plot</option>' +
-    plots.map(plot => `<option value="${escapeHtml(plot)}">${escapeHtml(plot)}</option>`).join('');
-
-  const finalValue = selectedValue && plots.includes(selectedValue) ? selectedValue : '';
-  select.value = finalValue;
-}
-
-function togglePlotEditor() {
-  document.getElementById('plotEditorCard').classList.toggle('hidden');
-}
-
-function addPlotOption() {
-  const input = document.getElementById('newPlotInput');
-  const value = (input.value || '').trim();
-  if (!value) return showToast('Enter a plot name');
-
-  const plots = getPlots();
-  if (plots.some(p => p.toLowerCase() === value.toLowerCase())) {
-    return showToast('Plot already exists');
-  }
-
-  plots.push(value);
-  savePlots(plots);
-  renderPlotOptions(value);
-  saveLastSelectedPlot(value);
-  input.value = '';
-  showToast('Plot added');
-}
-
-function removeSelectedPlot() {
-  const select = document.getElementById('plotSelect');
-  const value = (select.value || '').trim();
-  if (!value) return showToast('Select a plot first');
-
-  const plots = getPlots().filter(p => p !== value);
-  savePlots(plots);
-  renderPlotOptions('');
-  saveLastSelectedPlot('');
-  showToast('Plot removed');
-}
-
-function resetDefaultPlots() {
-  savePlots([...DEFAULT_PLOTS]);
-  renderPlotOptions(getLastSelectedPlot());
-  showToast('Default plots restored');
-}
-
-function renderSavedPlotFilterOptions() {
-  const select = document.getElementById('savedPlotFilter');
-  if (!select) return;
-
-  const jobs = getLocalJobs();
-  const plotNames = Array.from(
-    new Set(jobs.map(job => (job.snapshot?.plot || 'Unassigned Plot').trim() || 'Unassigned Plot'))
-  ).sort((a, b) => a.localeCompare(b));
-
-  const current = select.value || '';
-  select.innerHTML =
-    '<option value="">All Plots</option>' +
-    plotNames.map(plot => `<option value="${escapeHtml(plot)}">${escapeHtml(plot)}</option>`).join('');
-
-  if (current && plotNames.includes(current)) {
-    select.value = current;
-  }
-}
-
-function togglePlotSection(plotName) {
-  openPlotName = openPlotName === plotName ? '' : plotName;
-  renderHistory();
-}
-
-function switchTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', ['calc', 'saved'][i] === tab));
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + tab).classList.add('active');
-  document.getElementById('calcActions').style.display = tab === 'calc' ? 'flex' : 'none';
-  if (tab === 'saved') renderHistory();
-}
-
-function setJobType(type) {
-  if (jobType === type) return;
-  jobType = type;
-  updateJobTypeUI();
-  if (lastResults) renderResults(lastResults);
-}
-
-function updateJobTypeUI() {
-  document.getElementById('jobTypeMonument').classList.toggle('active', jobType === 'Monument');
-  document.getElementById('jobTypeMausoleum').classList.toggle('active', jobType === 'Mausoleum');
-  document.getElementById('piecesTitle').textContent = jobType === 'Monument' ? 'Monument Pieces' : 'Mausoleum Pieces';
-  document.getElementById('repointingCard').classList.toggle('hidden', jobType !== 'Mausoleum');
-  updatePieceLabels();
-}
-
-function setMode(newMode) {
-  if (mode === newMode) return;
-  const snapshot = getCurrentSnapshot();
-  mode = newMode;
-  document.getElementById('modeInches').classList.toggle('active', mode === 'inches');
-  document.getElementById('modeFeet').classList.toggle('active', mode === 'feetInches');
-  rebuildPieces(snapshot.pieces || []);
-}
-
-function rebuildPieces(savedPieces = []) {
-  document.getElementById('piecesContainer').innerHTML = '';
-  pieces = [];
-  pieceIdCounter = 0;
-  if (!savedPieces.length) {
-    addPiece(true);
+function renderHomeSearch(){
+  const q = (document.getElementById('homeSearch').value || '').trim().toLowerCase();
+  const card = document.getElementById('homeSearchResults');
+  const list = document.getElementById('homeResultsList');
+  if(!q){ card.classList.add('hidden'); list.innerHTML=''; return; }
+  const matches = getLocalJobs().filter(job => {
+    const s = job.snapshot || {};
+    return (s.ownerName || '').toLowerCase().includes(q) || (s.ownerId || '').toLowerCase().includes(q);
+  });
+  card.classList.remove('hidden');
+  if(!matches.length){
+    list.innerHTML = `<div class="rowbtn"><div><div class="name">No matches</div><div class="meta">Try another name or ID.</div></div></div>`;
     return;
   }
-  savedPieces.forEach((piece, index) => addPiece(index === 0, piece));
-  updatePieceLabels();
+  list.innerHTML = matches.map(job => {
+    const s = job.snapshot || {};
+    return `<button class="rowbtn" onclick="openRecord('${escapeJs(job.id)}','home')">
+      <div>
+        <div class="name">${escapeHtml(s.ownerName || 'Unnamed')} (${escapeHtml(s.ownerId || '-')})</div>
+        <div class="meta">${escapeHtml(s.plot || 'No Plot')} • ${escapeHtml(s.status || 'Not measured yet')}</div>
+      </div><span>›</span>
+    </button>`;
+  }).join('');
 }
 
-function addPiece(isMain = false, existingData = null) {
-  const id = pieceIdCounter++;
-  pieces.push({ id, isMain });
-  renderPiece(id, isMain, existingData || { l:'', w:'', h:'', mult:'', multOpen:false });
-  updatePieceCount();
-  updatePieceLabels();
+function populatePlotSelects(){
+  const plots = getPlots().slice().sort((a,b)=>a.localeCompare(b));
+  const html = '<option value="">Select a plot</option>' + plots.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
+  document.getElementById('plotSelect').innerHTML = html;
+  document.getElementById('newPlot').innerHTML = html;
+  renderPlots();
 }
 
-function updatePieceCount() {
-  document.getElementById('pieceCount').textContent = pieces.length;
-}
+function startNewRecord(){ document.getElementById('newRecordCard').classList.remove('hidden'); }
+function cancelNewRecord(){ document.getElementById('newRecordCard').classList.add('hidden'); }
 
-function updatePieceLabels() {
-  let count = 0;
-  pieces.forEach(piece => {
-    const labelEl = document.querySelector('#piece-' + piece.id + ' .piece-label');
-    if (!labelEl) return;
-    if (piece.isMain) {
-      labelEl.textContent = jobType === 'Monument' ? 'Main Monument' : 'Main Mausoleum';
-      labelEl.classList.add('main');
-    } else {
-      count += 1;
-      labelEl.textContent = (jobType === 'Monument' ? 'Monument Piece ' : 'Mausoleum Piece ') + count;
-      labelEl.classList.remove('main');
+function createRecordShell(){
+  const ownerName = document.getElementById('newOwnerName').value.trim();
+  const ownerId = document.getElementById('newOwnerId').value.trim();
+  const plot = document.getElementById('newPlot').value.trim();
+  if(!ownerName || !ownerId || !plot) return showToast('Owner Name, Owner ID, and Plot required');
+
+  const record = {
+    id: 'local-' + Date.now(),
+    date: new Date().toISOString(),
+    snapshot: {
+      ownerName, ownerId, plot,
+      status: document.getElementById('newStatus').value,
+      locationLabel: document.getElementById('newLocationLabel').value.trim(),
+      mapsUrl: document.getElementById('newMapsUrl').value.trim(),
+      issueType: '',
+      issueNote: '',
+      notes: '',
+      mode: 'inches',
+      jobType: 'Monument',
+      lfPointing: 0,
+      numFlats: 0,
+      numSlants: 0,
+      pieces: [],
+      photos: []
+    },
+    results: {
+      jobType:'Monument', totalSqFt:0, mlClean:0, priceClean:0, mlExt:0, priceExt:0,
+      lfPointing:0, mlLF:0, priceLF:0, numFlats:0, numSlants:0, priceFlats:0, priceSlants:0, footTotal:0, finalTotal:0
     }
-  });
-}
-
-function renderPiece(id, isMain, data) {
-  const div = document.createElement('div');
-  div.className = 'piece-block';
-  div.id = 'piece-' + id;
-
-  const removeBtn = isMain ? '' : `<button class="btn btn-danger btn-sm" onclick="removePiece(${id})">Remove</button>`;
-
-  function fiMarkup(prefix, totalInches) {
-    const total = totalInches === '' || totalInches === null || typeof totalInches === 'undefined' ? '' : Number(totalInches);
-    const ft = total === '' ? '' : Math.floor(total / 12);
-    const inch = total === '' ? '' : Number((total - ft * 12).toFixed(2));
-    return `
-      <div class="fi-row">
-        <input type="number" id="p${id}_${prefix}ft" placeholder="Feet" inputmode="decimal" value="${ft === '' ? '' : ft}"/>
-        <input type="number" id="p${id}_${prefix}in" placeholder="Inches" inputmode="decimal" value="${inch === '' ? '' : inch}"/>
-      </div>
-    `;
-  }
-
-  let dimFields = '';
-  if (mode === 'feetInches') {
-    dimFields = `
-      <div class="field-row"><div class="field-label">Length</div>${fiMarkup('l', data.l)}</div>
-      <div class="field-row"><div class="field-label">Width</div>${fiMarkup('w', data.w)}</div>
-      <div class="field-row"><div class="field-label">Height</div>${fiMarkup('h', data.h)}</div>
-    `;
-  } else {
-    dimFields = `
-      <div class="field-row"><div class="field-label">Length (in)</div><input type="number" id="p${id}_lin" placeholder="0" inputmode="decimal" value="${data.l ?? ''}"/></div>
-      <div class="field-row"><div class="field-label">Width (in)</div><input type="number" id="p${id}_win" placeholder="0" inputmode="decimal" value="${data.w ?? ''}"/></div>
-      <div class="field-row"><div class="field-label">Height (in)</div><input type="number" id="p${id}_hin" placeholder="0" inputmode="decimal" value="${data.h ?? ''}"/></div>
-    `;
-  }
-
-  const multOpen = Boolean(data.multOpen) || Number(data.mult || 0) > 1;
-
-  div.innerHTML = `
-    <div class="piece-header">
-      <span class="piece-label"></span>
-      ${removeBtn}
-    </div>
-    ${dimFields}
-    <button class="mult-toggle ${multOpen ? 'active' : ''}" id="multtoggle${id}" onclick="toggleMult(${id})">
-      ${multOpen ? '✕ Hide multiplier' : '✕ Multiply this piece (tap to expand)'}
-    </button>
-    <div id="multfield${id}" style="display:${multOpen ? 'block' : 'none'};">
-      <div class="field-label">Quantity / Multiplier</div>
-      <input type="number" id="p${id}_mult" value="${data.mult ?? ''}" placeholder="1" min="1" inputmode="numeric"/>
-    </div>
-  `;
-
-  document.getElementById('piecesContainer').appendChild(div);
-}
-
-function toggleMult(id) {
-  const field = document.getElementById('multfield' + id);
-  const btn = document.getElementById('multtoggle' + id);
-  const visible = field.style.display !== 'none';
-  field.style.display = visible ? 'none' : 'block';
-  btn.classList.toggle('active', !visible);
-  btn.textContent = visible ? '✕ Multiply this piece (tap to expand)' : '✕ Hide multiplier';
-}
-
-function removePiece(id) {
-  pieces = pieces.filter(p => p.id !== id);
-  const node = document.getElementById('piece-' + id);
-  if (node) node.remove();
-  updatePieceCount();
-  updatePieceLabels();
-}
-
-function stepperChange(fieldId, delta) {
-  const el = document.getElementById(fieldId);
-  el.value = Math.max(0, (parseInt(el.value || '0', 10) || 0) + delta);
-}
-
-function n(id) {
-  const el = document.getElementById(id);
-  return el ? parseFloat(el.value) || 0 : 0;
-}
-
-function getPieceDims(id) {
-  let l, w, h;
-  if (mode === 'feetInches') {
-    l = n(`p${id}_lft`) * 12 + n(`p${id}_lin`);
-    w = n(`p${id}_wft`) * 12 + n(`p${id}_win`);
-    h = n(`p${id}_hft`) * 12 + n(`p${id}_hin`);
-  } else {
-    l = n(`p${id}_lin`);
-    w = n(`p${id}_win`);
-    h = n(`p${id}_hin`);
-  }
-  const mult = Math.max(1, n(`p${id}_mult`) || 1);
-  const multField = document.getElementById('multfield' + id);
-  return { l, w, h, mult, multOpen: multField ? multField.style.display !== 'none' : false };
-}
-
-function getCombinedMeasurements() {
-  let total = { length: 0, width: 0, height: 0 };
-  pieces.forEach((p) => {
-    const dims = getPieceDims(p.id);
-    const mult = parseInt(dims.mult, 10) || 1;
-    total.length += dims.l * mult;
-    total.width += dims.w * mult;
-    total.height += dims.h * mult;
-  });
-  return total;
-}
-
-function calculateML() {
-  const totals = getCombinedMeasurements();
-  const length = totals.length;
-  const width = totals.width;
-  const height = totals.height;
-
-  const lfPointing = jobType === 'Mausoleum'
-    ? (parseFloat(document.getElementById('lfPointing')?.value) || 0)
-    : 0;
-
-  const numFlats = parseInt(document.getElementById('numFlats')?.value || '0', 10) || 0;
-  const numSlants = parseInt(document.getElementById('numSlants')?.value || '0', 10) || 0;
-
-  const hasDimensions = length > 0 && width > 0 && height > 0;
-
-  let totalSqInches = 0, totalSqFt = 0, mlClean = 0, priceClean = 0, cleanLabel = '', mlExt = 0, priceExt = 0;
-
-  if (hasDimensions) {
-    const top = length * width;
-    const side = length * height * 2;
-    const front = width * height * 2;
-
-    totalSqInches = top + side + front;
-    totalSqFt = totalSqInches / 144;
-
-    mlClean = parseFloat((totalSqFt / 25).toFixed(2));
-    if (mlClean < 2) mlClean = 2;
-
-    mlExt = parseFloat((totalSqFt / 50).toFixed(2));
-
-    const isUnderSize = (length < 72 && height < 120);
-    const cleanRate = isUnderSize ? 155 : 195;
-    cleanLabel = isUnderSize ? 'Standard Upright @ $155' : 'Standard Special @ $195';
-    priceClean = parseFloat((mlClean * cleanRate).toFixed(2));
-
-    const exteriorCleaningRate = 159;
-    priceExt = parseFloat((mlExt * exteriorCleaningRate).toFixed(2));
-  }
-
-  const mlLF = parseFloat((lfPointing / 50).toFixed(2));
-  const priceLF = parseFloat((mlLF * 564).toFixed(2));
-
-  const priceFlats = numFlats > 0 ? 155 + (numFlats - 1) * (155 / 2) : 0;
-  const priceSlants = numSlants > 0 ? 195 + (numSlants - 1) * (195 / 2) : 0;
-  const footTotal = parseFloat((priceFlats + priceSlants).toFixed(2));
-
-  const monumentTotal = parseFloat((priceClean + footTotal).toFixed(2));
-  const mausoleumTotal = parseFloat((priceExt + priceLF + footTotal).toFixed(2));
-
-  lastResults = {
-    jobType,
-    totalSqFt,
-    hasDimensions,
-    mainL: length,
-    mainW: width,
-    mainH: height,
-    mlClean,
-    priceClean,
-    cleanLabel,
-    mlExt,
-    priceExt,
-    lfPointing,
-    mlLF,
-    priceLF,
-    numFlats,
-    numSlants,
-    priceFlats,
-    priceSlants,
-    footTotal,
-    monumentTotal,
-    mausoleumTotal,
-    finalTotal: jobType === 'Monument' ? monumentTotal : mausoleumTotal
   };
-
-  renderResults(lastResults);
-  document.getElementById('saveBtn').style.display = 'flex';
-  document.getElementById('resultsContainer').classList.remove('hidden');
-  setTimeout(() => {
-    document.getElementById('resultsContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, 80);
+  const jobs = getLocalJobs();
+  jobs.unshift(record);
+  saveLocalJobs(jobs);
+  document.getElementById('newOwnerName').value='';
+  document.getElementById('newOwnerId').value='';
+  document.getElementById('newPlot').value='';
+  document.getElementById('newLocationLabel').value='';
+  document.getElementById('newMapsUrl').value='';
+  cancelNewRecord();
+  renderHome(); renderPlots();
+  showToast('Record created');
+  openRecord(record.id,'home');
 }
 
-function renderResults(r) {
-  const inner = document.getElementById('resultsInner');
-  let html = '';
-
-  if (!r.hasDimensions && !r.numFlats && !r.numSlants && !(r.jobType === 'Mausoleum' && r.lfPointing > 0)) {
-    inner.innerHTML = '<p style="color:var(--muted);font-size:14px;">Enter at least one measurement to calculate.</p>';
+function renderPlots(){
+  const jobs = getLocalJobs();
+  const grouped = {};
+  jobs.forEach(job => {
+    const plot = (job.snapshot?.plot || 'Unassigned Plot').trim() || 'Unassigned Plot';
+    (grouped[plot] ||= []).push(job);
+  });
+  const plots = Object.keys(grouped).sort((a,b)=>a.localeCompare(b));
+  const list = document.getElementById('plotList');
+  if(!plots.length){
+    list.innerHTML = `<div class="rowbtn"><div><div class="name">No plots yet</div><div class="meta">Create your first record from Home.</div></div></div>`;
     return;
   }
-
-  if (r.hasDimensions && r.jobType === 'Monument') {
-    html += `
-      <div class="result-section clean">
-        <div class="result-title">🟢 Monument Cleaning</div>
-        <div class="result-row"><span class="result-key">Total Area</span><span class="result-val green">${r.totalSqFt.toFixed(2)} sq ft</span></div>
-        <div class="result-row"><span class="result-key">Clean ML</span><span class="result-val green">${r.mlClean.toFixed(2)}${r.mlClean === 2 ? ' (min)' : ''}</span></div>
-        <div class="result-row"><span class="result-key">${r.cleanLabel}</span><span class="result-val green">$${r.priceClean.toFixed(2)}</span></div>
-      </div>
-    `;
-  }
-
-  if (r.hasDimensions && r.jobType === 'Mausoleum') {
-    html += `
-      <div class="result-section ext">
-        <div class="result-title">🔵 Mausoleum Exterior Cleaning</div>
-        <div class="result-row"><span class="result-key">Total Area</span><span class="result-val blue">${r.totalSqFt.toFixed(2)} sq ft</span></div>
-        <div class="result-row"><span class="result-key">Exterior ML</span><span class="result-val blue">${r.mlExt.toFixed(2)}</span></div>
-        <div class="result-row"><span class="result-key">Exterior Cleaning @ $159</span><span class="result-val blue">$${r.priceExt.toFixed(2)}</span></div>
-      </div>
-    `;
-  }
-
-  if (r.jobType === 'Mausoleum' && r.lfPointing > 0) {
-    html += `
-      <div class="result-section lf">
-        <div class="result-title">🟣 Re-pointing</div>
-        <div class="result-row"><span class="result-key">LF</span><span class="result-val purple">${r.lfPointing.toFixed(2)}</span></div>
-        <div class="result-row"><span class="result-key">Re-pointing ML</span><span class="result-val purple">${r.mlLF.toFixed(2)}</span></div>
-        <div class="result-row"><span class="result-key">Re-pointing Total</span><span class="result-val purple">$${r.priceLF.toFixed(2)}</span></div>
-      </div>
-    `;
-  }
-
-  if (r.numFlats > 0 || r.numSlants > 0) {
-    html += `
-      <div class="result-section flat">
-        <div class="result-title">🔴 Footstones</div>
-        ${r.numFlats > 0 ? `<div class="result-row"><span class="result-key">Flats (${r.numFlats})</span><span class="result-val red">$${r.priceFlats.toFixed(2)}</span></div>` : ''}
-        ${r.numSlants > 0 ? `<div class="result-row"><span class="result-key">Slants (${r.numSlants})</span><span class="result-val red">$${r.priceSlants.toFixed(2)}</span></div>` : ''}
-        <div class="result-row"><span class="result-key">Footstones Total</span><span class="result-val red">$${r.footTotal.toFixed(2)}</span></div>
-      </div>
-    `;
-  }
-
-  html += `
-    <div class="result-section final">
-      <div class="result-title">⭐ Final Total</div>
-      <div class="result-row">
-        <span class="result-key">${r.jobType === 'Monument' ? 'Monument Total' : 'Mausoleum Total'}</span>
-        <span class="result-val gold" style="font-size:24px;">$${r.finalTotal.toFixed(2)}</span>
-      </div>
-    </div>
-  `;
-
-  inner.innerHTML = html;
+  list.innerHTML = plots.map(plot => `<button class="rowbtn" onclick="openPlot('${escapeJs(plot)}')"><div class="name">${escapeHtml(plot)}</div><div class="meta">${grouped[plot].length} records</div></button>`).join('');
 }
 
-function getCurrentSnapshot() {
+function openPlot(plot){
+  currentPlotName = plot;
+  document.getElementById('plotsView').classList.add('hidden');
+  document.getElementById('plotDetailView').classList.remove('hidden');
+  document.getElementById('plotDetailTitle').textContent = plot;
+  document.getElementById('plotSearch').value = '';
+  renderPlotDetail();
+}
+
+function backToPlots(){
+  document.getElementById('plotsView').classList.remove('hidden');
+  document.getElementById('plotDetailView').classList.add('hidden');
+  currentPlotName = '';
+}
+
+function renderPlotDetail(){
+  const q = (document.getElementById('plotSearch').value || '').trim().toLowerCase();
+  const jobs = getLocalJobs().filter(job => (job.snapshot?.plot || 'Unassigned Plot') === currentPlotName)
+    .filter(job => !q || (job.snapshot?.ownerName || '').toLowerCase().includes(q) || (job.snapshot?.ownerId || '').toLowerCase().includes(q))
+    .sort((a,b)=>(a.snapshot?.ownerName||'').localeCompare(b.snapshot?.ownerName||''));
+  const list = document.getElementById('plotOwnerList');
+  if(!jobs.length){
+    list.innerHTML = `<div class="rowbtn"><div><div class="name">No names found</div><div class="meta">Try another search.</div></div></div>`;
+    return;
+  }
+  list.innerHTML = jobs.map(job => {
+    const s = job.snapshot || {};
+    return `<button class="rowbtn" onclick="openRecord('${escapeJs(job.id)}','plot')">
+      <div>
+        <div class="name">${escapeHtml(s.ownerName || 'Unnamed')} (${escapeHtml(s.ownerId || '-')})</div>
+        <div class="meta">${escapeHtml(s.status || 'Not measured yet')}</div>
+      </div><span>›</span>
+    </button>`;
+  }).join('');
+}
+
+function openRecord(id, from){
+  currentRecordId = id;
+  currentBackContext = from || 'home';
+  const job = getLocalJobs().find(j => j.id === id);
+  if(!job) return showToast('Record not found');
+  const s = job.snapshot || {};
+  const r = job.results || {};
+  mode = s.mode || 'inches';
+  jobType = s.jobType || 'Monument';
+  photos = Array.isArray(s.photos) ? s.photos.map(p => ({ url:p.url||'', filename:p.filename||'', dataUrl:p.dataUrl||'' })) : [];
+  lastResults = r;
+
+  document.getElementById('page-home').classList.remove('active');
+  document.getElementById('page-plots').classList.remove('active');
+  document.getElementById('recordPage').classList.remove('hidden');
+  document.getElementById('recordActions').style.display = 'flex';
+
+  document.getElementById('recordHeaderTitle').textContent = `${s.ownerName || 'Unnamed'} (${s.ownerId || '-'})`;
+  document.getElementById('ownerName').value = s.ownerName || '';
+  document.getElementById('ownerId').value = s.ownerId || '';
+  document.getElementById('plotSelect').value = s.plot || '';
+  document.getElementById('statusSelect').value = s.status || 'Not measured yet';
+  document.getElementById('locationLabel').value = s.locationLabel || '';
+  document.getElementById('mapsUrl').value = s.mapsUrl || '';
+  document.getElementById('issueType').value = s.issueType || '';
+  document.getElementById('issueNote').value = s.issueNote || '';
+  document.getElementById('jobNotes').value = s.notes || '';
+  document.getElementById('lfPointing').value = s.lfPointing || '';
+  document.getElementById('numFlats').value = s.numFlats || '';
+  document.getElementById('numSlants').value = s.numSlants || '';
+
+  document.getElementById('statStatus').textContent = s.status || 'Not measured yet';
+  document.getElementById('statML').textContent = Number(r.mlClean || 0).toFixed(2);
+  document.getElementById('statTotal').textContent = '$' + Number(r.finalTotal || 0).toFixed(2);
+  document.getElementById('statPhotos').textContent = String(photos.length);
+
+  rebuildPieces(s.pieces || []);
+  updateJobTypeUI();
+  updateModeUI();
+  renderPhotoGrid();
+
+  if(lastResults && (lastResults.hasDimensions || lastResults.numFlats || lastResults.numSlants || lastResults.lfPointing)) {
+    document.getElementById('resultsContainer').classList.remove('hidden');
+    renderResults(lastResults);
+  } else {
+    document.getElementById('resultsContainer').classList.add('hidden');
+  }
+}
+
+function backFromRecord(){
+  document.getElementById('recordPage').classList.add('hidden');
+  document.getElementById('recordActions').style.display = 'none';
+  if(currentBackContext === 'plot'){
+    document.getElementById('page-plots').classList.add('active');
+    renderPlotDetail();
+  } else {
+    document.getElementById('page-home').classList.add('active');
+    renderHome();
+  }
+}
+
+function resetRecordForm(){
+  if(!currentRecordId) return;
+  openRecord(currentRecordId, currentBackContext);
+  showToast('Form reset to saved values');
+}
+
+function getCurrentSnapshot(){
   return {
     mode,
     jobType,
     ownerName: document.getElementById('ownerName').value.trim(),
     ownerId: document.getElementById('ownerId').value.trim(),
     plot: document.getElementById('plotSelect').value.trim(),
+    status: document.getElementById('statusSelect').value.trim(),
+    locationLabel: document.getElementById('locationLabel').value.trim(),
+    mapsUrl: document.getElementById('mapsUrl').value.trim(),
     issueType: document.getElementById('issueType').value.trim(),
     issueNote: document.getElementById('issueNote').value.trim(),
     notes: document.getElementById('jobNotes').value.trim(),
     lfPointing: n('lfPointing'),
     numFlats: parseInt(document.getElementById('numFlats').value || '0', 10) || 0,
     numSlants: parseInt(document.getElementById('numSlants').value || '0', 10) || 0,
-    pieces: pieces.map(p => ({ ...getPieceDims(p.id), isMain: p.isMain })),
-    photos: photos.map(p => ({
-      url: p.url || '',
-      filename: p.filename || p.name || '',
-      dataUrl: p.dataUrl || ''
-    }))
+    pieces: pieces.map(p => ({ ...getPieceDims(p.id), isMain:p.isMain })),
+    photos: photos.map(p => ({ url:p.url||'', filename:p.filename||'', dataUrl:p.dataUrl||'' }))
   };
 }
 
-function makeJobRecord(existingRecordId = '') {
-  const snapshot = getCurrentSnapshot();
-  const displayName = `${snapshot.ownerName} ${snapshot.ownerId}`.trim();
-  return {
-    id: existingRecordId || ('local-' + Date.now()),
-    airtableRecordId: existingRecordId || '',
-    name: displayName || 'Unnamed Job',
-    date: new Date().toISOString(),
-    snapshot,
-    results: { ...lastResults }
-  };
+function saveCurrentRecord(){
+  if(!currentRecordId) return showToast('No record open');
+  const snap = getCurrentSnapshot();
+  if(!snap.ownerName || !snap.ownerId || !snap.plot) return showToast('Owner Name, Owner ID, and Plot required');
+  const jobs = getLocalJobs();
+  const idx = jobs.findIndex(j => j.id === currentRecordId);
+  if(idx < 0) return showToast('Record not found');
+  jobs[idx].snapshot = snap;
+  jobs[idx].results = lastResults || jobs[idx].results || {};
+  jobs[idx].date = new Date().toISOString();
+  saveLocalJobs(jobs);
+  document.getElementById('recordHeaderTitle').textContent = `${snap.ownerName} (${snap.ownerId})`;
+  document.getElementById('statStatus').textContent = snap.status || 'Not measured yet';
+  document.getElementById('statPhotos').textContent = String(photos.length);
+  document.getElementById('statML').textContent = Number((lastResults||{}).mlClean || 0).toFixed(2);
+  document.getElementById('statTotal').textContent = '$' + Number((lastResults||{}).finalTotal || 0).toFixed(2);
+  renderHome(); renderPlots();
+  if(currentBackContext === 'plot') renderPlotDetail();
+  showToast('Record saved');
 }
 
-function cloudinaryReady() {
-  const c = CONFIG.cloudinary || {};
-  return Boolean(c.cloudName && c.uploadPreset);
-}
-
-async function uploadToCloudinary(dataUrl, filename = 'photo.jpg') {
-  if (!cloudinaryReady()) throw new Error('Cloudinary is not configured');
-
-  const cloud = CONFIG.cloudinary.cloudName;
-  const preset = CONFIG.cloudinary.uploadPreset;
-  const url = `https://api.cloudinary.com/v1_1/${cloud}/image/upload`;
-
-  const formData = new FormData();
-  formData.append('file', dataUrl);
-  formData.append('upload_preset', preset);
-  formData.append('folder', 'monument-photos');
-
-  const res = await fetch(url, {
-    method: 'POST',
-    body: formData
-  });
-
-  if (!res.ok) {
-    let detail = '';
-    try {
-      const data = await res.json();
-      detail = data?.error?.message || JSON.stringify(data);
-    } catch {}
-    throw new Error(detail ? `Cloudinary upload failed: ${detail}` : 'Cloudinary upload failed');
-  }
-
-  const data = await res.json();
-  return {
-    url: data.secure_url,
-    filename: filename || data.original_filename || 'photo.jpg'
-  };
-}
-
-async function uploadPendingPhotos() {
-  const uploaded = [];
-  for (const photo of photos) {
-    if (photo.url) {
-      uploaded.push({ url: photo.url, filename: photo.filename || photo.name || 'photo.jpg' });
-    } else if (photo.dataUrl) {
-      const result = await uploadToCloudinary(photo.dataUrl, photo.name || 'photo.jpg');
-      uploaded.push(result);
-    }
-  }
-  return uploaded;
-}
-
-async function saveJob() {
-  if (!lastResults) return showToast('Calculate first');
-
-  const ownerName = document.getElementById('ownerName')?.value.trim();
-  const ownerId = document.getElementById('ownerId')?.value.trim();
-  const plot = document.getElementById('plotSelect')?.value.trim();
-
-  if (!ownerName || !ownerId) return showToast('Owner Name and ID required');
-  if (!plot) return showToast('Select a plot');
-  if (!cloudinaryReady()) return showToast('Cloudinary not configured');
-
-  saveLastSelectedPlot(plot);
-
-  try {
-    const uploadedPhotos = await uploadPendingPhotos();
-    photos = uploadedPhotos.map(p => ({ url: p.url, filename: p.filename }));
-
-    const job = makeJobRecord();
-    job.snapshot.photos = photos.map(p => ({ url: p.url, filename: p.filename }));
-
-    let savedToAirtable = false;
-    if (airtableReady()) {
-      const recordId = await airtableCreateRecord(job);
-      job.airtableRecordId = recordId || '';
-      savedToAirtable = true;
-    }
-
-    await cacheMergedJob(job);
-    document.getElementById('saveBtn').style.display = 'none';
-    await renderHistory();
-    resetCalculator();
-    showToast(savedToAirtable ? 'Saved to Airtable & cleared' : 'Saved locally & cleared');
-  } catch (err) {
-    console.error(err);
-    showToast(err.message || 'Save failed');
-  }
-}
-
-async function cacheMergedJob(job) {
-  const jobs = getLocalJobs().filter(j => j.id !== job.id && j.airtableRecordId !== job.airtableRecordId);
-  jobs.unshift(job);
-  safeLocalSet(STORAGE_KEY, JSON.stringify(jobs));
-  renderSavedPlotFilterOptions();
-}
-
-function getLocalJobs() {
-  try { return JSON.parse(safeLocalGet(STORAGE_KEY) || '[]') || []; } catch { return []; }
-}
-
-function mergeJobs(localJobs, remoteJobs) {
-  const merged = [];
-  const seen = new Set();
-  [...remoteJobs, ...localJobs].forEach(job => {
-    const key = job.airtableRecordId || job.id;
-    if (!key || seen.has(key)) return;
-    seen.add(key);
-    merged.push(job);
-  });
-  return merged.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
-}
-
-async function getJobs() {
-  const localJobs = getLocalJobs();
-  if (airtableReady() && navigator.onLine) {
-    try {
-      const remote = await airtableFetchJobs();
-      const merged = mergeJobs(localJobs, remote);
-      safeLocalSet(STORAGE_KEY, JSON.stringify(merged));
-      return merged;
-    } catch (err) {
-      console.error(err);
-      return localJobs;
-    }
-  }
-  return localJobs;
-}
-
-async function deleteJob(id, event) {
-  if (event) event.stopPropagation();
-  const jobs = await getJobs();
-  const job = jobs.find(j => j.id === id);
-
-  if (job?.airtableRecordId && airtableReady()) {
-    try { await airtableDeleteRecord(job.airtableRecordId); } catch (err) { console.error(err); }
-  }
-
-  safeLocalSet(STORAGE_KEY, JSON.stringify(jobs.filter(j => j.id !== id)));
-  renderSavedPlotFilterOptions();
-  await renderHistory();
-  showToast('Saved job deleted');
-}
-
-async function clearAllJobs() {
-  const jobs = await getJobs();
-  if (!jobs.length) return showToast('No saved jobs to delete');
-  if (!window.confirm('Delete all saved jobs? This cannot be undone.')) return;
-
-  if (airtableReady()) {
-    for (const job of jobs) {
-      if (job.airtableRecordId) {
-        try { await airtableDeleteRecord(job.airtableRecordId); } catch (err) { console.error(err); }
-      }
-    }
-  }
-
-  safeLocalSet(STORAGE_KEY, JSON.stringify([]));
-  openPlotName = '';
-  renderSavedPlotFilterOptions();
-  await renderHistory();
-  showToast('All saved jobs deleted');
-}
-
-function loadJob(id, event) {
-  if (event) event.stopPropagation();
-
-  const job = getLocalJobs().find(j => j.id === id);
-  if (!job) return;
-
-  const snap = job.snapshot || {};
-  mode = snap.mode || 'inches';
-  jobType = snap.jobType || 'Monument';
-  photos = Array.isArray(snap.photos)
-    ? snap.photos.map(p => ({ url: p.url || '', filename: p.filename || p.name || '' }))
-    : [];
-
-  document.getElementById('modeInches').classList.toggle('active', mode === 'inches');
-  document.getElementById('modeFeet').classList.toggle('active', mode === 'feetInches');
-
-  document.getElementById('ownerName').value = snap.ownerName || '';
-  document.getElementById('ownerId').value = snap.ownerId || '';
-  renderPlotOptions(snap.plot || getLastSelectedPlot());
-  document.getElementById('issueType').value = snap.issueType || '';
-  document.getElementById('issueNote').value = snap.issueNote || '';
-  document.getElementById('jobNotes').value = snap.notes || '';
-  document.getElementById('lfPointing').value = snap.lfPointing || '';
-  document.getElementById('numFlats').value = snap.numFlats || '';
-  document.getElementById('numSlants').value = snap.numSlants || '';
-
-  if (snap.plot) saveLastSelectedPlot(snap.plot);
-
+function setJobType(type){
+  jobType = type;
   updateJobTypeUI();
-  rebuildPieces(snap.pieces || []);
-  renderPhotoGrid();
-
-  lastResults = job.results || null;
-  if (lastResults) {
-    document.getElementById('resultsContainer').classList.remove('hidden');
-    renderResults(lastResults);
-  } else {
-    document.getElementById('resultsContainer').classList.add('hidden');
-  }
-
-  document.getElementById('saveBtn').style.display = 'none';
-  switchTab('calc');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  showToast('Loaded saved job');
 }
-
-async function renderHistory() {
-  const container = document.getElementById('historyContainer');
-
-  if (!storageReady) {
-    container.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>Saved jobs can break when this file is opened directly from Files.<br>Use the hosted PWA version.</p></div>';
-    return;
-  }
-
-  const jobs = await getJobs();
-  renderSavedPlotFilterOptions();
-
-  if (!jobs.length) {
-    container.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>No saved jobs yet.<br>Calculate and save a job to see it here.</p></div>';
-    return;
-  }
-
-  const selectedPlot = (document.getElementById('savedPlotFilter')?.value || '').trim();
-  const searchTerm = (document.getElementById('savedSearch')?.value || '').trim().toLowerCase();
-
-  const filteredJobs = jobs.filter(job => {
-    const snap = job.snapshot || {};
-    const plot = (snap.plot || 'Unassigned Plot').trim() || 'Unassigned Plot';
-    const ownerName = (snap.ownerName || '').toLowerCase();
-    const ownerId = (snap.ownerId || '').toLowerCase();
-    const combined = `${ownerName} ${ownerId}`.trim();
-    const plotMatch = !selectedPlot || plot === selectedPlot;
-    const searchMatch = !searchTerm || ownerName.includes(searchTerm) || ownerId.includes(searchTerm) || combined.includes(searchTerm);
-    return plotMatch && searchMatch;
-  });
-
-  if (!filteredJobs.length) {
-    container.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>No jobs matched your filter or search.</p></div>';
-    return;
-  }
-
-  const grouped = {};
-  filteredJobs.forEach(job => {
-    const plot = (job.snapshot?.plot || 'Unassigned Plot').trim() || 'Unassigned Plot';
-    if (!grouped[plot]) grouped[plot] = [];
-    grouped[plot].push(job);
-  });
-
-  const plotNames = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
-  if (!openPlotName || !plotNames.includes(openPlotName)) openPlotName = plotNames[0];
-
-  container.innerHTML = plotNames.map(plotName => {
-    const plotJobs = grouped[plotName];
-    const isOpen = openPlotName === plotName;
-
-    return `
-      <div class="plot-group">
-        <div class="plot-group-title" onclick="togglePlotSection('${escapeJs(plotName)}')">
-          <span><span class="plot-chevron">${isOpen ? '▼' : '▶'}</span>${escapeHtml(plotName)}</span>
-          <span class="badge">${plotJobs.length}</span>
-        </div>
-
-        <div class="plot-group-body ${isOpen ? '' : 'hidden'}">
-          ${plotJobs.map(job => {
-            const r = job.results || {};
-            const snap = job.snapshot || {};
-            const date =
-              new Date(job.date).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) +
-              ' • ' +
-              new Date(job.date).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
-
-            const displayName = (((snap.ownerName || '') + ' ' + (snap.ownerId || '')).trim()) || job.name || 'Unnamed Job';
-
-            return `
-              <div class="history-item">
-                <div class="history-name">${escapeHtml(displayName)}</div>
-                <div class="history-date">${date} • ${escapeHtml(snap.jobType || 'Monument')}</div>
-                ${snap.issueType ? `<div class="history-issue">${escapeHtml(snap.issueType)}</div>` : ''}
-
-                <div class="history-totals">
-                  ${
-                    (snap.jobType || 'Monument') === 'Monument'
-                    ? `
-                      <div class="history-total-item"><div class="history-total-label">Clean ML</div><div class="history-total-val">${Number(r.mlClean || 0).toFixed(2)}</div></div>
-                      <div class="history-total-item"><div class="history-total-label">Clean Total</div><div class="history-total-val">$${Number(r.priceClean || 0).toFixed(2)}</div></div>
-                    `
-                    : `
-                      <div class="history-total-item"><div class="history-total-label">Exterior ML</div><div class="history-total-val">${Number(r.mlExt || 0).toFixed(2)}</div></div>
-                      <div class="history-total-item"><div class="history-total-label">Exterior Total</div><div class="history-total-val">$${Number(r.priceExt || 0).toFixed(2)}</div></div>
-                    `
-                  }
-
-                  <div class="history-total-item"><div class="history-total-label">Flats / Slants</div><div class="history-total-val">${Number(r.numFlats || 0)} / ${Number(r.numSlants || 0)}</div></div>
-
-                  ${
-                    (snap.jobType || 'Monument') === 'Mausoleum'
-                    ? `<div class="history-total-item"><div class="history-total-label">Re-pointing</div><div class="history-total-val">$${Number(r.priceLF || 0).toFixed(2)}</div></div>`
-                    : `<div class="history-total-item"><div class="history-total-label">Job Total</div><div class="history-total-val">$${Number(r.finalTotal || 0).toFixed(2)}</div></div>`
-                  }
-                </div>
-
-                <div class="history-actions">
-                  <button class="btn btn-ghost btn-sm" onclick="loadJob('${escapeJs(job.id)}', event)">Open</button>
-                  <button class="btn btn-danger btn-sm" onclick="deleteJob('${escapeJs(job.id)}', event)">Delete</button>
-                </div>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-    `;
-  }).join('');
+function updateJobTypeUI(){
+  document.getElementById('jobTypeMonument').className = 'btn small ' + (jobType==='Monument' ? 'primary' : 'ghost');
+  document.getElementById('jobTypeMausoleum').className = 'btn small ' + (jobType==='Mausoleum' ? 'primary' : 'ghost');
+  document.getElementById('piecesTitle').textContent = jobType === 'Monument' ? 'Monument Pieces' : 'Mausoleum Pieces';
+  document.getElementById('repointingCard').classList.toggle('hidden', jobType !== 'Mausoleum');
+  updatePieceLabels();
 }
-
-function resetCalculator() {
-  document.getElementById('ownerName').value = '';
-  document.getElementById('ownerId').value = '';
-  renderPlotOptions(getLastSelectedPlot());
-  document.getElementById('issueType').value = '';
-  document.getElementById('issueNote').value = '';
-  document.getElementById('jobNotes').value = '';
-  document.getElementById('lfPointing').value = '';
-  document.getElementById('numFlats').value = '';
-  document.getElementById('numSlants').value = '';
-
-  mode = 'inches';
-  jobType = 'Monument';
-  photos = [];
+function setMode(newMode){
+  if(mode === newMode) return;
+  const snapshot = getCurrentSnapshot();
+  mode = newMode;
+  updateModeUI();
+  rebuildPieces(snapshot.pieces || []);
+}
+function updateModeUI(){
+  document.getElementById('modeInches').className = 'btn small ' + (mode==='inches' ? 'primary' : 'ghost');
+  document.getElementById('modeFeet').className = 'btn small ' + (mode==='feetInches' ? 'primary' : 'ghost');
+}
+function updatePieceLabels(){
+  let count = 0;
+  pieces.forEach(piece => {
+    const el = document.querySelector('#piece-' + piece.id + ' .piece-label');
+    if(!el) return;
+    if(piece.isMain){
+      el.textContent = jobType === 'Monument' ? 'Main Monument' : 'Main Mausoleum';
+    } else {
+      count += 1;
+      el.textContent = (jobType === 'Monument' ? 'Monument Piece ' : 'Mausoleum Piece ') + count;
+    }
+  });
+}
+function addPiece(isMain=false, existingData=null){
+  const id = pieceIdCounter++;
+  pieces.push({id, isMain});
+  renderPiece(id, isMain, existingData || {l:'',w:'',h:'',mult:'',multOpen:false});
+  updatePieceLabels();
+}
+function rebuildPieces(savedPieces=[]){
+  document.getElementById('piecesContainer').innerHTML = '';
   pieces = [];
   pieceIdCounter = 0;
-  lastResults = null;
-
-  document.getElementById('modeInches').classList.add('active');
-  document.getElementById('modeFeet').classList.remove('active');
-
-  updateJobTypeUI();
-  rebuildPieces([]);
-  renderPhotoGrid();
-
-  document.getElementById('resultsContainer').classList.add('hidden');
-  document.getElementById('saveBtn').style.display = 'none';
-
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if(!savedPieces.length){ addPiece(true); return; }
+  savedPieces.forEach((p,i)=>addPiece(i===0, p));
 }
+function renderPiece(id, isMain, data){
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.style.padding = '12px';
+  div.id = 'piece-' + id;
 
-function bindPhotos() {
-  const cameraInput = document.getElementById('cameraInput');
-  const libraryInput = document.getElementById('photoLibraryInput');
+  const removeBtn = isMain ? '' : `<button class="btn danger small" onclick="removePiece(${id})">Remove</button>`;
 
-  async function handleFiles(fileList) {
-    const files = Array.from(fileList || []);
-    if (!files.length) return;
-
-    const remaining = Math.max(0, 3 - photos.length);
-    if (remaining <= 0) return showToast('You can save up to 3 photos');
-
-    const selected = files.slice(0, remaining);
-    for (const file of selected) {
-      const compressed = await compressImage(file, 1600, 0.72);
-      photos.push({
-        name: compressed.filename,
-        filename: compressed.filename,
-        dataUrl: compressed.dataUrl
-      });
-    }
-
-    renderPhotoGrid();
+  function fiMarkup(prefix, totalInches){
+    const total = totalInches === '' || totalInches == null ? '' : Number(totalInches);
+    const ft = total === '' ? '' : Math.floor(total / 12);
+    const inch = total === '' ? '' : Number((total - ft * 12).toFixed(2));
+    return `<div class="grid2">
+      <input type="number" id="p${id}_${prefix}ft" placeholder="Feet" value="${ft === '' ? '' : ft}">
+      <input type="number" id="p${id}_${prefix}in" placeholder="Inches" value="${inch === '' ? '' : inch}">
+    </div>`;
   }
 
-  cameraInput.addEventListener('change', async (e) => {
-    await handleFiles(e.target.files);
-    e.target.value = '';
-  });
+  const dims = mode === 'feetInches'
+    ? `
+      <div class="field"><div class="label">Length</div>${fiMarkup('l', data.l)}</div>
+      <div class="field"><div class="label">Width</div>${fiMarkup('w', data.w)}</div>
+      <div class="field"><div class="label">Height</div>${fiMarkup('h', data.h)}</div>
+    `
+    : `
+      <div class="field"><div class="label">Length (in)</div><input type="number" id="p${id}_lin" placeholder="0" value="${data.l ?? ''}"></div>
+      <div class="field"><div class="label">Width (in)</div><input type="number" id="p${id}_win" placeholder="0" value="${data.w ?? ''}"></div>
+      <div class="field"><div class="label">Height (in)</div><input type="number" id="p${id}_hin" placeholder="0" value="${data.h ?? ''}"></div>
+    `;
 
-  libraryInput.addEventListener('change', async (e) => {
-    await handleFiles(e.target.files);
-    e.target.value = '';
+  const multOpen = Boolean(data.multOpen) || Number(data.mult || 0) > 1;
+  div.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px">
+      <div class="name piece-label"></div>
+      ${removeBtn}
+    </div>
+    ${dims}
+    <button class="btn ghost small" id="multtoggle${id}" onclick="toggleMult(${id})">${multOpen ? 'Hide multiplier' : 'Multiply this piece'}</button>
+    <div id="multfield${id}" class="${multOpen ? '' : 'hidden'}" style="margin-top:8px">
+      <div class="label">Quantity / Multiplier</div>
+      <input type="number" id="p${id}_mult" placeholder="1" min="1" value="${data.mult ?? ''}">
+    </div>
+  `;
+  document.getElementById('piecesContainer').appendChild(div);
+  updatePieceLabels();
+}
+function toggleMult(id){
+  document.getElementById('multfield'+id).classList.toggle('hidden');
+}
+function removePiece(id){
+  pieces = pieces.filter(p=>p.id!==id);
+  const n = document.getElementById('piece-'+id);
+  if(n) n.remove();
+  updatePieceLabels();
+}
+function getPieceDims(id){
+  let l,w,h;
+  if(mode === 'feetInches'){
+    l = n(`p${id}_lft`) * 12 + n(`p${id}_lin`);
+    w = n(`p${id}_wft`) * 12 + n(`p${id}_win`);
+    h = n(`p${id}_hft`) * 12 + n(`p${id}_hin`);
+  } else {
+    l = n(`p${id}_lin`); w = n(`p${id}_win`); h = n(`p${id}_hin`);
+  }
+  const mult = Math.max(1, n(`p${id}_mult`) || 1);
+  const multField = document.getElementById('multfield'+id);
+  return { l,w,h,mult,multOpen: multField ? !multField.classList.contains('hidden') : false };
+}
+function getCombinedMeasurements(){
+  let total = {length:0,width:0,height:0};
+  pieces.forEach(p=>{
+    const d = getPieceDims(p.id);
+    const m = parseInt(d.mult,10) || 1;
+    total.length += d.l * m;
+    total.width += d.w * m;
+    total.height += d.h * m;
   });
+  return total;
+}
+function calculateML(){
+  const totals = getCombinedMeasurements();
+  const length = totals.length, width = totals.width, height = totals.height;
+  const lfPointing = jobType === 'Mausoleum' ? (parseFloat(document.getElementById('lfPointing').value) || 0) : 0;
+  const numFlats = parseInt(document.getElementById('numFlats').value || '0', 10) || 0;
+  const numSlants = parseInt(document.getElementById('numSlants').value || '0', 10) || 0;
+  const hasDimensions = length > 0 && width > 0 && height > 0;
+
+  let totalSqFt = 0, mlClean = 0, priceClean = 0, cleanLabel = '', mlExt = 0, priceExt = 0;
+  if(hasDimensions){
+    const totalSqInches = (length * width) + (length * height * 2) + (width * height * 2);
+    totalSqFt = totalSqInches / 144;
+    mlClean = parseFloat((totalSqFt / 25).toFixed(2));
+    if(mlClean < 2) mlClean = 2;
+    mlExt = parseFloat((totalSqFt / 50).toFixed(2));
+    const isUnderSize = length < 72 && height < 120;
+    const cleanRate = isUnderSize ? 155 : 195;
+    cleanLabel = isUnderSize ? 'Standard Upright @ $155' : 'Standard Special @ $195';
+    priceClean = parseFloat((mlClean * cleanRate).toFixed(2));
+    priceExt = parseFloat((mlExt * 159).toFixed(2));
+  }
+
+  const mlLF = parseFloat((lfPointing / 50).toFixed(2));
+  const priceLF = parseFloat((mlLF * 564).toFixed(2));
+  const priceFlats = numFlats > 0 ? 155 + (numFlats - 1) * (155 / 2) : 0;
+  const priceSlants = numSlants > 0 ? 195 + (numSlants - 1) * (195 / 2) : 0;
+  const footTotal = parseFloat((priceFlats + priceSlants).toFixed(2));
+  const monumentTotal = parseFloat((priceClean + footTotal).toFixed(2));
+  const mausoleumTotal = parseFloat((priceExt + priceLF + footTotal).toFixed(2));
+
+  lastResults = {
+    jobType, totalSqFt, hasDimensions, mainL:length, mainW:width, mainH:height,
+    mlClean, priceClean, cleanLabel, mlExt, priceExt, lfPointing, mlLF, priceLF,
+    numFlats, numSlants, priceFlats, priceSlants, footTotal,
+    finalTotal: jobType === 'Monument' ? monumentTotal : mausoleumTotal
+  };
+
+  document.getElementById('resultsContainer').classList.remove('hidden');
+  renderResults(lastResults);
+  document.getElementById('statML').textContent = Number(lastResults.mlClean || 0).toFixed(2);
+  document.getElementById('statTotal').textContent = '$' + Number(lastResults.finalTotal || 0).toFixed(2);
+  showToast('Calculated');
+}
+function renderResults(r){
+  const inner = document.getElementById('resultsInner');
+  let html = '';
+  if(r.hasDimensions && r.jobType==='Monument'){
+    html += `<div class="card" style="padding:12px"><div class="title">Monument Cleaning</div>
+      <div class="meta">Total Area: ${r.totalSqFt.toFixed(2)} sq ft</div>
+      <div class="meta">Clean ML: ${r.mlClean.toFixed(2)}</div>
+      <div class="meta">${escapeHtml(r.cleanLabel)}: $${r.priceClean.toFixed(2)}</div></div>`;
+  }
+  if(r.hasDimensions && r.jobType==='Mausoleum'){
+    html += `<div class="card" style="padding:12px"><div class="title">Mausoleum Exterior</div>
+      <div class="meta">Total Area: ${r.totalSqFt.toFixed(2)} sq ft</div>
+      <div class="meta">Exterior ML: ${r.mlExt.toFixed(2)}</div>
+      <div class="meta">Exterior Total: $${r.priceExt.toFixed(2)}</div></div>`;
+  }
+  if(r.jobType==='Mausoleum' && r.lfPointing > 0){
+    html += `<div class="card" style="padding:12px"><div class="title">Re-pointing</div>
+      <div class="meta">LF: ${r.lfPointing.toFixed(2)}</div>
+      <div class="meta">ML: ${r.mlLF.toFixed(2)}</div>
+      <div class="meta">Total: $${r.priceLF.toFixed(2)}</div></div>`;
+  }
+  if(r.numFlats > 0 || r.numSlants > 0){
+    html += `<div class="card" style="padding:12px"><div class="title">Footstones</div>
+      ${r.numFlats ? `<div class="meta">Flats (${r.numFlats}): $${r.priceFlats.toFixed(2)}</div>` : ''}
+      ${r.numSlants ? `<div class="meta">Slants (${r.numSlants}): $${r.priceSlants.toFixed(2)}</div>` : ''}
+      <div class="meta">Footstones Total: $${r.footTotal.toFixed(2)}</div></div>`;
+  }
+  html += `<div class="card" style="padding:12px"><div class="title">Final Total</div><div style="font-family:Rajdhani,sans-serif;font-size:28px;font-weight:700">$${r.finalTotal.toFixed(2)}</div></div>`;
+  inner.innerHTML = html;
 }
 
-function renderPhotoGrid() {
+function bindPhotos(){
+  const cameraInput = document.getElementById('cameraInput');
+  const libraryInput = document.getElementById('photoLibraryInput');
+  async function handleFiles(fileList){
+    const files = Array.from(fileList || []);
+    if(!files.length) return;
+    const remaining = Math.max(0, 3 - photos.length);
+    if(remaining <= 0) return showToast('You can save up to 3 photos');
+    for(const file of files.slice(0, remaining)){
+      const compressed = await compressImage(file, 1600, 0.72);
+      photos.push({ filename: compressed.filename, dataUrl: compressed.dataUrl });
+    }
+    renderPhotoGrid();
+  }
+  cameraInput.addEventListener('change', async e => { await handleFiles(e.target.files); e.target.value=''; });
+  libraryInput.addEventListener('change', async e => { await handleFiles(e.target.files); e.target.value=''; });
+}
+function renderPhotoGrid(){
   const grid = document.getElementById('photoGrid');
   document.getElementById('photoCount').textContent = photos.length;
-
-  grid.innerHTML = photos.map((p, i) => {
+  document.getElementById('statPhotos').textContent = String(photos.length);
+  grid.innerHTML = photos.map((p,i)=>{
     const src = p.url || p.dataUrl || '';
-    const name = p.filename || p.name || `Photo ${i + 1}`;
-    return `
-      <div class="photo-item">
-        <img src="${src}" alt="${escapeHtml(name)}" onclick="openPhoto('${escapeJs(src)}')"/>
-        <button class="photo-remove" onclick="removePhoto(${i})">✕</button>
-      </div>
-    `;
+    return `<div class="photo"><img src="${src}" onclick="openPhoto('${escapeJs(src)}')"><button onclick="removePhoto(${i})">✕</button></div>`;
   }).join('');
 }
-
-function openPhoto(url) {
-  if (!url) return;
-  window.open(url, '_blank');
-}
-
-function removePhoto(index) {
-  photos.splice(index, 1);
-  renderPhotoGrid();
-}
-
-function compressImage(file, maxSide, quality) {
-  return new Promise((resolve, reject) => {
+function removePhoto(index){ photos.splice(index,1); renderPhotoGrid(); }
+function openPhoto(url){ if(url) window.open(url,'_blank'); }
+function compressImage(file,maxSide,quality){
+  return new Promise((resolve,reject)=>{
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = ()=>{
       const img = new Image();
-      img.onload = () => {
+      img.onload = ()=>{
         const ratio = Math.min(1, maxSide / Math.max(img.width, img.height));
         const canvas = document.createElement('canvas');
         canvas.width = Math.round(img.width * ratio);
         canvas.height = Math.round(img.height * ratio);
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL('image/jpeg', quality);
-        resolve({
-          dataUrl,
-          filename: (file.name || 'photo').replace(/\.[^.]+$/, '') + '.jpg'
-        });
+        ctx.drawImage(img,0,0,canvas.width,canvas.height);
+        resolve({ dataUrl: canvas.toDataURL('image/jpeg', quality), filename: (file.name || 'photo').replace(/\.[^.]+$/, '') + '.jpg' });
       };
       img.onerror = reject;
       img.src = reader.result;
@@ -1882,404 +874,30 @@ function compressImage(file, maxSide, quality) {
   });
 }
 
-function exportBackup() {
-  const jobs = getLocalJobs();
-  if (!jobs.length) return showToast('No saved jobs to export');
-  downloadBlob(new Blob([JSON.stringify(jobs, null, 2)], { type:'application/json' }), 'ml-monument-saved-jobs-backup.json');
-  showToast('Backup exported');
+function openDirections(){
+  const url = document.getElementById('mapsUrl').value.trim();
+  if(!url) return showToast('No Google Maps link saved');
+  window.open(url, '_blank');
 }
 
-function bindImport() {
-  document.getElementById('importFile').addEventListener('change', async (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-
-    try {
-      const text = await file.text();
-      const incoming = JSON.parse(text);
-      if (!Array.isArray(incoming)) throw new Error('Invalid backup');
-
-      const current = getLocalJobs();
-      const map = new Map();
-      [...incoming, ...current].forEach(job => map.set(job.id, job));
-      const merged = Array.from(map.values()).sort((a, b) => new Date(b.date) - new Date(a.date));
-      safeLocalSet(STORAGE_KEY, JSON.stringify(merged));
-      renderSavedPlotFilterOptions();
-      await renderHistory();
-      showToast('Backup imported');
-    } catch (err) {
-      console.error(err);
-      showToast('Import failed');
-    }
-
-    e.target.value = '';
+function toggleTheme(){
+  const isDark = document.body.classList.contains('theme-dark');
+  applyTheme(isDark ? 'light' : 'dark');
+}
+function applyTheme(theme){
+  document.body.classList.toggle('theme-dark', theme === 'dark');
+  document.body.classList.toggle('theme-light', theme !== 'dark');
+  document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
+  saveTheme(theme);
+}
+function bindThemeMedia(){
+  const media = window.matchMedia('(prefers-color-scheme: dark)');
+  media.addEventListener?.('change', e => {
+    if(!getSavedTheme()) applyTheme(e.matches ? 'dark' : 'light');
   });
 }
-
-function csvEscape(value) {
-  const str = String(value ?? '');
-  return '"' + str.replace(/"/g, '""') + '"';
-}
-
-function exportCsv() {
-  const jobs = getLocalJobs();
-  if (!jobs.length) return showToast('No saved jobs to export');
-
-  const headers = [
-    'Saved At','Owner Name','Owner ID','Plot','Issue Type','Issue Note','Job Name','Job Type','Mode',
-    'Main Length In','Main Width In','Main Height In','Area Sq Ft',
-    'Clean ML','Clean Total','Exterior ML','Exterior Total',
-    'Re-pointing LF','Re-pointing ML','Re-pointing Total',
-    'Flats','Flats Total','Slants','Slants Total','Footstones Total',
-    'Job Total','Notes','Photo Count','Photo URLs'
-  ];
-
-  const rows = jobs.map(job => {
-    const snap = job.snapshot || {};
-    const r = job.results || {};
-    const urls = Array.isArray(snap.photos) ? snap.photos.map(p => p.url).filter(Boolean).join('\n') : '';
-    return [
-      job.date || '',
-      snap.ownerName || '',
-      snap.ownerId || '',
-      snap.plot || '',
-      snap.issueType || '',
-      snap.issueNote || '',
-      job.name || '',
-      snap.jobType || '',
-      snap.mode || '',
-      Number(r.mainL || 0).toFixed(2),
-      Number(r.mainW || 0).toFixed(2),
-      Number(r.mainH || 0).toFixed(2),
-      Number(r.totalSqFt || 0).toFixed(2),
-      Number(r.mlClean || 0).toFixed(2),
-      Number(r.priceClean || 0).toFixed(2),
-      Number(r.mlExt || 0).toFixed(2),
-      Number(r.priceExt || 0).toFixed(2),
-      Number(r.lfPointing || 0).toFixed(2),
-      Number(r.mlLF || 0).toFixed(2),
-      Number(r.priceLF || 0).toFixed(2),
-      Number(r.numFlats || 0),
-      Number(r.priceFlats || 0).toFixed(2),
-      Number(r.numSlants || 0),
-      Number(r.priceSlants || 0).toFixed(2),
-      Number(r.footTotal || 0).toFixed(2),
-      Number(r.finalTotal || 0).toFixed(2),
-      snap.notes || '',
-      Array.isArray(snap.photos) ? snap.photos.length : 0,
-      urls
-    ];
-  });
-
-  let csv = headers.map(csvEscape).join(',') + '\n' + rows.map(row => row.map(csvEscape).join(',')).join('\n');
-
-  const pieceLines = [];
-  jobs.forEach(job =>
-    (job.snapshot?.pieces || []).forEach((piece, idx) =>
-      pieceLines.push([
-        job.name || '',
-        idx === 0 ? (job.snapshot?.jobType === 'Mausoleum' ? 'Main Mausoleum' : 'Main Monument') : `Piece ${idx}`,
-        Number(piece.l || 0).toFixed(2),
-        Number(piece.w || 0).toFixed(2),
-        Number(piece.h || 0).toFixed(2),
-        Number(piece.mult || 1)
-      ])
-    )
-  );
-
-  if (pieceLines.length) {
-    csv += '\n\n' + ['Piece Details'].map(csvEscape).join(',') + '\n';
-    csv += ['Job Name','Piece Label','Length In','Width In','Height In','Multiplier'].map(csvEscape).join(',') + '\n';
-    csv += pieceLines.map(row => row.map(csvEscape).join(',')).join('\n');
-  }
-
-  downloadBlob(new Blob([csv], { type:'text/csv;charset=utf-8;' }), 'ml-monument-saved-jobs.csv');
-  showToast('CSV exported');
-}
-
-function downloadBlob(blob, filename) {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-function escapeHtml(str) {
-  return String(str).replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
-}
-
-function escapeJs(str) {
-  return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-}
-
-async function registerServiceWorker() {
-  if (!('serviceWorker' in navigator)) return;
-  try {
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (refreshing) return;
-      refreshing = true;
-      window.location.reload();
-    });
-    const reg = await navigator.serviceWorker.register('./service-worker.js?v=6');
-    await reg.update();
-  } catch (err) {
-    console.warn('SW registration failed', err);
-  }
-}
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  document.getElementById('installCard').classList.remove('hidden');
-});
-
-document.getElementById('installBtn').addEventListener('click', async () => {
-  if (!deferredPrompt) return showToast('On iPhone: Share → Add to Home Screen');
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  dismissInstallCard();
-});
-
-function dismissInstallCard() {
-  document.getElementById('installCard').classList.add('hidden');
-}
-
-function updateSyncBadge() {
-  const badge = document.getElementById('syncStatus');
-  if (airtableReady() && cloudinaryReady()) {
-    badge.textContent = 'Cloud sync ready';
-    badge.className = 'sync-pill ok';
-  } else if ((CONFIG.airtable && CONFIG.airtable.enabled) || CONFIG.cloudinary) {
-    badge.textContent = 'Sync incomplete';
-    badge.className = 'sync-pill warn';
-  } else {
-    badge.textContent = 'Local only';
-    badge.className = 'sync-pill';
-  }
-}
-
-function airtableReady() {
-  const a = CONFIG.airtable || {};
-  return Boolean(a.enabled && a.personalAccessToken && a.baseId && a.tableName);
-}
-
-function getFieldMap() {
-  return Object.assign({
-    ownerName: 'Owner Name',
-    ownerId: 'Owner ID',
-    plot: 'Plot',
-    photos: 'Photos',
-    photoUrls: 'Photo URLs',
-    issueType: 'Issue Type',
-    issueNote: 'Issue Note',
-    jobName: 'Job Name',
-    date: 'Date',
-    jobType: 'Job Type',
-    areaSqFt: 'Area Sq Ft',
-    cleanML: 'Clean ML',
-    cleanTotal: 'Clean Total',
-    exteriorML: 'Exterior ML',
-    exteriorTotal: 'Exterior Total',
-    repointingLF: 'Re-pointing LF',
-    repointingML: 'Re-pointing ML',
-    repointingTotal: 'Re-pointing Total',
-    flats: 'Flats',
-    slants: 'Slants',
-    jobTotal: 'Job Total',
-    notes: 'Notes',
-    detailsJson: 'Details JSON',
-    photoCount: 'Photo Count'
-  }, (CONFIG.airtable && CONFIG.airtable.fields) || {});
-}
-
-function airtableHeaders() {
-  return {
-    'Authorization': 'Bearer ' + CONFIG.airtable.personalAccessToken,
-    'Content-Type': 'application/json'
-  };
-}
-
-function airtableUrl() {
-  return `https://api.airtable.com/v0/${CONFIG.airtable.baseId}/${encodeURIComponent(CONFIG.airtable.tableName)}`;
-}
-
-function toAirtableFields(job) {
-  const f = getFieldMap();
-  const snap = job.snapshot || {};
-  const r = job.results || {};
-  const isMonument = (snap.jobType || 'Monument') === 'Monument';
-  const photoAttachments = Array.isArray(snap.photos)
-    ? snap.photos
-        .filter(p => p.url)
-        .map(p => ({ url: p.url, filename: p.filename || 'photo.jpg' }))
-    : [];
-  const photoUrls = photoAttachments.map(p => p.url).join('\n');
-
-  return {
-    [f.ownerName]: snap.ownerName || '',
-    [f.ownerId]: snap.ownerId || '',
-    [f.plot]: snap.plot || '',
-    [f.issueType]: snap.issueType || '',
-    [f.issueNote]: snap.issueNote || '',
-    [f.photos]: photoAttachments,
-    [f.photoUrls]: photoUrls,
-    [f.jobName]: job.name || '',
-    [f.date]: (job.date || new Date().toISOString()).slice(0, 10),
-    [f.jobType]: snap.jobType || 'Monument',
-    [f.areaSqFt]: Number(r.totalSqFt || 0),
-    [f.cleanML]: isMonument ? Number(r.mlClean || 0) : 0,
-    [f.cleanTotal]: isMonument ? Number(r.priceClean || 0) : 0,
-    [f.exteriorML]: isMonument ? 0 : Number(r.mlExt || 0),
-    [f.exteriorTotal]: isMonument ? 0 : Number(r.priceExt || 0),
-    [f.repointingLF]: isMonument ? 0 : Number(r.lfPointing || 0),
-    [f.repointingML]: isMonument ? 0 : Number(r.mlLF || 0),
-    [f.repointingTotal]: isMonument ? 0 : Number(r.priceLF || 0),
-    [f.flats]: Number(r.numFlats || 0),
-    [f.slants]: Number(r.numSlants || 0),
-    [f.jobTotal]: Number(r.finalTotal || 0),
-    [f.notes]: snap.notes || '',
-    [f.photoCount]: photoAttachments.length,
-    [f.detailsJson]: JSON.stringify({
-      ...job,
-      snapshot: {
-        ...snap,
-        photos: photoAttachments.map(p => ({ url: p.url, filename: p.filename })),
-        photoCount: photoAttachments.length
-      }
-    })
-  };
-}
-
-async function airtableCreateRecord(job) {
-  const res = await fetch(airtableUrl(), {
-    method: 'POST',
-    headers: airtableHeaders(),
-    body: JSON.stringify({ records: [{ fields: toAirtableFields(job) }] })
-  });
-
-  if (!res.ok) {
-    let detail = '';
-    try {
-      const data = await res.json();
-      detail = data?.error?.message || data?.error?.type || JSON.stringify(data);
-    } catch {}
-    throw new Error(detail ? ('Airtable save failed: ' + detail) : 'Airtable save failed');
-  }
-
-  const data = await res.json();
-  return data.records?.[0]?.id || '';
-}
-
-async function airtableDeleteRecord(recordId) {
-  const res = await fetch(`${airtableUrl()}/${recordId}`, {
-    method: 'DELETE',
-    headers: airtableHeaders()
-  });
-
-  if (!res.ok) {
-    let detail = '';
-    try {
-      const data = await res.json();
-      detail = data?.error?.message || data?.error?.type || JSON.stringify(data);
-    } catch {}
-    throw new Error(detail ? ('Airtable delete failed: ' + detail) : 'Airtable delete failed');
-  }
-}
-
-async function airtableFetchJobs() {
-  const f = getFieldMap();
-  let url = airtableUrl() + '?pageSize=100&sort[0][field]=' + encodeURIComponent(f.date) + '&sort[0][direction]=desc';
-  let records = [];
-
-  while (url) {
-    const res = await fetch(url, { headers: airtableHeaders() });
-    if (!res.ok) throw new Error('Failed to fetch Airtable jobs');
-    const data = await res.json();
-    records = records.concat(data.records || []);
-    url = data.offset ? `${airtableUrl()}?pageSize=100&offset=${encodeURIComponent(data.offset)}` : '';
-  }
-
-  return records.map(record => {
-    const fields = record.fields || {};
-    let parsed = null;
-
-    try {
-      if (fields[f.detailsJson]) parsed = JSON.parse(fields[f.detailsJson]);
-    } catch {}
-
-    const attachments = Array.isArray(fields[f.photos])
-      ? fields[f.photos].map(att => ({
-          url: att.url || '',
-          filename: att.filename || ''
-        })).filter(att => att.url)
-      : [];
-
-    const urlLines = String(fields[f.photoUrls] || '')
-      .split('\n')
-      .map(s => s.trim())
-      .filter(Boolean)
-      .map(url => ({ url, filename: '' }));
-
-    const mergedPhotos = attachments.length ? attachments : urlLines;
-
-    const job = parsed && parsed.snapshot ? parsed : {
-      id: 'at-' + record.id,
-      name: fields[f.jobName] || 'Unnamed Job',
-      date: fields[f.date] || new Date().toISOString(),
-      snapshot: {
-        ownerName: fields[f.ownerName] || '',
-        ownerId: fields[f.ownerId] || '',
-        plot: fields[f.plot] || '',
-        issueType: fields[f.issueType] || '',
-        issueNote: fields[f.issueNote] || '',
-        jobType: fields[f.jobType] || 'Monument',
-        mode: 'inches',
-        notes: fields[f.notes] || '',
-        lfPointing: Number(fields[f.repointingLF] || 0),
-        numFlats: Number(fields[f.flats] || 0),
-        numSlants: Number(fields[f.slants] || 0),
-        pieces: [],
-        photos: mergedPhotos
-      },
-      results: {
-        jobType: fields[f.jobType] || 'Monument',
-        totalSqFt: Number(fields[f.areaSqFt] || 0),
-        mlClean: Number(fields[f.cleanML] || 0),
-        priceClean: Number(fields[f.cleanTotal] || 0),
-        mlExt: Number(fields[f.exteriorML] || 0),
-        priceExt: Number(fields[f.exteriorTotal] || 0),
-        lfPointing: Number(fields[f.repointingLF] || 0),
-        mlLF: Number(fields[f.repointingML] || 0),
-        priceLF: Number(fields[f.repointingTotal] || 0),
-        numFlats: Number(fields[f.flats] || 0),
-        numSlants: Number(fields[f.slants] || 0),
-        finalTotal: Number(fields[f.jobTotal] || 0),
-        mainL: 0,
-        mainW: 0,
-        mainH: 0
-      }
-    };
-
-    if (!job.snapshot) job.snapshot = {};
-    if (!Array.isArray(job.snapshot.photos) || !job.snapshot.photos.length) {
-      job.snapshot.photos = mergedPhotos;
-    }
-
-    job.airtableRecordId = record.id;
-    if (!job.id) job.id = 'at-' + record.id;
-    return job;
-  });
-}
+function escapeHtml(str){ return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function escapeJs(str){ return String(str).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 </script>
 </body>
 </html>
