@@ -23,7 +23,8 @@ window.ML_APP_CONFIG = {
       jobTotal: 'Job Total',
       notes: 'Notes',
       detailsJson: 'Details JSON',
-      photoCount: 'Photo Count'
+      photoCount: 'Photo Count',
+      plot: 'Plot'
     }
   }
 };
