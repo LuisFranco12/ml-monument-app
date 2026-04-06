@@ -1,4 +1,9 @@
 window.ML_APP_CONFIG = {
+  cloudinary: {
+    enabled: true,
+    cloudName: 'dcrusohw7',
+    uploadPreset: 'monument_photos'
+  },
   airtable: {
     enabled: true,
     baseId: 'appDEGBJxfr14dLbn',
@@ -8,7 +13,6 @@ window.ML_APP_CONFIG = {
       ownerName: 'Owner Name',
       ownerId: 'Owner ID',
       plot: 'Plot',
-      photos: 'Photos',
       jobName: 'Job Name',
       date: 'Date',
       jobType: 'Job Type',
@@ -25,7 +29,11 @@ window.ML_APP_CONFIG = {
       jobTotal: 'Job Total',
       notes: 'Notes',
       detailsJson: 'Details JSON',
-      photoCount: 'Photo Count'
+      photoCount: 'Photo Count',
+      photos: 'Photos',
+      photoUrls: 'Photo URLs',
+      issueType: 'Issue Type',
+      issueNote: 'Issue Note'
     }
   }
 };
