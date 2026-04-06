@@ -7,6 +7,8 @@ window.ML_APP_CONFIG = {
     fields: {
       ownerName: 'Owner Name',
       ownerId: 'Owner ID',
+      plot: 'Plot',
+      photos: 'Photos',
       jobName: 'Job Name',
       date: 'Date',
       jobType: 'Job Type',
@@ -23,8 +25,7 @@ window.ML_APP_CONFIG = {
       jobTotal: 'Job Total',
       notes: 'Notes',
       detailsJson: 'Details JSON',
-      photoCount: 'Photo Count',
-      plot: 'Plot'
+      photoCount: 'Photo Count'
     }
   }
 };
