@@ -9,17 +9,20 @@ window.ML_APP_CONFIG = {
       ownerName: "Owner Name",
       ownerId: "Owner ID",
       plot: "Plot",
-  
+
       locationLabel: "Location Label",
       mapsUrl: "Maps URL",
-  
+
       status: "Status",
-  
+
       issueType: "Issue Type",
       issueNote: "Issue Note",
-  
+
       photoUrls: "Photo URLs",
-  
+      photos: "Photos",
+
+      areaSqFt: "Area Sq Ft",
+
       cleanML: "Clean ML",
       cleanTotal: "Clean Total",
       exteriorML: "Exterior ML",
@@ -27,7 +30,7 @@ window.ML_APP_CONFIG = {
       repointingLF: "Re-pointing LF",
       repointingML: "Re-pointing ML",
       repointingTotal: "Re-pointing Total",
-  
+
       flats: "Flats",
       slants: "Slants",
       jobTotal: "Job Total",
