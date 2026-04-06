@@ -15,703 +15,112 @@
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --bg: #0f1117;
-      --surface: #1a1d27;
-      --surface2: #22263a;
-      --border: #2e3350;
-      --accent: #3b82f6;
-      --accent2: #10b981;
-      --accent3: #8b5cf6;
-      --danger: #ef4444;
-      --text: #e8eaf6;
-      --muted: #8b93a7;
-      --clean: #10b981;
-      --ext: #3b82f6;
-      --lf: #8b5cf6;
-      --flat: #ef4444;
-      --final: #f59e0b;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding-bottom: 100px;
-    }
-
-    .app-container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 0 16px;
-    }
-
-    .header {
-      background: linear-gradient(135deg, #1a1d27 0%, #0f1117 100%);
-      padding: 20px 16px 16px;
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .header h1 {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: 1px;
-    }
-
-    .header h1 span {
-      color: var(--accent);
-    }
-
-    .header-sub {
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 2px;
-      letter-spacing: 0.5px;
-    }
-
-    .tab-nav {
-      display: flex;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 73px;
-      z-index: 99;
-    }
-
-    .tab-btn {
-      flex: 1;
-      padding: 12px 4px;
-      background: none;
-      border: none;
-      color: var(--muted);
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: .5px;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-    }
-
-    .tab-btn.active {
-      color: var(--accent);
-      border-bottom-color: var(--accent);
-    }
-
-    .page {
-      display: none;
-      padding: 16px;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-
-    .page.active {
-      display: block;
-    }
-
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 12px;
-      max-width: 900px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .card-title {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: var(--muted);
-      text-transform: uppercase;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-
-    .badge {
-      background: var(--accent);
-      color: white;
-      font-size: 10px;
-      padding: 2px 7px;
-      border-radius: 20px;
-      font-weight: 600;
-    }
-
-    .mode-toggle {
-      display: flex;
-      background: var(--bg);
-      border-radius: 8px;
-      padding: 3px;
-      border: 1px solid var(--border);
-      gap: 3px;
-    }
-
-    .mode-btn {
-      flex: 1;
-      padding: 8px;
-      border: none;
-      background: none;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 600;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    .mode-btn.active {
-      background: var(--accent);
-      color: white;
-    }
-
-    .field-row {
-      margin-bottom: 11px;
-    }
-
-    .field-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--muted);
-      letter-spacing: .5px;
-      text-transform: uppercase;
-      margin-bottom: 5px;
-    }
-
-    input[type="number"],
-    input[type="text"],
-    input[type="file"],
-    textarea,
-    select {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      font-size: 16px;
-      padding: 11px 13px;
-      outline: none;
-    }
-
-    textarea {
-      min-height: 80px;
-      resize: vertical;
-    }
-
-    input:focus,
-    textarea:focus,
-    select:focus {
-      border-color: var(--accent);
-    }
-
-    input::placeholder,
-    textarea::placeholder {
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .fi-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .piece-block {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
-      margin-bottom: 10px;
-    }
-
-    .piece-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
-    .piece-label {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--accent);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-
-    .piece-label.main {
-      color: var(--accent2);
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 11px 16px;
-      border: none;
-      border-radius: 8px;
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: .5px;
-      cursor: pointer;
-      text-decoration: none;
-    }
-
-    .btn:active {
-      transform: scale(.98);
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: white;
-    }
-
-    .btn-success {
-      background: var(--accent2);
-      color: white;
-    }
-
-    .btn-danger {
-      background: transparent;
-      border: 1px solid var(--danger);
-      color: var(--danger);
-      padding: 6px 12px;
-      font-size: 12px;
-    }
-
-    .btn-ghost {
-      background: var(--surface2);
-      color: var(--text);
-    }
-
-    .btn-sm {
-      padding: 6px 12px;
-      font-size: 12px;
-    }
-
-    .btn-full {
-      width: 100%;
-    }
-
-    .btn-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    .mult-toggle {
-      background: var(--surface2);
-      border: 1px dashed var(--border);
-      border-radius: 8px;
-      padding: 9px 13px;
-      font-size: 13px;
-      color: var(--muted);
-      cursor: pointer;
-      width: 100%;
-      text-align: left;
-      margin-bottom: 8px;
-    }
-
-    .mult-toggle.active {
-      border-color: var(--accent3);
-      color: var(--accent3);
-    }
-
-    .stepper {
-      display: flex;
-      align-items: center;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
-    .stepper-btn {
-      width: 44px;
-      height: 44px;
-      background: var(--surface2);
-      border: none;
-      color: var(--text);
-      font-size: 20px;
-      cursor: pointer;
-    }
-
-    .stepper input {
-      flex: 1;
-      text-align: center;
-      border: none;
-      border-radius: 0;
-      border-left: 1px solid var(--border);
-      border-right: 1px solid var(--border);
-      font-size: 18px;
-      padding: 10px 4px;
-    }
-
-    .result-section {
-      border-radius: 10px;
-      padding: 13px;
-      margin-bottom: 10px;
-      border-left: 3px solid;
-    }
-
-    .result-section.clean {
-      background: rgba(16,185,129,.08);
-      border-color: var(--clean);
-    }
-
-    .result-section.ext {
-      background: rgba(59,130,246,.08);
-      border-color: var(--ext);
-    }
-
-    .result-section.lf {
-      background: rgba(139,92,246,.08);
-      border-color: var(--lf);
-    }
-
-    .result-section.flat {
-      background: rgba(239,68,68,.08);
-      border-color: var(--flat);
-    }
-
-    .result-section.final {
-      background: rgba(245,158,11,.12);
-      border-color: var(--final);
-    }
-
-    .result-title {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-      opacity: .8;
-    }
-
-    .result-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      gap: 12px;
-      margin-bottom: 4px;
-    }
-
-    .result-key {
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .result-val {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 18px;
-      font-weight: 700;
-      text-align: right;
-    }
-
-    .green { color: var(--clean); }
-    .blue { color: var(--ext); }
-    .purple { color: var(--lf); }
-    .red { color: var(--flat); }
-    .gold { color: var(--final); }
-
-    .history-item {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 13px;
-      margin-bottom: 10px;
-    }
-
-    .history-name {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .history-date {
-      font-size: 11px;
-      color: var(--muted);
-      margin-bottom: 8px;
-    }
-
-    .history-totals {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-    }
-
-    .history-total-item {
-      background: var(--bg);
-      border-radius: 6px;
-      padding: 6px 10px;
-    }
-
-    .history-total-label {
-      font-size: 10px;
-      color: var(--muted);
-    }
-
-    .history-total-val {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--accent2);
-    }
-
-    .history-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-    }
-
-    .plot-group {
-      margin-bottom: 18px;
-    }
-
-    .plot-group-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: var(--accent);
-      margin: 10px 0 8px;
-      padding-bottom: 6px;
-      border-bottom: 1px solid var(--border);
-      max-width: 900px;
-      margin-left: auto;
-      margin-right: auto;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .plot-chevron {
-      font-size: 14px;
-      color: var(--muted);
-      margin-right: 8px;
-    }
-
-    .plot-group-body.hidden {
-      display: none;
-    }
-
-    .saved-toolbar {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .saved-toolbar input,
-    .saved-toolbar select {
-      width: 100%;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--muted);
-    }
-
-    .empty-state .icon {
-      font-size: 40px;
-      margin-bottom: 10px;
-    }
-
-    .empty-state p {
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    .action-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: var(--surface);
-      border-top: 1px solid var(--border);
-      padding: 12px 16px;
-      display: flex;
-      gap: 10px;
-      z-index: 200;
-    }
-
-    .action-bar .btn {
-      flex: 1;
-    }
-
-    .toast {
-      position: fixed;
-      top: 80px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-10px);
-      background: var(--accent2);
-      color: white;
-      padding: 10px 20px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
-      opacity: 0;
-      pointer-events: none;
-      transition: all .3s;
-      z-index: 999;
-      max-width: calc(100vw - 32px);
-      text-align: center;
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    .install-hint, .status-card {
-      border-radius: 10px;
-      padding: 12px;
-      font-size: 12px;
-      line-height: 1.5;
-      margin-bottom: 14px;
-    }
-
-    .install-hint {
-      background: var(--surface2);
-      border: 1px dashed var(--border);
-      color: var(--muted);
-    }
-
-    .install-hint strong {
-      color: var(--accent);
-    }
-
-    .status-card {
-      background: rgba(59,130,246,.08);
-      border: 1px solid rgba(59,130,246,.2);
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .photo-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .photo-item {
-      position: relative;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      overflow: hidden;
-      aspect-ratio: 1 / 1;
-    }
-
-    .photo-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .photo-remove {
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      width: 28px;
-      height: 28px;
-      border: none;
-      border-radius: 999px;
-      background: rgba(15,17,23,.85);
-      color: white;
-      cursor: pointer;
-    }
-
-    .sync-pill {
-      font-size: 11px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      color: var(--muted);
-    }
-
-    .sync-pill.ok {
-      color: var(--accent2);
-      border-color: rgba(16,185,129,.4);
-    }
-
-    .sync-pill.warn {
-      color: #f59e0b;
-      border-color: rgba(245,158,11,.4);
-    }
-
-    .section-note {
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.5;
-      margin-top: 8px;
-    }
-
-    #resultsInner {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    @media (max-width: 380px) {
-      .result-row {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .result-val {
-        text-align: left;
-      }
-
-      .history-totals,
-      .btn-row,
-      .saved-toolbar {
-        grid-template-columns: 1fr;
-      }
-
-      .photo-grid {
-        grid-template-columns: repeat(2,1fr);
-      }
-    }
-
-    @media (min-width: 900px) {
-      body {
-        padding-top: 20px;
-      }
-
-      .card {
-        padding: 18px;
-      }
+      --bg:#0f1117; --surface:#1a1d27; --surface2:#22263a; --border:#2e3350;
+      --accent:#3b82f6; --accent2:#10b981; --accent3:#8b5cf6; --danger:#ef4444;
+      --text:#e8eaf6; --muted:#8b93a7; --clean:#10b981; --ext:#3b82f6; --lf:#8b5cf6;
+      --flat:#ef4444; --final:#f59e0b;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:100px}
+    .app-container{max-width:1100px;margin:0 auto;padding:0 16px}
+    .header{background:linear-gradient(135deg,#1a1d27 0%,#0f1117 100%);padding:20px 16px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+    .header h1{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;letter-spacing:1px}
+    .header h1 span{color:var(--accent)}
+    .header-sub{font-size:11px;color:var(--muted);margin-top:2px;letter-spacing:.5px}
+    .tab-nav{display:flex;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:73px;z-index:99}
+    .tab-btn{flex:1;padding:12px 4px;background:none;border:none;color:var(--muted);font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;cursor:pointer;border-bottom:2px solid transparent}
+    .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+    .page{display:none;padding:16px;max-width:1000px;margin:0 auto}
+    .page.active{display:block}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;max-width:900px;margin-left:auto;margin-right:auto}
+    .card-title{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .badge{background:var(--accent);color:#fff;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600}
+    .mode-toggle{display:flex;background:var(--bg);border-radius:8px;padding:3px;border:1px solid var(--border);gap:3px}
+    .mode-btn{flex:1;padding:8px;border:none;background:none;color:var(--muted);font-size:13px;font-weight:600;border-radius:6px;cursor:pointer}
+    .mode-btn.active{background:var(--accent);color:#fff}
+    .field-row{margin-bottom:11px}
+    .field-label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:5px}
+    input[type="number"],input[type="text"],input[type="file"],textarea,select{
+      width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);
+      font-family:'Inter',sans-serif;font-size:16px;padding:11px 13px;outline:none
+    }
+    textarea{min-height:80px;resize:vertical}
+    input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+    input::placeholder,textarea::placeholder{color:var(--muted);font-size:14px}
+    .fi-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .piece-block{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px}
+    .piece-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+    .piece-label{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--accent);letter-spacing:1px;text-transform:uppercase}
+    .piece-label.main{color:var(--accent2)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 16px;border:none;border-radius:8px;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;letter-spacing:.5px;cursor:pointer;text-decoration:none}
+    .btn:active{transform:scale(.98)}
+    .btn-primary{background:var(--accent);color:#fff}
+    .btn-success{background:var(--accent2);color:#fff}
+    .btn-danger{background:transparent;border:1px solid var(--danger);color:var(--danger);padding:6px 12px;font-size:12px}
+    .btn-ghost{background:var(--surface2);color:var(--text)}
+    .btn-sm{padding:6px 12px;font-size:12px}
+    .btn-full{width:100%}
+    .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+    .mult-toggle{background:var(--surface2);border:1px dashed var(--border);border-radius:8px;padding:9px 13px;font-size:13px;color:var(--muted);cursor:pointer;width:100%;text-align:left;margin-bottom:8px}
+    .mult-toggle.active{border-color:var(--accent3);color:var(--accent3)}
+    .stepper{display:flex;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+    .stepper-btn{width:44px;height:44px;background:var(--surface2);border:none;color:var(--text);font-size:20px;cursor:pointer}
+    .stepper input{flex:1;text-align:center;border:none;border-radius:0;border-left:1px solid var(--border);border-right:1px solid var(--border);font-size:18px;padding:10px 4px}
+    .result-section{border-radius:10px;padding:13px;margin-bottom:10px;border-left:3px solid}
+    .result-section.clean{background:rgba(16,185,129,.08);border-color:var(--clean)}
+    .result-section.ext{background:rgba(59,130,246,.08);border-color:var(--ext)}
+    .result-section.lf{background:rgba(139,92,246,.08);border-color:var(--lf)}
+    .result-section.flat{background:rgba(239,68,68,.08);border-color:var(--flat)}
+    .result-section.final{background:rgba(245,158,11,.12);border-color:var(--final)}
+    .result-title{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;opacity:.8}
+    .result-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:4px}
+    .result-key{font-size:13px;color:var(--muted)}
+    .result-val{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;text-align:right}
+    .green{color:var(--clean)} .blue{color:var(--ext)} .purple{color:var(--lf)} .red{color:var(--flat)} .gold{color:var(--final)}
+    .history-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:10px}
+    .history-name{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;margin-bottom:4px}
+    .history-date{font-size:11px;color:var(--muted);margin-bottom:8px}
+    .history-totals{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+    .history-total-item{background:var(--bg);border-radius:6px;padding:6px 10px}
+    .history-total-label{font-size:10px;color:var(--muted)}
+    .history-total-val{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;color:var(--accent2)}
+    .history-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .plot-group{margin-bottom:18px}
+    .plot-group-title{display:flex;align-items:center;justify-content:space-between;gap:8px;font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;letter-spacing:1px;color:var(--accent);margin:10px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border);max-width:900px;margin-left:auto;margin-right:auto;cursor:pointer;user-select:none}
+    .plot-chevron{font-size:14px;color:var(--muted);margin-right:8px}
+    .plot-group-body.hidden{display:none}
+    .saved-toolbar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+    .saved-toolbar input,.saved-toolbar select{width:100%}
+    .empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
+    .empty-state .icon{font-size:40px;margin-bottom:10px}
+    .empty-state p{font-size:14px;line-height:1.6}
+    .action-bar{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 16px;display:flex;gap:10px;z-index:200}
+    .action-bar .btn{flex:1}
+    .toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-10px);background:var(--accent2);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;z-index:999;max-width:calc(100vw - 32px);text-align:center}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .install-hint,.status-card{border-radius:10px;padding:12px;font-size:12px;line-height:1.5;margin-bottom:14px}
+    .install-hint{background:var(--surface2);border:1px dashed var(--border);color:var(--muted)}
+    .install-hint strong{color:var(--accent)}
+    .status-card{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2)}
+    .hidden{display:none !important}
+    .photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+    .photo-item{position:relative;background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;aspect-ratio:1/1}
+    .photo-item img{width:100%;height:100%;object-fit:cover;display:block}
+    .photo-remove{position:absolute;top:6px;right:6px;width:28px;height:28px;border:none;border-radius:999px;background:rgba(15,17,23,.85);color:#fff;cursor:pointer}
+    .sync-pill{font-size:11px;padding:4px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted)}
+    .sync-pill.ok{color:var(--accent2);border-color:rgba(16,185,129,.4)}
+    .sync-pill.warn{color:#f59e0b;border-color:rgba(245,158,11,.4)}
+    .section-note{font-size:12px;color:var(--muted);line-height:1.5;margin-top:8px}
+    #resultsInner{max-width:900px;margin:0 auto}
+    @media (max-width:380px){
+      .result-row{flex-direction:column;align-items:flex-start}
+      .result-val{text-align:left}
+      .history-totals,.btn-row,.saved-toolbar{grid-template-columns:1fr}
+      .photo-grid{grid-template-columns:repeat(2,1fr)}
+    }
+    @media (min-width:900px){
+      body{padding-top:20px}
+      .card{padding:18px}
     }
   </style>
 </head>
@@ -842,11 +251,21 @@
 
     <div class="card">
       <div class="card-title">Photos <span class="badge" id="photoCount">0</span></div>
+
       <div class="field-row">
         <div class="field-label">Add up to 3 photos</div>
-        <input type="file" id="photoInput" accept="image/*" capture="environment" multiple />
-        <div class="section-note">Photos save in the app and JSON backup. They are not included in the CSV export.</div>
+
+        <div class="btn-row">
+          <button type="button" class="btn btn-primary" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
+          <button type="button" class="btn btn-ghost" onclick="document.getElementById('photoLibraryInput').click()">🖼 Choose From Library</button>
+        </div>
+
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden"/>
+        <input type="file" id="photoLibraryInput" accept="image/*" multiple class="hidden"/>
+
+        <div class="section-note">Photos upload to Airtable and show on your other devices after save.</div>
       </div>
+
       <div class="photo-grid" id="photoGrid"></div>
     </div>
 
@@ -926,7 +345,7 @@ const DEFAULT_PLOTS = [
 let mode = 'inches';
 let jobType = 'Monument';
 let pieces = [];
-let photos = [];
+let photos = []; // local pending: {name,type,dataUrl}; remote: {id,url,filename}
 let pieceIdCounter = 0;
 let lastResults = null;
 let storageReady = false;
@@ -960,21 +379,12 @@ function canUseStorage() {
 
 function safeLocalGet(key) {
   if (!storageReady) return null;
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
+  try { return localStorage.getItem(key); } catch { return null; }
 }
 
 function safeLocalSet(key, value) {
   if (!storageReady) return false;
-  try {
-    localStorage.setItem(key, value);
-    return true;
-  } catch {
-    return false;
-  }
+  try { localStorage.setItem(key, value); return true; } catch { return false; }
 }
 
 function getPlots() {
@@ -1017,16 +427,11 @@ function togglePlotEditor() {
 function addPlotOption() {
   const input = document.getElementById('newPlotInput');
   const value = (input.value || '').trim();
-
-  if (!value) {
-    showToast('Enter a plot name');
-    return;
-  }
+  if (!value) return showToast('Enter a plot name');
 
   const plots = getPlots();
   if (plots.some(p => p.toLowerCase() === value.toLowerCase())) {
-    showToast('Plot already exists');
-    return;
+    return showToast('Plot already exists');
   }
 
   plots.push(value);
@@ -1040,11 +445,7 @@ function addPlotOption() {
 function removeSelectedPlot() {
   const select = document.getElementById('plotSelect');
   const value = (select.value || '').trim();
-
-  if (!value) {
-    showToast('Select a plot first');
-    return;
-  }
+  if (!value) return showToast('Select a plot first');
 
   const plots = getPlots().filter(p => p !== value);
   savePlots(plots);
@@ -1065,9 +466,7 @@ function renderSavedPlotFilterOptions() {
 
   const jobs = getLocalJobs();
   const plotNames = Array.from(
-    new Set(
-      jobs.map(job => (job.snapshot?.plot || 'Unassigned Plot').trim() || 'Unassigned Plot')
-    )
+    new Set(jobs.map(job => (job.snapshot?.plot || 'Unassigned Plot').trim() || 'Unassigned Plot'))
   ).sort((a, b) => a.localeCompare(b));
 
   const current = select.value || '';
@@ -1256,7 +655,6 @@ function getPieceDims(id) {
 
 function getCombinedMeasurements() {
   let total = { length: 0, width: 0, height: 0 };
-
   pieces.forEach((p) => {
     const dims = getPieceDims(p.id);
     const mult = parseInt(dims.mult, 10) || 1;
@@ -1264,7 +662,6 @@ function getCombinedMeasurements() {
     total.width += dims.w * mult;
     total.height += dims.h * mult;
   });
-
   return total;
 }
 
@@ -1283,13 +680,7 @@ function calculateML() {
 
   const hasDimensions = length > 0 && width > 0 && height > 0;
 
-  let totalSqInches = 0;
-  let totalSqFt = 0;
-  let mlClean = 0;
-  let priceClean = 0;
-  let cleanLabel = '';
-  let mlExt = 0;
-  let priceExt = 0;
+  let totalSqInches = 0, totalSqFt = 0, mlClean = 0, priceClean = 0, cleanLabel = '', mlExt = 0, priceExt = 0;
 
   if (hasDimensions) {
     const top = length * width;
@@ -1434,14 +825,16 @@ function getCurrentSnapshot() {
     numFlats: parseInt(document.getElementById('numFlats').value || '0', 10) || 0,
     numSlants: parseInt(document.getElementById('numSlants').value || '0', 10) || 0,
     pieces: pieces.map(p => ({ ...getPieceDims(p.id), isMain: p.isMain })),
-    photos: photos
+    photos: photos.map(p => {
+      if (p.url) return { id: p.id || '', url: p.url, filename: p.filename || p.name || '' };
+      return { name: p.name || '', type: p.type || '', dataUrl: p.dataUrl || '' };
+    })
   };
 }
 
 function makeJobRecord(existingRecordId = '') {
   const snapshot = getCurrentSnapshot();
   const displayName = `${snapshot.ownerName} ${snapshot.ownerId}`.trim();
-
   return {
     id: existingRecordId || ('local-' + Date.now()),
     airtableRecordId: existingRecordId || '',
@@ -1453,26 +846,19 @@ function makeJobRecord(existingRecordId = '') {
 }
 
 async function saveJob() {
-  if (!lastResults) {
-    showToast('Calculate first');
-    return;
-  }
+  if (!lastResults) return showToast('Calculate first');
 
   const ownerName = document.getElementById('ownerName')?.value.trim();
   const ownerId = document.getElementById('ownerId')?.value.trim();
   const plot = document.getElementById('plotSelect')?.value.trim();
 
-  if (!ownerName || !ownerId) {
-    showToast('Owner Name and ID required');
-    return;
-  }
-
-  if (!plot) {
-    showToast('Select a plot');
-    return;
-  }
+  if (!ownerName || !ownerId) return showToast('Owner Name and ID required');
+  if (!plot) return showToast('Select a plot');
 
   saveLastSelectedPlot(plot);
+
+  const pendingPhotoCount = photos.filter(p => p.dataUrl).length;
+  if (pendingPhotoCount > 3) return showToast('You can save up to 3 photos');
 
   const job = makeJobRecord();
   let savedToAirtable = false;
@@ -1481,6 +867,18 @@ async function saveJob() {
     try {
       const recordId = await airtableCreateRecord(job);
       job.airtableRecordId = recordId || '';
+
+      if (recordId && pendingPhotoCount > 0) {
+        const uploaded = await airtableUploadPhotos(recordId, photos.filter(p => p.dataUrl));
+        photos = uploaded.map(att => ({
+          id: att.id || '',
+          url: att.url || '',
+          filename: att.filename || ''
+        }));
+        job.snapshot.photos = [...photos];
+        job.snapshot.photoCount = photos.length;
+      }
+
       savedToAirtable = true;
     } catch (err) {
       console.error(err);
@@ -1488,16 +886,14 @@ async function saveJob() {
     }
   }
 
+  job.snapshot.photos = photos.map(p => p.url ? ({ id:p.id || '', url:p.url, filename:p.filename || '' }) : ({ name:p.name || '', type:p.type || '', dataUrl:p.dataUrl || '' }));
   await cacheMergedJob(job);
   document.getElementById('saveBtn').style.display = 'none';
   await renderHistory();
   resetCalculator();
 
-  if (savedToAirtable) {
-    showToast('Saved to Airtable & cleared');
-  } else {
-    showToast('Saved locally & cleared');
-  }
+  if (savedToAirtable) showToast('Saved to Airtable & cleared');
+  else showToast('Saved locally & cleared');
 }
 
 async function cacheMergedJob(job) {
@@ -1508,30 +904,23 @@ async function cacheMergedJob(job) {
 }
 
 function getLocalJobs() {
-  try {
-    return JSON.parse(safeLocalGet(STORAGE_KEY) || '[]') || [];
-  } catch {
-    return [];
-  }
+  try { return JSON.parse(safeLocalGet(STORAGE_KEY) || '[]') || []; } catch { return []; }
 }
 
 function mergeJobs(localJobs, remoteJobs) {
   const merged = [];
   const seen = new Set();
-
   [...remoteJobs, ...localJobs].forEach(job => {
     const key = job.airtableRecordId || job.id;
     if (!key || seen.has(key)) return;
     seen.add(key);
     merged.push(job);
   });
-
   return merged.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 }
 
 async function getJobs() {
   const localJobs = getLocalJobs();
-
   if (airtableReady() && navigator.onLine) {
     try {
       const remote = await airtableFetchJobs();
@@ -1543,7 +932,6 @@ async function getJobs() {
       return localJobs;
     }
   }
-
   return localJobs;
 }
 
@@ -1553,11 +941,7 @@ async function deleteJob(id, event) {
   const job = jobs.find(j => j.id === id);
 
   if (job?.airtableRecordId && airtableReady()) {
-    try {
-      await airtableDeleteRecord(job.airtableRecordId);
-    } catch (err) {
-      console.error(err);
-    }
+    try { await airtableDeleteRecord(job.airtableRecordId); } catch (err) { console.error(err); }
   }
 
   safeLocalSet(STORAGE_KEY, JSON.stringify(jobs.filter(j => j.id !== id)));
@@ -1568,22 +952,13 @@ async function deleteJob(id, event) {
 
 async function clearAllJobs() {
   const jobs = await getJobs();
-
-  if (!jobs.length) {
-    showToast('No saved jobs to delete');
-    return;
-  }
-
+  if (!jobs.length) return showToast('No saved jobs to delete');
   if (!window.confirm('Delete all saved jobs? This cannot be undone.')) return;
 
   if (airtableReady()) {
     for (const job of jobs) {
       if (job.airtableRecordId) {
-        try {
-          await airtableDeleteRecord(job.airtableRecordId);
-        } catch (err) {
-          console.error(err);
-        }
+        try { await airtableDeleteRecord(job.airtableRecordId); } catch (err) { console.error(err); }
       }
     }
   }
@@ -1604,7 +979,7 @@ function loadJob(id, event) {
   const snap = job.snapshot || {};
   mode = snap.mode || 'inches';
   jobType = snap.jobType || 'Monument';
-  photos = Array.isArray(snap.photos) ? snap.photos : [];
+  photos = Array.isArray(snap.photos) ? snap.photos.map(p => p.url ? ({ id:p.id || '', url:p.url, filename:p.filename || '' }) : ({ name:p.name || '', type:p.type || '', dataUrl:p.dataUrl || '' })) : [];
 
   document.getElementById('modeInches').classList.toggle('active', mode === 'inches');
   document.getElementById('modeFeet').classList.toggle('active', mode === 'feetInches');
@@ -1624,7 +999,6 @@ function loadJob(id, event) {
   renderPhotoGrid();
 
   lastResults = job.results || null;
-
   if (lastResults) {
     document.getElementById('resultsContainer').classList.remove('hidden');
     renderResults(lastResults);
@@ -1642,8 +1016,7 @@ async function renderHistory() {
   const container = document.getElementById('historyContainer');
 
   if (!storageReady) {
-    container.innerHTML =
-      '<div class="empty-state"><div class="icon">⚠️</div><p>Saved jobs can break when this file is opened directly from Files.<br>Use the hosted PWA version.</p></div>';
+    container.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>Saved jobs can break when this file is opened directly from Files.<br>Use the hosted PWA version.</p></div>';
     return;
   }
 
@@ -1651,30 +1024,26 @@ async function renderHistory() {
   renderSavedPlotFilterOptions();
 
   if (!jobs.length) {
-    container.innerHTML =
-      '<div class="empty-state"><div class="icon">📋</div><p>No saved jobs yet.<br>Calculate and save a job to see it here.</p></div>';
+    container.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>No saved jobs yet.<br>Calculate and save a job to see it here.</p></div>';
     return;
   }
 
   const selectedPlot = (document.getElementById('savedPlotFilter')?.value || '').trim();
   const searchTerm = (document.getElementById('savedSearch')?.value || '').trim().toLowerCase();
 
-  let filteredJobs = jobs.filter(job => {
+  const filteredJobs = jobs.filter(job => {
     const snap = job.snapshot || {};
     const plot = (snap.plot || 'Unassigned Plot').trim() || 'Unassigned Plot';
     const ownerName = (snap.ownerName || '').toLowerCase();
     const ownerId = (snap.ownerId || '').toLowerCase();
     const combined = `${ownerName} ${ownerId}`.trim();
-
     const plotMatch = !selectedPlot || plot === selectedPlot;
     const searchMatch = !searchTerm || ownerName.includes(searchTerm) || ownerId.includes(searchTerm) || combined.includes(searchTerm);
-
     return plotMatch && searchMatch;
   });
 
   if (!filteredJobs.length) {
-    container.innerHTML =
-      '<div class="empty-state"><div class="icon">🔍</div><p>No jobs matched your filter or search.</p></div>';
+    container.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>No jobs matched your filter or search.</p></div>';
     return;
   }
 
@@ -1686,10 +1055,7 @@ async function renderHistory() {
   });
 
   const plotNames = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
-
-  if (!openPlotName || !plotNames.includes(openPlotName)) {
-    openPlotName = plotNames[0];
-  }
+  if (!openPlotName || !plotNames.includes(openPlotName)) openPlotName = plotNames[0];
 
   container.innerHTML = plotNames.map(plotName => {
     const plotJobs = grouped[plotName];
@@ -1698,10 +1064,7 @@ async function renderHistory() {
     return `
       <div class="plot-group">
         <div class="plot-group-title" onclick="togglePlotSection('${escapeJs(plotName)}')">
-          <span>
-            <span class="plot-chevron">${isOpen ? '▼' : '▶'}</span>
-            ${escapeHtml(plotName)}
-          </span>
+          <span><span class="plot-chevron">${isOpen ? '▼' : '▶'}</span>${escapeHtml(plotName)}</span>
           <span class="badge">${plotJobs.length}</span>
         </div>
 
@@ -1710,21 +1073,11 @@ async function renderHistory() {
             const r = job.results || {};
             const snap = job.snapshot || {};
             const date =
-              new Date(job.date).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric'
-              }) +
+              new Date(job.date).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) +
               ' • ' +
-              new Date(job.date).toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit'
-              });
+              new Date(job.date).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
 
-            const displayName =
-              (((snap.ownerName || '') + ' ' + (snap.ownerId || '')).trim()) ||
-              job.name ||
-              'Unnamed Job';
+            const displayName = (((snap.ownerName || '') + ' ' + (snap.ownerId || '')).trim()) || job.name || 'Unnamed Job';
 
             return `
               <div class="history-item">
@@ -1734,47 +1087,22 @@ async function renderHistory() {
                 <div class="history-totals">
                   ${
                     (snap.jobType || 'Monument') === 'Monument'
-                      ? `
-                        <div class="history-total-item">
-                          <div class="history-total-label">Clean ML</div>
-                          <div class="history-total-val">${Number(r.mlClean || 0).toFixed(2)}</div>
-                        </div>
-                        <div class="history-total-item">
-                          <div class="history-total-label">Clean Total</div>
-                          <div class="history-total-val">$${Number(r.priceClean || 0).toFixed(2)}</div>
-                        </div>
-                      `
-                      : `
-                        <div class="history-total-item">
-                          <div class="history-total-label">Exterior ML</div>
-                          <div class="history-total-val">${Number(r.mlExt || 0).toFixed(2)}</div>
-                        </div>
-                        <div class="history-total-item">
-                          <div class="history-total-label">Exterior Total</div>
-                          <div class="history-total-val">$${Number(r.priceExt || 0).toFixed(2)}</div>
-                        </div>
-                      `
+                    ? `
+                      <div class="history-total-item"><div class="history-total-label">Clean ML</div><div class="history-total-val">${Number(r.mlClean || 0).toFixed(2)}</div></div>
+                      <div class="history-total-item"><div class="history-total-label">Clean Total</div><div class="history-total-val">$${Number(r.priceClean || 0).toFixed(2)}</div></div>
+                    `
+                    : `
+                      <div class="history-total-item"><div class="history-total-label">Exterior ML</div><div class="history-total-val">${Number(r.mlExt || 0).toFixed(2)}</div></div>
+                      <div class="history-total-item"><div class="history-total-label">Exterior Total</div><div class="history-total-val">$${Number(r.priceExt || 0).toFixed(2)}</div></div>
+                    `
                   }
 
-                  <div class="history-total-item">
-                    <div class="history-total-label">Flats / Slants</div>
-                    <div class="history-total-val">${Number(r.numFlats || 0)} / ${Number(r.numSlants || 0)}</div>
-                  </div>
+                  <div class="history-total-item"><div class="history-total-label">Flats / Slants</div><div class="history-total-val">${Number(r.numFlats || 0)} / ${Number(r.numSlants || 0)}</div></div>
 
                   ${
                     (snap.jobType || 'Monument') === 'Mausoleum'
-                      ? `
-                        <div class="history-total-item">
-                          <div class="history-total-label">Re-pointing</div>
-                          <div class="history-total-val">$${Number(r.priceLF || 0).toFixed(2)}</div>
-                        </div>
-                      `
-                      : `
-                        <div class="history-total-item">
-                          <div class="history-total-label">Job Total</div>
-                          <div class="history-total-val">$${Number(r.finalTotal || 0).toFixed(2)}</div>
-                        </div>
-                      `
+                    ? `<div class="history-total-item"><div class="history-total-label">Re-pointing</div><div class="history-total-val">$${Number(r.priceLF || 0).toFixed(2)}</div></div>`
+                    : `<div class="history-total-item"><div class="history-total-label">Job Total</div><div class="history-total-val">$${Number(r.finalTotal || 0).toFixed(2)}</div></div>`
                   }
                 </div>
 
@@ -1821,25 +1149,35 @@ function resetCalculator() {
 }
 
 function bindPhotos() {
-  document.getElementById('photoInput').addEventListener('change', async (e) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
-    const remaining = Math.max(0, 3 - photos.length);
+  const cameraInput = document.getElementById('cameraInput');
+  const libraryInput = document.getElementById('photoLibraryInput');
 
-    if (remaining <= 0) {
-      showToast('You can save up to 3 photos');
-      e.target.value = '';
-      return;
-    }
+  async function handleFiles(fileList) {
+    const files = Array.from(fileList || []);
+    if (!files.length) return;
+
+    const remaining = Math.max(0, 3 - photos.length);
+    if (remaining <= 0) return showToast('You can save up to 3 photos');
 
     const selected = files.slice(0, remaining);
-
     for (const file of selected) {
-      const compressed = await compressImage(file, 1200, .72);
-      photos.push({ name: file.name, type: file.type, dataUrl: compressed });
+      const compressed = await compressImage(file, 1600, 0.72);
+      photos.push({
+        name: compressed.filename,
+        type: compressed.type,
+        dataUrl: compressed.dataUrl
+      });
     }
-
     renderPhotoGrid();
+  }
+
+  cameraInput.addEventListener('change', async (e) => {
+    await handleFiles(e.target.files);
+    e.target.value = '';
+  });
+
+  libraryInput.addEventListener('change', async (e) => {
+    await handleFiles(e.target.files);
     e.target.value = '';
   });
 }
@@ -1847,9 +1185,11 @@ function bindPhotos() {
 function renderPhotoGrid() {
   const grid = document.getElementById('photoGrid');
   document.getElementById('photoCount').textContent = photos.length;
-  grid.innerHTML = photos.map((p, i) =>
-    `<div class="photo-item"><img src="${p.dataUrl}" alt="Photo ${i+1}"/><button class="photo-remove" onclick="removePhoto(${i})">✕</button></div>`
-  ).join('');
+  grid.innerHTML = photos.map((p, i) => {
+    const src = p.dataUrl || p.url || '';
+    const name = p.filename || p.name || `Photo ${i + 1}`;
+    return `<div class="photo-item"><img src="${src}" alt="${escapeHtml(name)}"/><button class="photo-remove" onclick="removePhoto(${i})">✕</button></div>`;
+  }).join('');
 }
 
 function removePhoto(index) {
@@ -1869,7 +1209,12 @@ function compressImage(file, maxSide, quality) {
         canvas.height = Math.round(img.height * ratio);
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL('image/jpeg', quality));
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve({
+          dataUrl,
+          type: 'image/jpeg',
+          filename: (file.name || 'photo').replace(/\.[^.]+$/, '') + '.jpg'
+        });
       };
       img.onerror = reject;
       img.src = reader.result;
@@ -1881,10 +1226,7 @@ function compressImage(file, maxSide, quality) {
 
 function exportBackup() {
   const jobs = getLocalJobs();
-  if (!jobs.length) {
-    showToast('No saved jobs to export');
-    return;
-  }
+  if (!jobs.length) return showToast('No saved jobs to export');
   downloadBlob(new Blob([JSON.stringify(jobs, null, 2)], { type:'application/json' }), 'ml-monument-saved-jobs-backup.json');
   showToast('Backup exported');
 }
@@ -1923,10 +1265,7 @@ function csvEscape(value) {
 
 function exportCsv() {
   const jobs = getLocalJobs();
-  if (!jobs.length) {
-    showToast('No saved jobs to export');
-    return;
-  }
+  if (!jobs.length) return showToast('No saved jobs to export');
 
   const headers = [
     'Saved At','Owner Name','Owner ID','Plot','Job Name','Job Type','Mode',
@@ -1940,7 +1279,6 @@ function exportCsv() {
   const rows = jobs.map(job => {
     const snap = job.snapshot || {};
     const r = job.results || {};
-
     return [
       job.date || '',
       snap.ownerName || '',
@@ -2013,13 +1351,7 @@ function showToast(msg) {
 }
 
 function escapeHtml(str) {
-  return String(str).replace(/[&<>"']/g, m => ({
-    '&':'&amp;',
-    '<':'&lt;',
-    '>':'&gt;',
-    '"':'&quot;',
-    "'":'&#39;'
-  }[m]));
+  return String(str).replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
 }
 
 function escapeJs(str) {
@@ -2049,10 +1381,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 document.getElementById('installBtn').addEventListener('click', async () => {
-  if (!deferredPrompt) {
-    showToast('On iPhone: Share → Add to Home Screen');
-    return;
-  }
+  if (!deferredPrompt) return showToast('On iPhone: Share → Add to Home Screen');
   deferredPrompt.prompt();
   await deferredPrompt.userChoice;
   deferredPrompt = null;
@@ -2087,6 +1416,7 @@ function getFieldMap() {
     ownerName: 'Owner Name',
     ownerId: 'Owner ID',
     plot: 'Plot',
+    photos: 'Photos',
     jobName: 'Job Name',
     date: 'Date',
     jobType: 'Job Type',
@@ -2110,12 +1440,21 @@ function getFieldMap() {
 function airtableHeaders() {
   return {
     'Authorization': 'Bearer ' + CONFIG.airtable.personalAccessToken,
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
   };
 }
 
 function airtableUrl() {
   return `https://api.airtable.com/v0/${CONFIG.airtable.baseId}/${encodeURIComponent(CONFIG.airtable.tableName)}`;
+}
+
+function airtableUploadUrl(recordId, attachmentFieldIdOrName) {
+  return `https://content.airtable.com/v0/${CONFIG.airtable.baseId}/${recordId}/${encodeURIComponent(attachmentFieldIdOrName)}/uploadAttachment`;
+}
+
+function dataUrlToBase64(dataUrl) {
+  return dataUrl.split(',')[1] || '';
 }
 
 function toAirtableFields(job) {
@@ -2143,15 +1482,17 @@ function toAirtableFields(job) {
     [f.slants]: Number(r.numSlants || 0),
     [f.jobTotal]: Number(r.finalTotal || 0),
     [f.notes]: snap.notes || '',
+    [f.photoCount]: Array.isArray(snap.photos) ? snap.photos.length : 0,
     [f.detailsJson]: JSON.stringify({
       ...job,
       snapshot: {
         ...snap,
-        photos: [],
+        photos: Array.isArray(snap.photos)
+          ? snap.photos.map(p => p.url ? ({ id:p.id || '', url:p.url, filename:p.filename || '' }) : ({ name:p.name || '', type:p.type || '', dataUrl:p.dataUrl || '' }))
+          : [],
         photoCount: Array.isArray(snap.photos) ? snap.photos.length : 0
       }
-    }),
-    [f.photoCount]: Array.isArray(snap.photos) ? snap.photos.length : 0
+    })
   };
 }
 
@@ -2173,6 +1514,38 @@ async function airtableCreateRecord(job) {
 
   const data = await res.json();
   return data.records?.[0]?.id || '';
+}
+
+async function airtableUploadPhotos(recordId, localPhotos) {
+  const field = (getFieldMap().photos || 'Photos');
+  let latestAttachments = [];
+
+  for (const photo of localPhotos) {
+    const base64 = dataUrlToBase64(photo.dataUrl);
+    const res = await fetch(airtableUploadUrl(recordId, field), {
+      method: 'POST',
+      headers: airtableHeaders(),
+      body: JSON.stringify({
+        file: base64,
+        filename: photo.name || 'photo.jpg',
+        contentType: photo.type || 'image/jpeg'
+      })
+    });
+
+    if (!res.ok) {
+      let detail = '';
+      try {
+        const data = await res.json();
+        detail = data?.error?.message || data?.error?.type || JSON.stringify(data);
+      } catch {}
+      throw new Error(detail ? ('Photo upload failed: ' + detail) : 'Photo upload failed');
+    }
+
+    const data = await res.json();
+    latestAttachments = data?.fields?.[field] || latestAttachments;
+  }
+
+  return latestAttachments;
 }
 
 async function airtableDeleteRecord(recordId) {
@@ -2212,6 +1585,12 @@ async function airtableFetchJobs() {
       if (fields[f.detailsJson]) parsed = JSON.parse(fields[f.detailsJson]);
     } catch {}
 
+    const attachments = Array.isArray(fields[f.photos]) ? fields[f.photos].map(att => ({
+      id: att.id || '',
+      url: att.url || '',
+      filename: att.filename || ''
+    })) : [];
+
     const job = parsed && parsed.snapshot ? parsed : {
       id: 'at-' + record.id,
       name: fields[f.jobName] || 'Unnamed Job',
@@ -2227,7 +1606,7 @@ async function airtableFetchJobs() {
         numFlats: Number(fields[f.flats] || 0),
         numSlants: Number(fields[f.slants] || 0),
         pieces: [],
-        photos: []
+        photos: attachments
       },
       results: {
         jobType: fields[f.jobType] || 'Monument',
@@ -2248,6 +1627,8 @@ async function airtableFetchJobs() {
       }
     };
 
+    job.snapshot = job.snapshot || {};
+    if (!Array.isArray(job.snapshot.photos) || !job.snapshot.photos.length) job.snapshot.photos = attachments;
     job.airtableRecordId = record.id;
     if (!job.id) job.id = 'at-' + record.id;
     return job;
