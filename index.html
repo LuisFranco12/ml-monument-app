@@ -685,7 +685,6 @@ function renderAll() {
 
 function renderHomePage() {
   const page = document.getElementById('page-home');
-  const filtered = getFilteredHomeRecords();
   const recent = recordsCache.slice(0, 6);
   page.innerHTML = `
     <div class="card section">
@@ -699,16 +698,11 @@ function renderHomePage() {
       <div class="toolbar">
         <div class="search-wrap">
           <span>🔎</span>
-          <input type="text" placeholder="Search Owner Name or Owner ID" value="${escapeHtml(currentSearch)}" oninput="setHomeSearch(this.value)"/>
+          <input id="homeSearchInput" type="text" placeholder="Search Owner Name or Owner ID" value="${escapeHtml(currentSearch)}" oninput="setHomeSearch(this.value)"/>
         </div>
         <button class="btn btn-secondary" onclick="clearHomeSearch()">Recent</button>
       </div>
-      ${currentSearch.trim() ? `
-        <div style="margin-top:18px;">
-          <div class="list">
-            ${filtered.length ? filtered.map(renderRecordRow).join('') : `<div class="list-row" style="cursor:default;"><div><div class="list-title">No records found</div><div class="list-sub">Try a different owner name or ID.</div></div></div>`}
-          </div>
-        </div>` : ''}
+      <div id="homeSearchResults"></div>
     </div>
 
     <div class="grid-2">
@@ -729,6 +723,7 @@ function renderHomePage() {
       </div>
     </div>
   `;
+  renderHomeSearchResults();
 }
 
 function getFilteredHomeRecords() {
@@ -741,14 +736,39 @@ function getFilteredHomeRecords() {
   });
 }
 
+function renderHomeSearchResults() {
+  const container = document.getElementById('homeSearchResults');
+  if (!container) return;
+
+  const filtered = getFilteredHomeRecords();
+
+  if (!currentSearch.trim()) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = `
+    <div style="margin-top:18px;">
+      <div class="list">
+        ${filtered.length ? filtered.map(renderRecordRow).join('') : `<div class="list-row" style="cursor:default;"><div><div class="list-title">No records found</div><div class="list-sub">Try a different owner name or ID.</div></div></div>`}
+      </div>
+    </div>
+  `;
+}
+
 function setHomeSearch(value) {
   currentSearch = value || '';
-  renderHomePage();
+  renderHomeSearchResults();
 }
 
 function clearHomeSearch() {
   currentSearch = '';
-  renderHomePage();
+  const input = document.getElementById('homeSearchInput');
+  if (input) {
+    input.value = '';
+    input.focus();
+  }
+  renderHomeSearchResults();
 }
 
 function renderPlotsPage() {
