@@ -341,6 +341,25 @@
     .result-row { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; }
     .muted { color: var(--muted); }
     .hidden { display: none !important; }
+    .static-field label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .static-value {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 14px;
+      background: var(--surface-2);
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      line-height: 1.5;
+    }
+
     .pill-status {
       display: inline-block;
       border-radius: 999px;
@@ -502,6 +521,7 @@ let currentSearch = '';
 let plotSearch = '';
 let currentRecordDraft = null;
 let pieceIdCounter = 0;
+let recordEditMode = false;
 
 window.onload = async () => {
   storageReady = canUseStorage();
@@ -849,6 +869,7 @@ function setPlotSearch(value) {
 
 function openRecordDetail(id) {
   selectedRecordId = id;
+  recordEditMode = false;
   plotsViewMode = 'detail';
   currentTab = 'plots';
   document.getElementById('navHome').classList.remove('active');
@@ -861,23 +882,51 @@ function openRecordDetail(id) {
 function renderRecordDetail(record) {
   const photos = Array.isArray(record.snapshot.photos) ? record.snapshot.photos : [];
   const results = record.results || {};
-  const metricClean = (record.snapshot.jobType || 'Monument') === 'Monument' ? Number(results.mlClean || 0).toFixed(2) : Number(results.mlExt || 0).toFixed(2);
-  const metricLabel = (record.snapshot.jobType || 'Monument') === 'Monument' ? 'Clean ML' : 'Exterior ML';
+  const snap = record.snapshot || {};
+  const isMausoleum = (snap.jobType || 'Monument') === 'Mausoleum';
+  const metricClean = isMausoleum ? Number(results.mlExt || 0).toFixed(2) : Number(results.mlClean || 0).toFixed(2);
+  const metricLabel = isMausoleum ? 'Exterior ML' : 'Clean ML';
+  const staticField = (label, value) => `
+    <div class="field static-field">
+      <label>${label}</label>
+      <div class="static-value">${value || '—'}</div>
+    </div>
+  `;
+  const pieceSummary = Array.isArray(snap.pieces) && snap.pieces.length
+    ? snap.pieces.map((piece, index) => {
+        const title = piece.isMain ? (isMausoleum ? 'Main Mausoleum' : 'Main Monument') : `Additional Piece ${index}`;
+        const dims = `${formatInchesAsFeetInches(piece.l)} × ${formatInchesAsFeetInches(piece.w)} × ${formatInchesAsFeetInches(piece.h)}`;
+        const mult = Math.max(1, parseInt(piece.mult || 1, 10) || 1);
+        return `
+          <div class="piece-block">
+            <div class="piece-header"><div class="piece-title">${title}</div></div>
+            <div class="muted">${dims}</div>
+            <div class="muted" style="margin-top:8px;">Multiplier: ${mult}</div>
+          </div>
+        `;
+      }).join('')
+    : `<div class="muted">No measurements added yet.</div>`;
+
   return `
     <div class="page-header">
       <div>
         <div class="crumb" onclick="backToPlotRecords()">← Back</div>
-        <h2>${escapeHtml(record.snapshot.ownerName || 'Unnamed')} (${escapeHtml(record.snapshot.ownerId || 'No ID')})</h2>
-        <p>Field-ready editable record</p>
+        <h2>${escapeHtml(snap.ownerName || 'Unnamed')} (${escapeHtml(snap.ownerId || 'No ID')})</h2>
+        <p>${recordEditMode ? 'Editing record' : 'Record profile'}</p>
       </div>
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button class="btn btn-secondary" onclick="openDirections()">Directions</button>
-        <button class="btn btn-primary" onclick="saveCurrentRecord()">Save Changes</button>
+        ${recordEditMode ? `
+          <button class="btn btn-secondary" onclick="cancelRecordEdit()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveCurrentRecord()">Save Changes</button>
+        ` : `
+          <button class="btn btn-primary" onclick="enterRecordEditMode()">Edit</button>
+        `}
       </div>
     </div>
 
     <div class="grid-4" style="margin-bottom:18px;">
-      <div class="metric"><div class="metric-label">Status</div><div class="metric-value">${escapeHtml(record.snapshot.status)}</div></div>
+      <div class="metric"><div class="metric-label">Status</div><div class="metric-value">${escapeHtml(snap.status)}</div></div>
       <div class="metric"><div class="metric-label">${metricLabel}</div><div class="metric-value">${metricClean}</div></div>
       <div class="metric"><div class="metric-label">Job Total</div><div class="metric-value">$${Number(results.finalTotal || 0).toFixed(2)}</div></div>
       <div class="metric"><div class="metric-label">Photos</div><div class="metric-value">${photos.length}</div></div>
@@ -885,40 +934,60 @@ function renderRecordDetail(record) {
 
     <div class="record-layout">
       <div class="card section">
-        <h2>Quick Edit While in the Field</h2>
-        <div class="field-grid" style="margin-top:18px;">
-          <div class="field"><label>Owner Name *</label><input id="record_ownerName" type="text"/></div>
-          <div class="field"><label>Owner ID *</label><input id="record_ownerId" type="text"/></div>
-          <div class="field"><label>Plot *</label><select id="record_plot"></select></div>
-          <div class="field"><label>Issue Type</label>
-            <select id="record_issueType">
-              <option value="">None</option>
-              <option>Fallen / Cracked Monument or Headstone</option>
-              <option>Inscription Different From Owner</option>
-              <option>Multiple Headstones, Different Names, Same Owner</option>
-              <option>No Monument At All</option>
-            </select>
+        <h2>${recordEditMode ? 'Edit Record' : 'Record Details'}</h2>
+        ${recordEditMode ? `
+          <div class="field-grid" style="margin-top:18px;">
+            <div class="field"><label>Owner Name *</label><input id="record_ownerName" type="text"/></div>
+            <div class="field"><label>Owner ID *</label><input id="record_ownerId" type="text"/></div>
+            <div class="field"><label>Plot *</label><select id="record_plot"></select></div>
+            <div class="field"><label>Issue Type</label>
+              <select id="record_issueType">
+                <option value="">None</option>
+                <option>Fallen / Cracked Monument or Headstone</option>
+                <option>Inscription Different From Owner</option>
+                <option>Multiple Headstones, Different Names, Same Owner</option>
+                <option>No Monument At All</option>
+              </select>
+            </div>
+            <div class="field"><label>Job Type</label>
+              <select id="record_jobType">
+                <option>Monument</option>
+                <option>Mausoleum</option>
+              </select>
+            </div>
+            <div class="field"><label>Status</label><input id="record_status" type="text" readonly/></div>
+            <div class="field"><label>Location Label</label><input id="record_locationLabel" type="text"/></div>
+            <div class="field"><label>Google Maps Link</label><input id="record_mapsUrl" type="text"/></div>
           </div>
-          <div class="field"><label>Job Type</label>
-            <select id="record_jobType">
-              <option>Monument</option>
-              <option>Mausoleum</option>
-            </select>
+          <div class="field"><label>Issue Note</label><textarea id="record_issueNote"></textarea></div>
+          <div class="field"><label>General Notes</label><textarea id="record_notes"></textarea></div>
+        ` : `
+          <div class="field-grid" style="margin-top:18px;">
+            ${staticField('Owner Name', escapeHtml(snap.ownerName || ''))}
+            ${staticField('Owner ID', escapeHtml(snap.ownerId || ''))}
+            ${staticField('Plot', escapeHtml(snap.plot || ''))}
+            ${staticField('Issue Type', escapeHtml(snap.issueType || ''))}
+            ${staticField('Job Type', escapeHtml(snap.jobType || ''))}
+            ${staticField('Status', escapeHtml(snap.status || ''))}
+            ${staticField('Location Label', escapeHtml(snap.locationLabel || ''))}
+            ${staticField('Google Maps Link', snap.mapsUrl ? `<a href="${escapeHtml(snap.mapsUrl)}" target="_blank" rel="noopener noreferrer">Open map</a>` : '—')}
           </div>
-          <div class="field"><label>Status</label><input id="record_status" type="text" readonly/></div>
-          <div class="field"><label>Location Label</label><input id="record_locationLabel" type="text"/></div>
-          <div class="field"><label>Google Maps Link</label><input id="record_mapsUrl" type="text"/></div>
-        </div>
-        <div class="field"><label>Issue Note</label><textarea id="record_issueNote"></textarea></div>
-        <div class="field"><label>General Notes</label><textarea id="record_notes"></textarea></div>
+          ${staticField('Issue Note', escapeHtml(snap.issueNote || ''))}
+          ${staticField('General Notes', escapeHtml(snap.notes || ''))}
+        `}
       </div>
 
       <div class="side-stack">
         <div class="card section">
-          <h2>Field Actions</h2>
+          <h2>${recordEditMode ? 'Field Actions' : 'Quick Actions'}</h2>
           <div class="action-stack">
-            <button class="action-btn primary" onclick="scrollToMeasurements()">Edit Measurements</button>
-            <button class="action-btn" onclick="triggerPhotoInput()">Add / Review Photos</button>
+            ${recordEditMode ? `
+              <button class="action-btn primary" onclick="scrollToMeasurements()">Edit Measurements</button>
+              <button class="action-btn" onclick="triggerPhotoInput()">Add / Review Photos</button>
+            ` : `
+              <button class="action-btn primary" onclick="enterRecordEditMode()">Edit Record</button>
+              <button class="action-btn" onclick="scrollToMeasurements()">View Measurements</button>
+            `}
             <button class="action-btn" onclick="openDirections()">Open Directions</button>
             <button class="action-btn" onclick="deleteCurrentRecord()">Delete Record</button>
           </div>
@@ -928,18 +997,18 @@ function renderRecordDetail(record) {
         <div class="card section">
           <h2>Location Preview</h2>
           <div class="workflow-item" style="margin-top:14px;">
-            <div style="font-weight:700; margin-bottom:4px;" id="locationPreviewLabel">—</div>
-            <div class="list-sub" id="locationPreviewUrl">—</div>
+            <div style="font-weight:700; margin-bottom:4px;" id="locationPreviewLabel">${escapeHtml(snap.locationLabel || '—')}</div>
+            <div class="list-sub" id="locationPreviewUrl">${snap.mapsUrl ? escapeHtml(snap.mapsUrl) : '—'}</div>
           </div>
           <div class="photo-grid" id="recordPhotoGrid" style="margin-top:14px;">
             ${photos.length ? photos.map((photo, index) => `
               <div class="photo-card">
                 <img src="${escapeHtml(photo.url || photo.dataUrl || '')}" alt="Photo ${index + 1}"/>
-                <button class="photo-remove" onclick="removeRecordPhoto(${index}, event)">×</button>
+                ${recordEditMode ? `<button class="photo-remove" onclick="removeRecordPhoto(${index}, event)">×</button>` : ''}
               </div>
             `).join('') : `
-              <div class="photo-card">Photo 1</div>
-              <div class="photo-card">Photo 2</div>
+              <div class="photo-card">No Photo</div>
+              <div class="photo-card">No Photo</div>
             `}
           </div>
         </div>
@@ -947,34 +1016,37 @@ function renderRecordDetail(record) {
     </div>
 
     <div class="card section calc-section" id="measurementSection" style="margin-top:18px;">
-      <h2>Measurements & Calculator</h2>
-
-      <div id="piecesContainer" style="margin-top:18px;"></div>
-
-      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-        <button class="btn btn-secondary" onclick="addDraftPiece()">Add Piece</button>
-      </div>
-
-      <div class="field-grid" style="margin-top:18px;">
-        <div class="field">
-          <label>Flats</label>
-          <input id="record_numFlats" type="number" min="0"/>
+      <h2>${recordEditMode ? 'Measurements & Calculator' : 'Measurements'}</h2>
+      ${recordEditMode ? `
+        <div id="piecesContainer" style="margin-top:18px;"></div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+          <button class="btn btn-secondary" onclick="addDraftPiece()">Add Piece</button>
         </div>
-        <div class="field">
-          <label>Slants</label>
-          <input id="record_numSlants" type="number" min="0"/>
+        <div class="field-grid" style="margin-top:18px;">
+          <div class="field">
+            <label>Flats</label>
+            <input id="record_numFlats" type="number" min="0"/>
+          </div>
+          <div class="field">
+            <label>Slants</label>
+            <input id="record_numSlants" type="number" min="0"/>
+          </div>
         </div>
-      </div>
-
-      <div class="field hidden" id="repointingWrap">
-        <label>Re-pointing LF</label>
-        <input id="record_lfPointing" type="number" min="0" step="0.01"/>
-      </div>
-
-      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-        <button class="btn btn-primary" onclick="calculateCurrentRecord()">Calculate</button>
-      </div>
-
+        <div class="field hidden" id="repointingWrap">
+          <label>Re-pointing LF</label>
+          <input id="record_lfPointing" type="number" min="0" step="0.01"/>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+          <button class="btn btn-primary" onclick="calculateCurrentRecord()">Calculate</button>
+        </div>
+      ` : `
+        <div style="margin-top:18px;">${pieceSummary}</div>
+        <div class="field-grid" style="margin-top:18px;">
+          ${staticField('Flats', String(Number(snap.numFlats || 0)))}
+          ${staticField('Slants', String(Number(snap.numSlants || 0)))}
+        </div>
+        ${isMausoleum ? `<div class="field-grid" style="margin-top:6px;">${staticField('Re-pointing LF', Number(snap.lfPointing || 0).toFixed(2))}</div>` : ''}
+      `}
       <div id="resultsBox" class="result-box" style="margin-top:18px;"></div>
     </div>
 
@@ -995,45 +1067,51 @@ function syncDraftIntoDom() {
 
   const snap = currentRecordDraft.snapshot;
 
-  renderPlotSelectInto('record_plot', snap.plot || '');
-  setValue('record_ownerName', snap.ownerName);
-  setValue('record_ownerId', snap.ownerId);
-  setValue('record_issueType', snap.issueType);
-  setValue('record_jobType', snap.jobType || 'Monument');
-  setValue('record_status', snap.status);
-  setValue('record_locationLabel', snap.locationLabel);
-  setValue('record_mapsUrl', snap.mapsUrl);
-  setValue('record_issueNote', snap.issueNote);
-  setValue('record_notes', snap.notes);
-  setValue('record_numFlats', snap.numFlats || '');
-  setValue('record_numSlants', snap.numSlants || '');
-  setValue('record_lfPointing', snap.lfPointing || '');
+  if (recordEditMode) {
+    renderPlotSelectInto('record_plot', snap.plot || '');
+    setValue('record_ownerName', snap.ownerName);
+    setValue('record_ownerId', snap.ownerId);
+    setValue('record_issueType', snap.issueType);
+    setValue('record_jobType', snap.jobType || 'Monument');
+    setValue('record_status', snap.status);
+    setValue('record_locationLabel', snap.locationLabel);
+    setValue('record_mapsUrl', snap.mapsUrl);
+    setValue('record_issueNote', snap.issueNote);
+    setValue('record_notes', snap.notes);
+    setValue('record_numFlats', snap.numFlats || '');
+    setValue('record_numSlants', snap.numSlants || '');
+    setValue('record_lfPointing', snap.lfPointing || '');
 
-  document.getElementById('repointingWrap').classList.toggle(
-    'hidden',
-    (snap.jobType || 'Monument') !== 'Mausoleum'
-  );
+    const repointingWrap = document.getElementById('repointingWrap');
+    if (repointingWrap) {
+      repointingWrap.classList.toggle('hidden', (snap.jobType || 'Monument') !== 'Mausoleum');
+    }
 
-  const jobTypeEl = document.getElementById('record_jobType');
-  if (jobTypeEl && !jobTypeEl.dataset.boundJobTypeChange) {
-    jobTypeEl.addEventListener('change', () => {
-      const selectedType = document.getElementById('record_jobType').value || 'Monument';
-      currentRecordDraft.snapshot.jobType = selectedType;
+    const jobTypeEl = document.getElementById('record_jobType');
+    if (jobTypeEl && !jobTypeEl.dataset.boundJobTypeChange) {
+      jobTypeEl.addEventListener('change', () => {
+        const selectedType = document.getElementById('record_jobType').value || 'Monument';
+        currentRecordDraft.snapshot.jobType = selectedType;
 
-      if (selectedType !== 'Mausoleum') {
-        currentRecordDraft.snapshot.lfPointing = 0;
-        setValue('record_lfPointing', '');
-      }
+        if (selectedType !== 'Mausoleum') {
+          currentRecordDraft.snapshot.lfPointing = 0;
+          setValue('record_lfPointing', '');
+        }
 
-      document.getElementById('repointingWrap').classList.toggle('hidden', selectedType !== 'Mausoleum');
-      renderPiecesForCurrentRecord();
-      renderResultsBox(currentRecordDraft.results || {});
-    });
-    jobTypeEl.dataset.boundJobTypeChange = '1';
+        const repointingWrapInner = document.getElementById('repointingWrap');
+        if (repointingWrapInner) {
+          repointingWrapInner.classList.toggle('hidden', selectedType !== 'Mausoleum');
+        }
+        renderPiecesForCurrentRecord();
+        renderResultsBox(currentRecordDraft.results || {});
+      });
+      jobTypeEl.dataset.boundJobTypeChange = '1';
+    }
+
+    updateLocationPreview();
+    renderPiecesForCurrentRecord();
   }
 
-  updateLocationPreview();
-  renderPiecesForCurrentRecord();
   renderResultsBox(currentRecordDraft.results || {});
 }
 
@@ -1507,6 +1585,26 @@ function renderResultsBox(results) {
   box.innerHTML = html;
 }
 
+function enterRecordEditMode() {
+  recordEditMode = true;
+  renderPlotsPage();
+}
+
+function cancelRecordEdit() {
+  const record = getRecordById(selectedRecordId);
+  if (!record) return;
+  currentRecordDraft = cloneRecord(record);
+  recordEditMode = false;
+  renderPlotsPage();
+}
+
+function formatInchesAsFeetInches(totalInches) {
+  const total = Number(totalInches || 0);
+  const feet = Math.floor(total / 12);
+  const inches = Number((total - feet * 12).toFixed(2));
+  return `${feet}' ${inches}"`;
+}
+
 async function saveCurrentRecord() {
   const record = hydrateDraftFromForm();
   if (!record) return;
@@ -1530,6 +1628,7 @@ async function saveCurrentRecord() {
     recordsCache.unshift(normalizeRecord(record));
     setLocalRecords(recordsCache);
     currentRecordDraft = cloneRecord(normalizeRecord(record));
+    recordEditMode = false;
     showToast('Record saved');
     renderPlotsPage();
     renderHomePage();
