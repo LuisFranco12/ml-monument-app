@@ -1456,22 +1456,30 @@ function toAirtableFields(record) {
   const f = getFieldMap();
   const snap = record.snapshot || {};
   const r = record.results || {};
-  const isMonument = (snap.jobType || 'Monument') === 'Monument';
-  const photoAttachments = Array.isArray(snap.photos) ? snap.photos.filter(p => p.url).map(p => ({ url: p.url, filename: p.filename || 'photo.jpg' })) : [];
-  return {
+  const computedStatus = snap.status || computeStatus(record);
+  const jobType = snap.jobType || 'Monument';
+  const isMonument = jobType === 'Monument';
+
+  const photoAttachments = Array.isArray(snap.photos)
+    ? snap.photos
+        .filter(p => p && p.url)
+        .map(p => ({
+          url: p.url,
+          filename: p.filename || 'photo.jpg'
+        }))
+    : [];
+
+  const fields = {
     [f.ownerName]: snap.ownerName || '',
     [f.ownerId]: snap.ownerId || '',
     [f.plot]: snap.plot || '',
     [f.locationLabel]: snap.locationLabel || '',
     [f.mapsUrl]: snap.mapsUrl || '',
-    [f.status]: snap.status || computeStatus(record),
-    [f.issueType]: snap.issueType || '',
     [f.issueNote]: snap.issueNote || '',
     [f.photos]: photoAttachments,
     [f.photoUrls]: photoAttachments.map(p => p.url).join('\n'),
     [f.jobName]: record.name || '',
     [f.date]: (record.date || new Date().toISOString()).slice(0, 10),
-    [f.jobType]: snap.jobType || 'Monument',
     [f.areaSqFt]: Number(r.totalSqFt || 0),
     [f.cleanML]: isMonument ? Number(r.mlClean || 0) : 0,
     [f.cleanTotal]: isMonument ? Number(r.priceClean || 0) : 0,
@@ -1490,10 +1498,26 @@ function toAirtableFields(record) {
       snapshot: {
         ...snap,
         photos: photoAttachments,
-        status: snap.status || computeStatus(record)
+        status: computedStatus,
+        jobType
       }
     })
   };
+
+  // Only send select/text values when they actually have content
+  if (computedStatus && String(computedStatus).trim()) {
+    fields[f.status] = String(computedStatus).trim();
+  }
+
+  if (jobType && String(jobType).trim()) {
+    fields[f.jobType] = String(jobType).trim();
+  }
+
+  if (snap.issueType && String(snap.issueType).trim()) {
+    fields[f.issueType] = String(snap.issueType).trim();
+  }
+
+  return fields;
 }
 
 async function airtableCreateRecord(record) {
