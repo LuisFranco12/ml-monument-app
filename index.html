@@ -1060,7 +1060,7 @@ function renderRecordDetail(record) {
             ${staticField('Job Type', escapeHtml(snap.jobType || ''))}
             ${staticField('Status', escapeHtml(snap.status || ''))}
             ${staticField('Location Label', escapeHtml(snap.locationLabel || ''))}
-            ${staticField('Google Maps Link', snap.mapsUrl ? `<a href="${escapeHtml(snap.mapsUrl)}" target="_blank" rel="noopener noreferrer">Open map</a>` : '—')}
+            ${staticField('Google Maps Link', snap.mapsUrl ? `<a href="${escapeHtml(normalizeMapsUrl(snap.mapsUrl))}" target="_blank" rel="noopener noreferrer">Open map</a>` : '—')}
           </div>
           ${staticField('Issue Note', escapeHtml(snap.issueNote || ''))}
           ${staticField('General Notes', escapeHtml(snap.notes || ''))}
@@ -1090,7 +1090,26 @@ function renderRecordDetail(record) {
           <h2>Location Preview</h2>
           <div class="workflow-item" style="margin-top:14px;">
             <div style="font-weight:700; margin-bottom:4px;" id="locationPreviewLabel">${escapeHtml(snap.locationLabel || '—')}</div>
-            <div class="list-sub" id="locationPreviewUrl">${snap.mapsUrl ? escapeHtml(snap.mapsUrl) : '—'}</div>
+            <div class="list-sub" id="locationPreviewUrl">
+              ${snap.mapsUrl ? `<a href="${escapeHtml(normalizeMapsUrl(snap.mapsUrl))}" target="_blank" rel="noopener noreferrer">Open map</a>` : '—'}
+            </div>
+            <div id="locationPreviewActions">
+              ${snap.mapsUrl ? `
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+                  <a class="btn btn-secondary" href="${escapeHtml(normalizeMapsUrl(snap.mapsUrl))}" target="_blank" rel="noopener noreferrer">Open Directions</a>
+                  <button class="btn btn-primary" type="button" onclick="openDirections()">Directions</button>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+          <div id="locationPreviewFrameWrap" style="margin-top:14px; ${snap.mapsUrl && !String(snap.mapsUrl).includes('maps.app.goo.gl') ? '' : 'display:none;'}">
+            <iframe
+              id="locationPreviewFrame"
+              src="${snap.mapsUrl && !String(snap.mapsUrl).includes('maps.app.goo.gl') ? escapeHtml(normalizeMapsUrl(snap.mapsUrl)) : ''}"
+              style="width:100%; height:260px; border:1px solid var(--border); border-radius:18px; background:#fff;"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
           </div>
           ${recordEditMode ? `<div class="photo-toolbar"><button class="btn btn-secondary" onclick="triggerCameraInput()">📷 Take Photo</button><button class="btn btn-secondary" onclick="triggerPhotoInput()">🖼 Choose Photos</button></div>` : ``}<div class="photo-grid" id="recordPhotoGrid" style="margin-top:14px;">
             ${photos.length ? photos.map((photo, index) => `
@@ -1238,7 +1257,7 @@ async function createRecordFromModal() {
   const ownerId = document.getElementById('newOwnerId').value.trim();
   const plot = document.getElementById('newPlot').value.trim();
   const jobType = document.getElementById('newJobType').value.trim();
-  const mapsUrl = document.getElementById('newMapsUrl').value.trim();
+  const mapsUrl = normalizeMapsUrl(document.getElementById('newMapsUrl').value.trim());
   const locationLabel = document.getElementById('newLocationLabel').value.trim();
 
   if (!ownerName || !ownerId || !plot || !jobType) {
@@ -1434,7 +1453,7 @@ function hydrateDraftFromForm() {
   snap.issueType = document.getElementById('record_issueType').value.trim();
   snap.jobType = document.getElementById('record_jobType').value.trim() || 'Monument';
   snap.locationLabel = document.getElementById('record_locationLabel').value.trim();
-  snap.mapsUrl = document.getElementById('record_mapsUrl').value.trim();
+  snap.mapsUrl = normalizeMapsUrl(document.getElementById('record_mapsUrl').value.trim());
   snap.issueNote = document.getElementById('record_issueNote').value.trim();
   snap.notes = document.getElementById('record_notes').value.trim();
   snap.mode = 'feetInches';
@@ -1886,19 +1905,76 @@ function closePhotoViewer(event) {
   if (img) img.src = '';
 }
 
+function getCurrentMapsValue() {
+  const editInput = document.getElementById('record_mapsUrl');
+  if (editInput && editInput.value.trim()) return editInput.value.trim();
+  if (currentRecordDraft?.snapshot?.mapsUrl) return String(currentRecordDraft.snapshot.mapsUrl).trim();
+  const record = getRecordById(selectedRecordId);
+  if (record?.snapshot?.mapsUrl) return String(record.snapshot.mapsUrl).trim();
+  return '';
+}
+
+function normalizeMapsUrl(raw) {
+  const value = String(raw || '').trim();
+  if (!value) return '';
+  const lower = value.toLowerCase();
+  if (lower.startsWith('http://') || lower.startsWith('https://')) return value;
+  return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(value);
+}
+
 function openDirections() {
-  const url = document.getElementById('record_mapsUrl')?.value.trim();
-  if (!url) return showToast('No Google Maps link saved');
-  window.open(url, '_blank', 'noopener');
+  const raw = getCurrentMapsValue();
+  if (!raw) return showToast('No Google Maps link saved');
+  const finalUrl = normalizeMapsUrl(raw);
+  window.open(finalUrl, '_blank', 'noopener,noreferrer');
 }
 
 function updateLocationPreview() {
-  const label = document.getElementById('record_locationLabel')?.value || '—';
-  const url = document.getElementById('record_mapsUrl')?.value || '—';
+  const labelInput = document.getElementById('record_locationLabel');
+  const mapsInput = document.getElementById('record_mapsUrl');
+
+  const label = labelInput
+    ? (labelInput.value.trim() || '—')
+    : (currentRecordDraft?.snapshot?.locationLabel || '—');
+
+  const rawUrl = mapsInput
+    ? mapsInput.value.trim()
+    : (currentRecordDraft?.snapshot?.mapsUrl || '');
+
+  const finalUrl = normalizeMapsUrl(rawUrl);
+
   const labelEl = document.getElementById('locationPreviewLabel');
   const urlEl = document.getElementById('locationPreviewUrl');
+  const actionsEl = document.getElementById('locationPreviewActions');
+  const frameWrapEl = document.getElementById('locationPreviewFrameWrap');
+  const frameEl = document.getElementById('locationPreviewFrame');
+
   if (labelEl) labelEl.textContent = label;
-  if (urlEl) urlEl.textContent = url;
+
+  if (urlEl) {
+    if (finalUrl) {
+      urlEl.innerHTML = `<a href="${escapeHtml(finalUrl)}" target="_blank" rel="noopener noreferrer">Open map</a>`;
+    } else {
+      urlEl.textContent = '—';
+    }
+  }
+
+  if (actionsEl) {
+    actionsEl.innerHTML = finalUrl
+      ? `
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+          <a class="btn btn-secondary" href="${escapeHtml(finalUrl)}" target="_blank" rel="noopener noreferrer">Open Directions</a>
+          <button class="btn btn-primary" type="button" onclick="openDirections()">Directions</button>
+        </div>
+      `
+      : '';
+  }
+
+  const canEmbed = finalUrl && !finalUrl.includes('maps.app.goo.gl');
+
+  if (frameWrapEl) frameWrapEl.style.display = canEmbed ? 'block' : 'none';
+  if (frameEl) frameEl.src = canEmbed ? finalUrl : '';
+
   ['record_locationLabel', 'record_mapsUrl'].forEach(id => {
     const el = document.getElementById(id);
     if (el && !el.dataset.boundPreview) {
