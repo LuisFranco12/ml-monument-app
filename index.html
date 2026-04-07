@@ -153,7 +153,7 @@
 
 <script src="./config.js"></script>
 <script>
-const STORAGE_KEY='ml_saved_jobs_v7',PLOTS_STORAGE_KEY='ml_plot_options_v1',THEME_KEY='ml_theme_v1';
+const STORAGE_KEY='ml_saved_jobs_v8',PLOTS_STORAGE_KEY='ml_plot_options_v1',THEME_KEY='ml_theme_v1';
 const CONFIG=window.ML_APP_CONFIG||{};
 const DEFAULT_PLOTS=['Acacia','ALP HILL','Alpine Hill','Althea','Arbor','Ash','Beech','Cedar','Cherry','Crocus','Dogwood','Elm','Evergreen','Fir','Forest','Hazel','Hillcrest','Holly','Iris','Juniper','Lakeview','Lilac','Magnolia','Maple','Oak','Oak Hill','Parkview','Pine','Poplar','Primrose','Rose Hill','Spruce','Summit','Sunnyside','Sycamore','Tulip','Walnut','Webster','White Oak','Woodbine','Woodlawn','Yew'];
 let mode='inches',jobType='Monument',pieces=[],photos=[],pieceIdCounter=0,lastResults=null,currentView='home',currentPlotName='',currentRecordId='',currentBackContext='home',allJobsCache=[];
@@ -161,23 +161,102 @@ let mode='inches',jobType='Monument',pieces=[],photos=[],pieceIdCounter=0,lastRe
 window.onload=async()=>{applyTheme(getSavedTheme()||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));bindPhotos();bindThemeMedia();populatePlotSelects();addPiece(true);renderPhotoGrid();updateJobTypeUI();updateModeUI();updateSyncStatus();await refreshData();};
 
 async function refreshData(){allJobsCache=await getJobs();renderHome();renderPlots();}
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
 function safeParse(s,f){try{return JSON.parse(s)||f}catch{return f}}
 function getLocalJobs(){return safeParse(localStorage.getItem(STORAGE_KEY)||'[]',[])}
 function saveLocalJobs(j){localStorage.setItem(STORAGE_KEY,JSON.stringify(j))}
 function getPlots(){const s=safeParse(localStorage.getItem(PLOTS_STORAGE_KEY)||'null',null);return Array.isArray(s)&&s.length?s:[...DEFAULT_PLOTS]}
-function getSavedTheme(){return localStorage.getItem(THEME_KEY)||''} function saveTheme(t){localStorage.setItem(THEME_KEY,t)}
+function getSavedTheme(){return localStorage.getItem(THEME_KEY)||''}
+function saveTheme(t){localStorage.setItem(THEME_KEY,t)}
 
-function updateSyncStatus(){const el=document.getElementById('syncStatus');el.textContent=(airtableReady()&&cloudinaryReady())?'Airtable + Cloudinary ready':(airtableReady()?'Airtable ready; Cloudinary missing':'Local only / sync incomplete');}
+function updateSyncStatus(){
+  const el=document.getElementById('syncStatus');
+  if (airtableReady() && cloudinaryReady()) el.textContent='Airtable + Cloudinary ready';
+  else if (airtableConfigured()) el.textContent='Airtable configured, but token still looks invalid or placeholder';
+  else if (cloudinaryReady()) el.textContent='Cloudinary ready; Airtable not ready';
+  else el.textContent='Local only / sync incomplete';
+}
+
 function switchView(v){currentView=v;document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',['home','plots'][i]===v));document.getElementById('page-home').classList.toggle('active',v==='home');document.getElementById('page-plots').classList.toggle('active',v==='plots');document.getElementById('recordPage').classList.add('hidden');document.getElementById('recordActions').style.display='none';if(v==='home')renderHome();if(v==='plots')renderPlots();}
 function populatePlotSelects(){const plots=getPlots().slice().sort((a,b)=>a.localeCompare(b));const html='<option value="">Select a plot</option>'+plots.map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');document.getElementById('plotSelect').innerHTML=html;document.getElementById('newPlot').innerHTML=html;}
-function startNewRecord(){document.getElementById('newRecordCard').classList.remove('hidden')} function cancelNewRecord(){document.getElementById('newRecordCard').classList.add('hidden')}
+function startNewRecord(){document.getElementById('newRecordCard').classList.remove('hidden')}
+function cancelNewRecord(){document.getElementById('newRecordCard').classList.add('hidden')}
+
 async function createRecordShell(){
-  const ownerName=document.getElementById('newOwnerName').value.trim(),ownerId=document.getElementById('newOwnerId').value.trim(),plot=document.getElementById('newPlot').value.trim();
+  const ownerName=document.getElementById('newOwnerName').value.trim();
+  const ownerId=document.getElementById('newOwnerId').value.trim();
+  const plot=document.getElementById('newPlot').value.trim();
+
   if(!ownerName||!ownerId||!plot)return showToast('Owner Name, Owner ID, and Plot required');
-  const rec={id:'local-'+Date.now(),date:new Date().toISOString(),snapshot:{ownerName,ownerId,plot,status:document.getElementById('newStatus').value,locationLabel:document.getElementById('newLocationLabel').value.trim(),mapsUrl:document.getElementById('newMapsUrl').value.trim(),issueType:'',issueNote:'',notes:'',mode:'inches',jobType:'Monument',lfPointing:0,numFlats:0,numSlants:0,pieces:[],photos:[]},results:{jobType:'Monument',totalSqFt:0,mlClean:0,priceClean:0,mlExt:0,priceExt:0,lfPointing:0,mlLF:0,priceLF:0,numFlats:0,numSlants:0,priceFlats:0,priceSlants:0,footTotal:0,finalTotal:0}};
-  const jobs=getLocalJobs();jobs.unshift(rec);saveLocalJobs(jobs);await refreshData();cancelNewRecord();showToast('Record created');openRecord(rec.id,'home');
+
+  const rec={
+    id:'local-'+Date.now(),
+    date:new Date().toISOString(),
+    snapshot:{
+      ownerName,
+      ownerId,
+      plot,
+      status:document.getElementById('newStatus').value,
+      locationLabel:document.getElementById('newLocationLabel').value.trim(),
+      mapsUrl:document.getElementById('newMapsUrl').value.trim(),
+      issueType:'',
+      issueNote:'',
+      notes:'',
+      mode:'inches',
+      jobType:'Monument',
+      lfPointing:0,
+      numFlats:0,
+      numSlants:0,
+      pieces:[],
+      photos:[]
+    },
+    results:{
+      jobType:'Monument',
+      totalSqFt:0,
+      mlClean:0,
+      priceClean:0,
+      mlExt:0,
+      priceExt:0,
+      lfPointing:0,
+      mlLF:0,
+      priceLF:0,
+      numFlats:0,
+      numSlants:0,
+      priceFlats:0,
+      priceSlants:0,
+      footTotal:0,
+      finalTotal:0
+    }
+  };
+
+  try{
+    const jobs=getLocalJobs();
+    jobs.unshift(rec);
+    saveLocalJobs(jobs);
+
+    if(airtableReady()){
+      const airtableId=await airtableCreateRecord(rec);
+      if(airtableId){
+        rec.airtableRecordId=airtableId;
+        const updatedJobs=getLocalJobs();
+        const idx=updatedJobs.findIndex(j=>j.id===rec.id);
+        if(idx!==-1){
+          updatedJobs[idx]=rec;
+          saveLocalJobs(updatedJobs);
+        }
+      }
+    }
+
+    await refreshData();
+    cancelNewRecord();
+    showToast('Record created');
+    openRecord(rec.id,'home');
+  }catch(err){
+    console.error('createRecordShell error:',err);
+    showToast(err.message||'Failed to create record');
+  }
 }
+
 function renderHome(){const recent=allJobsCache.slice().sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)).slice(0,8),list=document.getElementById('recentList');list.innerHTML=recent.length?recent.map(job=>{const s=job.snapshot||{};return `<button class="rowbtn" onclick="openRecord('${escapeJs(job.id)}','home')"><div><div class="name">${escapeHtml(s.ownerName||'Unnamed')} (${escapeHtml(s.ownerId||'-')})</div><div class="meta">${escapeHtml(s.plot||'No Plot')} • ${escapeHtml(s.status||'Not measured yet')}</div></div><span>›</span></button>`}).join(''):`<div class="rowbtn"><div><div class="name">No records yet</div><div class="meta">Create a new job from Home.</div></div></div>`;renderHomeSearch();}
 function renderHomeSearch(){const q=(document.getElementById('homeSearch').value||'').trim().toLowerCase(),card=document.getElementById('homeSearchResults'),list=document.getElementById('homeResultsList');if(!q){card.classList.add('hidden');list.innerHTML='';return;}const matches=allJobsCache.filter(job=>((job.snapshot?.ownerName)||'').toLowerCase().includes(q)||((job.snapshot?.ownerId)||'').toLowerCase().includes(q));card.classList.remove('hidden');list.innerHTML=matches.length?matches.map(job=>{const s=job.snapshot||{};return `<button class="rowbtn" onclick="openRecord('${escapeJs(job.id)}','home')"><div><div class="name">${escapeHtml(s.ownerName||'Unnamed')} (${escapeHtml(s.ownerId||'-')})</div><div class="meta">${escapeHtml(s.plot||'No Plot')} • ${escapeHtml(s.status||'Not measured yet')}</div></div><span>›</span></button>`}).join(''):`<div class="rowbtn"><div><div class="name">No matches</div><div class="meta">Try another name or ID.</div></div></div>`;}
 function renderPlots(){const grouped={};allJobsCache.forEach(job=>{const p=(job.snapshot?.plot||'Unassigned Plot').trim()||'Unassigned Plot';(grouped[p] ||= []).push(job)});const plots=Object.keys(grouped).sort((a,b)=>a.localeCompare(b)),list=document.getElementById('plotList');list.innerHTML=plots.length?plots.map(p=>`<button class="rowbtn" onclick="openPlot('${escapeJs(p)}')"><div class="name">${escapeHtml(p)}</div><div class="meta">${grouped[p].length} records</div></button>`).join(''):`<div class="rowbtn"><div><div class="name">No plots yet</div><div class="meta">Create your first record from Home.</div></div></div>`;}
@@ -200,7 +279,8 @@ function updatePieceLabels(){let c=0;pieces.forEach(piece=>{const el=document.qu
 function addPiece(isMain=false,existingData=null){const id=pieceIdCounter++;pieces.push({id,isMain});renderPiece(id,isMain,existingData||{l:'',w:'',h:'',mult:'',multOpen:false});updatePieceLabels()}
 function rebuildPieces(savedPieces=[]){document.getElementById('piecesContainer').innerHTML='';pieces=[];pieceIdCounter=0;if(!savedPieces.length){addPiece(true);return}savedPieces.forEach((p,i)=>addPiece(i===0,p))}
 function renderPiece(id,isMain,data){const div=document.createElement('div');div.className='card';div.style.padding='12px';div.id='piece-'+id;const removeBtn=isMain?'':`<button class="btn danger small" onclick="removePiece(${id})">Remove</button>`;const fi=(prefix,totalInches)=>{const total=totalInches===''||totalInches==null?'':Number(totalInches);const ft=total===''?'':Math.floor(total/12);const inch=total===''?'':Number((total-ft*12).toFixed(2));return `<div class="grid2"><input type="number" id="p${id}_${prefix}ft" placeholder="Feet" value="${ft===''?'':ft}"><input type="number" id="p${id}_${prefix}in" placeholder="Inches" value="${inch===''?'':inch}"></div>`};const dims=mode==='feetInches'?`<div class="field"><div class="label">Length</div>${fi('l',data.l)}</div><div class="field"><div class="label">Width</div>${fi('w',data.w)}</div><div class="field"><div class="label">Height</div>${fi('h',data.h)}</div>`:`<div class="field"><div class="label">Length (in)</div><input type="number" id="p${id}_lin" placeholder="0" value="${data.l??''}"></div><div class="field"><div class="label">Width (in)</div><input type="number" id="p${id}_win" placeholder="0" value="${data.w??''}"></div><div class="field"><div class="label">Height (in)</div><input type="number" id="p${id}_hin" placeholder="0" value="${data.h??''}"></div>`;const multOpen=Boolean(data.multOpen)||Number(data.mult||0)>1;div.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px"><div class="name piece-label"></div>${removeBtn}</div>${dims}<button class="btn ghost small" onclick="toggleMult(${id})">${multOpen?'Hide multiplier':'Multiply this piece'}</button><div id="multfield${id}" class="${multOpen?'':'hidden'}" style="margin-top:8px"><div class="label">Quantity / Multiplier</div><input type="number" id="p${id}_mult" placeholder="1" min="1" value="${data.mult??''}"></div>`;document.getElementById('piecesContainer').appendChild(div)}
-function toggleMult(id){document.getElementById('multfield'+id).classList.toggle('hidden')} function removePiece(id){pieces=pieces.filter(p=>p.id!==id);document.getElementById('piece-'+id)?.remove();updatePieceLabels()}
+function toggleMult(id){document.getElementById('multfield'+id).classList.toggle('hidden')}
+function removePiece(id){pieces=pieces.filter(p=>p.id!==id);document.getElementById('piece-'+id)?.remove();updatePieceLabels()}
 function n(id){const el=document.getElementById(id);return el?parseFloat(el.value)||0:0}
 function getPieceDims(id){let l,w,h;if(mode==='feetInches'){l=n(`p${id}_lft`)*12+n(`p${id}_lin`);w=n(`p${id}_wft`)*12+n(`p${id}_win`);h=n(`p${id}_hft`)*12+n(`p${id}_hin`)}else{l=n(`p${id}_lin`);w=n(`p${id}_win`);h=n(`p${id}_hin`)}const mult=Math.max(1,n(`p${id}_mult`)||1);const multField=document.getElementById('multfield'+id);return{l,w,h,mult,multOpen:multField?!multField.classList.contains('hidden'):false}}
 function getCombinedMeasurements(){let total={length:0,width:0,height:0};pieces.forEach(p=>{const d=getPieceDims(p.id),m=parseInt(d.mult,10)||1;total.length+=d.l*m;total.width+=d.w*m;total.height+=d.h*m});return total}
@@ -217,14 +297,31 @@ async function uploadPendingPhotos(){const uploaded=[];for(const photo of photos
 
 function bindPhotos(){const cameraInput=document.getElementById('cameraInput'),libraryInput=document.getElementById('photoLibraryInput');async function handleFiles(fileList){const files=Array.from(fileList||[]);if(!files.length)return;const remaining=Math.max(0,3-photos.length);if(remaining<=0)return showToast('You can save up to 3 photos');for(const file of files.slice(0,remaining)){const c=await compressImage(file,1600,.72);photos.push({filename:c.filename,dataUrl:c.dataUrl})}renderPhotoGrid()}cameraInput.addEventListener('change',async e=>{await handleFiles(e.target.files);e.target.value=''});libraryInput.addEventListener('change',async e=>{await handleFiles(e.target.files);e.target.value=''})}
 function renderPhotoGrid(){document.getElementById('photoCount').textContent=photos.length;document.getElementById('statPhotos').textContent=String(photos.length);document.getElementById('photoGrid').innerHTML=photos.map((p,i)=>{const src=p.url||p.dataUrl||'';return `<div class="photo"><img src="${src}" onclick="openPhoto('${escapeJs(src)}')"><button type="button" onclick="removePhoto(${i})">✕</button></div>`}).join('')}
-function removePhoto(index){photos.splice(index,1);renderPhotoGrid()} function openPhoto(url){if(url)window.open(url,'_blank')}
+function removePhoto(index){photos.splice(index,1);renderPhotoGrid()}
+function openPhoto(url){if(url)window.open(url,'_blank')}
 function compressImage(file,maxSide,quality){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const ratio=Math.min(1,maxSide/Math.max(img.width,img.height));const canvas=document.createElement('canvas');canvas.width=Math.round(img.width*ratio);canvas.height=Math.round(img.height*ratio);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);resolve({dataUrl:canvas.toDataURL('image/jpeg',quality),filename:(file.name||'photo').replace(/\.[^.]+$/,'')+'.jpg'})};img.onerror=reject;img.src=reader.result};reader.onerror=reject;reader.readAsDataURL(file)})}
 function openDirections(){const url=document.getElementById('mapsUrl').value.trim();if(!url)return showToast('No Google Maps link saved');window.open(url,'_blank')}
 
-function airtableReady(){const a=CONFIG.airtable||{};return Boolean(a.enabled&&a.personalAccessToken&&a.baseId&&a.tableName)}
+function airtableConfigured(){
+  const a=CONFIG.airtable||{};
+  return Boolean(a.enabled&&a.baseId&&a.tableName&&a.personalAccessToken);
+}
+function airtableReady(){
+  const a=CONFIG.airtable||{};
+  const token=String(a.personalAccessToken||'').trim();
+  return Boolean(
+    a.enabled &&
+    a.baseId &&
+    a.tableName &&
+    token &&
+    token !== 'MY_KEY' &&
+    token !== 'PASTE_YOUR_REAL_AIRTABLE_TOKEN_HERE'
+  );
+}
 function airtableHeaders(){return{'Authorization':'Bearer '+CONFIG.airtable.personalAccessToken,'Content-Type':'application/json'}}
 function airtableUrl(){return `https://api.airtable.com/v0/${CONFIG.airtable.baseId}/${encodeURIComponent(CONFIG.airtable.tableName)}`}
 function getFieldMap(){return Object.assign({ownerName:'Owner Name',ownerId:'Owner ID',plot:'Plot',locationLabel:'Location Label',mapsUrl:'Maps URL',status:'Status',photoUrls:'Photo URLs',photos:'Photos',issueType:'Issue Type',issueNote:'Issue Note',jobName:'Job Name',date:'Date',jobType:'Job Type',areaSqFt:'Area Sq Ft',cleanML:'Clean ML',cleanTotal:'Clean Total',exteriorML:'Exterior ML',exteriorTotal:'Exterior Total',repointingLF:'Re-pointing LF',repointingML:'Re-pointing ML',repointingTotal:'Re-pointing Total',flats:'Flats',slants:'Slants',jobTotal:'Job Total',notes:'Notes',detailsJson:'Details JSON',photoCount:'Photo Count'},(CONFIG.airtable&&CONFIG.airtable.fields)||{})}
+
 function toAirtableFields(job){
   const f=getFieldMap(),s=job.snapshot||{},r=job.results||{},isMonument=(s.jobType||'Monument')==='Monument';
   const photoAttachments=(s.photos||[]).filter(p=>p.url).map(p=>({url:p.url,filename:p.filename||'photo.jpg'}));
@@ -259,36 +356,152 @@ function toAirtableFields(job){
     [f.detailsJson]:JSON.stringify({...job,snapshot:{...s,photos:photoAttachments.map(p=>({url:p.url||'',filename:p.filename||''}))}})
   };
 }
-async function airtableCreateRecord(job){const res=await fetch(airtableUrl(),{method:'POST',headers:airtableHeaders(),body:JSON.stringify({records:[{fields:toAirtableFields(job)}]})});if(!res.ok){let d='';try{const j=await res.json();d=j?.error?.message||j?.error?.type||JSON.stringify(j)}catch{}throw new Error(d||'Airtable save failed')}const data=await res.json();return data.records?.[0]?.id||''}
-async function airtableUpdateRecord(recordId,job){const res=await fetch(airtableUrl()+'/'+recordId,{method:'PATCH',headers:airtableHeaders(),body:JSON.stringify({fields:toAirtableFields(job)})});if(!res.ok){let d='';try{const j=await res.json();d=j?.error?.message||j?.error?.type||JSON.stringify(j)}catch{}throw new Error(d||'Airtable update failed')}return await res.json()}
+
+async function airtableCreateRecord(job){
+  const payload={records:[{fields:toAirtableFields(job)}]};
+  console.log('Airtable CREATE payload:',payload);
+
+  const res=await fetch(airtableUrl(),{
+    method:'POST',
+    headers:airtableHeaders(),
+    body:JSON.stringify(payload)
+  });
+
+  const text=await res.text();
+  console.log('Airtable CREATE status:',res.status);
+  console.log('Airtable CREATE response:',text);
+
+  let data={};
+  try{data=text?JSON.parse(text):{}}catch{}
+
+  if(!res.ok){
+    const detail=data?.error?.message||data?.error?.type||text||'Airtable save failed';
+    throw new Error(detail);
+  }
+
+  return data.records?.[0]?.id||'';
+}
+
+async function airtableUpdateRecord(recordId,job){
+  const payload={fields:toAirtableFields(job)};
+  console.log('Airtable UPDATE payload:',payload);
+
+  const res=await fetch(airtableUrl()+'/'+recordId,{
+    method:'PATCH',
+    headers:airtableHeaders(),
+    body:JSON.stringify(payload)
+  });
+
+  const text=await res.text();
+  console.log('Airtable UPDATE status:',res.status);
+  console.log('Airtable UPDATE response:',text);
+
+  let data={};
+  try{data=text?JSON.parse(text):{}}catch{}
+
+  if(!res.ok){
+    const detail=data?.error?.message||data?.error?.type||text||'Airtable update failed';
+    throw new Error(detail);
+  }
+
+  return data;
+}
+
 async function airtableDeleteRecord(recordId){await fetch(airtableUrl()+'/'+recordId,{method:'DELETE',headers:airtableHeaders()})}
-async function airtableFetchJobs(){const f=getFieldMap();let url=airtableUrl()+'?pageSize=100';let records=[];while(url){const res=await fetch(url,{headers:airtableHeaders()});if(!res.ok)throw new Error('Failed to fetch Airtable');const data=await res.json();records=records.concat(data.records||[]);url=data.offset?airtableUrl()+'?pageSize=100&offset='+encodeURIComponent(data.offset):''}
-  return records.map(record=>{const fields=record.fields||{};let parsed=null;try{if(fields[f.detailsJson])parsed=JSON.parse(fields[f.detailsJson])}catch{}const attachments=Array.isArray(fields[f.photos])?fields[f.photos].map(att=>({url:att.url||'',filename:att.filename||''})).filter(p=>p.url):[];const urls=String(fields[f.photoUrls]||'').split('\n').map(s=>s.trim()).filter(Boolean).map(url=>({url,filename:''}));const mergedPhotos=attachments.length?attachments:urls;const job=parsed&&parsed.snapshot?parsed:{id:'at-'+record.id,date:fields[f.date]||new Date().toISOString(),snapshot:{ownerName:fields[f.ownerName]||'',ownerId:fields[f.ownerId]||'',plot:fields[f.plot]||'',locationLabel:fields[f.locationLabel]||'',mapsUrl:fields[f.mapsUrl]||'',status:fields[f.status]||'Not measured yet',issueType:fields[f.issueType]||'',issueNote:fields[f.issueNote]||'',notes:fields[f.notes]||'',mode:'inches',jobType:fields[f.jobType]||'Monument',lfPointing:Number(fields[f.repointingLF]||0),numFlats:Number(fields[f.flats]||0),numSlants:Number(fields[f.slants]||0),pieces:[],photos:mergedPhotos},results:{jobType:fields[f.jobType]||'Monument',totalSqFt:Number(fields[f.areaSqFt]||0),mlClean:Number(fields[f.cleanML]||0),priceClean:Number(fields[f.cleanTotal]||0),mlExt:Number(fields[f.exteriorML]||0),priceExt:Number(fields[f.exteriorTotal]||0),lfPointing:Number(fields[f.repointingLF]||0),mlLF:Number(fields[f.repointingML]||0),priceLF:Number(fields[f.repointingTotal]||0),numFlats:Number(fields[f.flats]||0),numSlants:Number(fields[f.slants]||0),finalTotal:Number(fields[f.jobTotal]||0)}};job.airtableRecordId=record.id;if(!job.id)job.id='at-'+record.id;if(!job.snapshot.photos||!job.snapshot.photos.length)job.snapshot.photos=mergedPhotos;return job})}
-function mergeJobs(localJobs,remoteJobs){const merged=[],seen=new Set();[...remoteJobs,...localJobs].forEach(job=>{const key=job.airtableRecordId||job.id;if(!key||seen.has(key))return;seen.add(key);merged.push(job)});return merged.sort((a,b)=>new Date(b.date||0)-new Date(a.date||0))}
-async function getJobs(){const local=getLocalJobs();if(airtableReady()&&navigator.onLine){try{const remote=await airtableFetchJobs();const merged=mergeJobs(local,remote);saveLocalJobs(merged);return merged}catch(e){console.error(e);return local}}return local}
+
+async function airtableFetchJobs(){
+  const f=getFieldMap();
+  let url=airtableUrl()+'?pageSize=100';
+  let records=[];
+
+  while(url){
+    const res=await fetch(url,{headers:airtableHeaders()});
+    const text=await res.text();
+    if(!res.ok){
+      console.error('Airtable FETCH failed:',res.status,text);
+      throw new Error(text||'Failed to fetch Airtable');
+    }
+    let data={};
+    try{data=text?JSON.parse(text):{}}catch{}
+    records=records.concat(data.records||[]);
+    url=data.offset?airtableUrl()+'?pageSize=100&offset='+encodeURIComponent(data.offset):'';
+  }
+
+  return records.map(record=>{
+    const fields=record.fields||{};
+    let parsed=null;
+    try{if(fields[f.detailsJson])parsed=JSON.parse(fields[f.detailsJson])}catch{}
+    const attachments=Array.isArray(fields[f.photos])?fields[f.photos].map(att=>({url:att.url||'',filename:att.filename||''})).filter(p=>p.url):[];
+    const urls=String(fields[f.photoUrls]||'').split('\n').map(s=>s.trim()).filter(Boolean).map(url=>({url,filename:''}));
+    const mergedPhotos=attachments.length?attachments:urls;
+    const job=parsed&&parsed.snapshot?parsed:{id:'at-'+record.id,date:fields[f.date]||new Date().toISOString(),snapshot:{ownerName:fields[f.ownerName]||'',ownerId:fields[f.ownerId]||'',plot:fields[f.plot]||'',locationLabel:fields[f.locationLabel]||'',mapsUrl:fields[f.mapsUrl]||'',status:fields[f.status]||'Not measured yet',issueType:fields[f.issueType]||'',issueNote:fields[f.issueNote]||'',notes:fields[f.notes]||'',mode:'inches',jobType:fields[f.jobType]||'Monument',lfPointing:Number(fields[f.repointingLF]||0),numFlats:Number(fields[f.flats]||0),numSlants:Number(fields[f.slants]||0),pieces:[],photos:mergedPhotos},results:{jobType:fields[f.jobType]||'Monument',totalSqFt:Number(fields[f.areaSqFt]||0),mlClean:Number(fields[f.cleanML]||0),priceClean:Number(fields[f.cleanTotal]||0),mlExt:Number(fields[f.exteriorML]||0),priceExt:Number(fields[f.exteriorTotal]||0),lfPointing:Number(fields[f.repointingLF]||0),mlLF:Number(fields[f.repointingML]||0),priceLF:Number(fields[f.repointingTotal]||0),numFlats:Number(fields[f.flats]||0),numSlants:Number(fields[f.slants]||0),finalTotal:Number(fields[f.jobTotal]||0)}};
+    job.airtableRecordId=record.id;
+    if(!job.id)job.id='at-'+record.id;
+    if(!job.snapshot.photos||!job.snapshot.photos.length)job.snapshot.photos=mergedPhotos;
+    return job;
+  });
+}
+
+function mergeJobs(localJobs,remoteJobs){
+  const merged=[],seen=new Set();
+  [...remoteJobs,...localJobs].forEach(job=>{
+    const key=job.airtableRecordId||job.id;
+    if(!key||seen.has(key))return;
+    seen.add(key);
+    merged.push(job);
+  });
+  return merged.sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
+}
+
+async function getJobs(){
+  const local=getLocalJobs();
+  if(airtableReady()&&navigator.onLine){
+    try{
+      const remote=await airtableFetchJobs();
+      const merged=mergeJobs(local,remote);
+      saveLocalJobs(merged);
+      return merged;
+    }catch(e){
+      console.error(e);
+      return local;
+    }
+  }
+  return local;
+}
 
 async function saveCurrentRecord(){
   if(!currentRecordId)return showToast('No record open');
   const snap=getCurrentSnapshot();
   if(!snap.ownerName||!snap.ownerId||!snap.plot)return showToast('Owner Name, Owner ID, and Plot required');
+
   try{
-    if(cloudinaryReady()){photos=(await uploadPendingPhotos()).map(p=>({url:p.url,filename:p.filename}))}
+    if(cloudinaryReady()){
+      photos=(await uploadPendingPhotos()).map(p=>({url:p.url,filename:p.filename}));
+    }
+
     snap.photos=photos.map(p=>({url:p.url||'',filename:p.filename||''}));
+
     const jobs=getLocalJobs();
     let idx=jobs.findIndex(j=>j.id===currentRecordId);
     if(idx<0){idx=jobs.findIndex(j=>j.airtableRecordId===currentRecordId)}
     if(idx<0)return showToast('Record not found');
+
     const updated={...jobs[idx],snapshot:snap,results:lastResults||jobs[idx].results||{},date:new Date().toISOString()};
+
     if(airtableReady()){
-      if(updated.airtableRecordId) await airtableUpdateRecord(updated.airtableRecordId,updated);
+      if(updated.airtableRecordId) updated.airtableRecordId=(await airtableUpdateRecord(updated.airtableRecordId,updated)).id||updated.airtableRecordId;
       else updated.airtableRecordId=await airtableCreateRecord(updated);
     }
+
     jobs[idx]=updated;
     saveLocalJobs(jobs);
     await refreshData();
     openRecord(updated.id,currentBackContext);
     showToast('Record saved');
-  }catch(err){console.error(err);showToast(err.message||'Save failed')}
+  }catch(err){
+    console.error(err);
+    showToast(err.message||'Save failed');
+  }
 }
 
 function toggleTheme(){applyTheme(document.body.classList.contains('theme-dark')?'light':'dark')}
