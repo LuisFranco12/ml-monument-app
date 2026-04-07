@@ -323,38 +323,58 @@ function airtableUrl(){return `https://api.airtable.com/v0/${CONFIG.airtable.bas
 function getFieldMap(){return Object.assign({ownerName:'Owner Name',ownerId:'Owner ID',plot:'Plot',locationLabel:'Location Label',mapsUrl:'Maps URL',status:'Status',photoUrls:'Photo URLs',photos:'Photos',issueType:'Issue Type',issueNote:'Issue Note',jobName:'Job Name',date:'Date',jobType:'Job Type',areaSqFt:'Area Sq Ft',cleanML:'Clean ML',cleanTotal:'Clean Total',exteriorML:'Exterior ML',exteriorTotal:'Exterior Total',repointingLF:'Re-pointing LF',repointingML:'Re-pointing ML',repointingTotal:'Re-pointing Total',flats:'Flats',slants:'Slants',jobTotal:'Job Total',notes:'Notes',detailsJson:'Details JSON',photoCount:'Photo Count'},(CONFIG.airtable&&CONFIG.airtable.fields)||{})}
 
 function toAirtableFields(job){
-  const f=getFieldMap(),s=job.snapshot||{},r=job.results||{},isMonument=(s.jobType||'Monument')==='Monument';
-  const photoAttachments=(s.photos||[]).filter(p=>p.url).map(p=>({url:p.url,filename:p.filename||'photo.jpg'}));
-  const urls=photoAttachments.map(p=>p.url).join('\n');
-  return {
-    [f.ownerName]:s.ownerName||'',
-    [f.ownerId]:s.ownerId||'',
-    [f.plot]:s.plot||'',
-    [f.locationLabel]:s.locationLabel||'',
-    [f.mapsUrl]:s.mapsUrl||'',
-    [f.status]:s.status||'Not measured yet',
-    [f.issueType]:s.issueType||'',
-    [f.issueNote]:s.issueNote||'',
-    [f.photoUrls]:urls,
-    [f.photos]:photoAttachments,
-    [f.jobName]:`${s.ownerName||''} ${s.ownerId||''}`.trim(),
-    [f.date]:(job.date||new Date().toISOString()).slice(0,10),
-    [f.jobType]:s.jobType||'Monument',
-    [f.areaSqFt]:Number(r.totalSqFt||0),
-    [f.cleanML]:isMonument?Number(r.mlClean||0):0,
-    [f.cleanTotal]:isMonument?Number(r.priceClean||0):0,
-    [f.exteriorML]:isMonument?0:Number(r.mlExt||0),
-    [f.exteriorTotal]:isMonument?0:Number(r.priceExt||0),
-    [f.repointingLF]:isMonument?0:Number(r.lfPointing||0),
-    [f.repointingML]:isMonument?0:Number(r.mlLF||0),
-    [f.repointingTotal]:isMonument?0:Number(r.priceLF||0),
-    [f.flats]:Number(r.numFlats||0),
-    [f.slants]:Number(r.numSlants||0),
-    [f.jobTotal]:Number(r.finalTotal||0),
-    [f.notes]:s.notes||'',
-    [f.photoCount]:photoAttachments.length,
-    [f.detailsJson]:JSON.stringify({...job,snapshot:{...s,photos:photoAttachments.map(p=>({url:p.url||'',filename:p.filename||''}))}})
+  const f = getFieldMap();
+  const s = job.snapshot || {};
+  const r = job.results || {};
+  const isMonument = (s.jobType || 'Monument') === 'Monument';
+
+  const photoAttachments = (s.photos || [])
+    .filter(p => p.url)
+    .map(p => ({ url: p.url, filename: p.filename || 'photo.jpg' }));
+
+  const urls = photoAttachments.map(p => p.url).join('\n');
+
+  const fields = {
+    [f.ownerName]: s.ownerName || '',
+    [f.ownerId]: s.ownerId || '',
+    [f.locationLabel]: s.locationLabel || '',
+    [f.mapsUrl]: s.mapsUrl || '',
+    [f.issueNote]: s.issueNote || '',
+    [f.photoUrls]: urls,
+    [f.photos]: photoAttachments,
+    [f.jobName]: `${s.ownerName || ''} ${s.ownerId || ''}`.trim(),
+    [f.date]: (job.date || new Date().toISOString()).slice(0,10),
+    [f.areaSqFt]: Number(r.totalSqFt || 0),
+    [f.cleanML]: isMonument ? Number(r.mlClean || 0) : 0,
+    [f.cleanTotal]: isMonument ? Number(r.priceClean || 0) : 0,
+    [f.exteriorML]: isMonument ? 0 : Number(r.mlExt || 0),
+    [f.exteriorTotal]: isMonument ? 0 : Number(r.priceExt || 0),
+    [f.repointingLF]: isMonument ? 0 : Number(r.lfPointing || 0),
+    [f.repointingML]: isMonument ? 0 : Number(r.mlLF || 0),
+    [f.repointingTotal]: isMonument ? 0 : Number(r.priceLF || 0),
+    [f.flats]: Number(r.numFlats || 0),
+    [f.slants]: Number(r.numSlants || 0),
+    [f.jobTotal]: Number(r.finalTotal || 0),
+    [f.notes]: s.notes || '',
+    [f.photoCount]: photoAttachments.length,
+    [f.detailsJson]: JSON.stringify({
+      ...job,
+      snapshot: {
+        ...s,
+        photos: photoAttachments.map(p => ({
+          url: p.url || '',
+          filename: p.filename || ''
+        }))
+      }
+    })
   };
+
+  if ((s.plot || '').trim()) fields[f.plot] = s.plot.trim();
+  if ((s.status || '').trim()) fields[f.status] = s.status.trim();
+  if ((s.issueType || '').trim()) fields[f.issueType] = s.issueType.trim();
+  if ((s.jobType || '').trim()) fields[f.jobType] = s.jobType.trim();
+
+  return fields;
 }
 
 async function airtableCreateRecord(job){
