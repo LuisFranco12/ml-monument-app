@@ -3,927 +3,435 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <meta name="theme-color" content="#0f1117"/>
+  <meta name="theme-color" content="#f4f7fb"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-  <meta name="apple-mobile-web-app-title" content="ML Monument Calc"/>
-  <title>ML Monument Calc</title>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="ML Monument App"/>
+  <title>ML Monument App</title>
   <link rel="manifest" href="./manifest.webmanifest"/>
   <link rel="apple-touch-icon" href="./icon-180.png"/>
   <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png"/>
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --bg:#0f1117;
-      --surface:#1a1d27;
-      --surface2:#22263a;
-      --border:#2e3350;
-      --accent:#3b82f6;
-      --accent2:#10b981;
-      --accent3:#8b5cf6;
-      --danger:#ef4444;
-      --text:#e8eaf6;
-      --muted:#8b93a7;
-      --clean:#10b981;
-      --ext:#3b82f6;
-      --lf:#8b5cf6;
-      --flat:#ef4444;
-      --final:#f59e0b;
-      --warning:#f59e0b;
+      --bg: #f4f7fb;
+      --surface: #ffffff;
+      --surface-2: #f8fbff;
+      --text: #0f172a;
+      --muted: #60728e;
+      --border: #dbe4ef;
+      --accent: #0c1837;
+      --accent-soft: #edf3fb;
+      --danger: #b42318;
+      --shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+      --radius: 22px;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-
+    * { box-sizing: border-box; }
     body {
+      margin: 0;
       font-family: 'Inter', sans-serif;
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
-      padding-bottom: 100px;
     }
-
-    .app-container {
-      max-width: 1100px;
+    button, input, textarea, select { font: inherit; }
+    .shell {
+      max-width: 1450px;
       margin: 0 auto;
-      padding: 0 16px;
+      padding: 18px 18px 60px;
     }
-
-    .header {
-      background: linear-gradient(135deg, #1a1d27 0%, #0f1117 100%);
-      padding: 20px 16px 16px;
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .header h1 {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: 1px;
-    }
-
-    .header h1 span {
-      color: var(--accent);
-    }
-
-    .header-sub {
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 2px;
-      letter-spacing: .5px;
-    }
-
-    .tab-nav {
+    .topbar {
       display: flex;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 73px;
-      z-index: 99;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      margin-bottom: 18px;
     }
-
-    .tab-btn {
-      flex: 1;
-      padding: 12px 4px;
-      background: none;
-      border: none;
-      color: var(--muted);
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 13px;
+    .title h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.1;
       font-weight: 700;
-      letter-spacing: .5px;
+    }
+    .title p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .nav-pill {
+      display: inline-flex;
+      gap: 8px;
+      background: var(--surface);
+      padding: 6px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      align-self: flex-start;
+    }
+    .nav-pill button {
+      border: none;
+      background: transparent;
+      color: var(--text);
+      padding: 12px 18px;
+      border-radius: 14px;
+      font-weight: 600;
       cursor: pointer;
-      border-bottom: 2px solid transparent;
     }
-
-    .tab-btn.active {
-      color: var(--accent);
-      border-bottom-color: var(--accent);
+    .nav-pill button.active {
+      background: var(--accent);
+      color: #fff;
     }
-
-    .page {
-      display: none;
-      padding: 16px;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-
-    .page.active {
-      display: block;
-    }
-
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 12px;
-      max-width: 900px;
-      margin-left: auto;
-      margin-right: auto;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
     }
-
-    .card-title {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: var(--muted);
-      text-transform: uppercase;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-
-    .badge {
-      background: var(--accent);
-      color: white;
-      font-size: 10px;
-      padding: 2px 7px;
-      border-radius: 20px;
-      font-weight: 600;
-    }
-
-    .mode-toggle {
-      display: flex;
-      background: var(--bg);
-      border-radius: 8px;
-      padding: 3px;
-      border: 1px solid var(--border);
-      gap: 3px;
-    }
-
-    .mode-btn {
-      flex: 1;
-      padding: 8px;
-      border: none;
-      background: none;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 600;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    .mode-btn.active {
-      background: var(--accent);
-      color: white;
-    }
-
-    .field-row {
-      margin-bottom: 11px;
-    }
-
-    .field-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--muted);
-      letter-spacing: .5px;
-      text-transform: uppercase;
-      margin-bottom: 5px;
-    }
-
-    input[type="number"],
-    input[type="text"],
-    input[type="file"],
-    textarea,
-    select {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      font-size: 16px;
-      padding: 11px 13px;
-      outline: none;
-    }
-
-    textarea {
-      min-height: 80px;
-      resize: vertical;
-    }
-
-    input:focus,
-    textarea:focus,
-    select:focus {
-      border-color: var(--accent);
-    }
-
-    input::placeholder,
-    textarea::placeholder {
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .fi-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .piece-block {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
-      margin-bottom: 10px;
-    }
-
-    .piece-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
-    .piece-label {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--accent);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-
-    .piece-label.main {
-      color: var(--accent2);
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 11px 16px;
-      border: none;
-      border-radius: 8px;
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: .5px;
-      cursor: pointer;
-      text-decoration: none;
-    }
-
-    .btn:active {
-      transform: scale(.98);
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: white;
-    }
-
-    .btn-success {
-      background: var(--accent2);
-      color: white;
-    }
-
-    .btn-danger {
-      background: transparent;
-      border: 1px solid var(--danger);
-      color: var(--danger);
-      padding: 6px 12px;
-      font-size: 12px;
-    }
-
-    .btn-ghost {
-      background: var(--surface2);
-      color: var(--text);
-    }
-
-    .btn-sm {
-      padding: 6px 12px;
-      font-size: 12px;
-    }
-
-    .btn-full {
-      width: 100%;
-    }
-
-    .btn-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    .mult-toggle {
-      background: var(--surface2);
-      border: 1px dashed var(--border);
-      border-radius: 8px;
-      padding: 9px 13px;
-      font-size: 13px;
-      color: var(--muted);
-      cursor: pointer;
-      width: 100%;
-      text-align: left;
-      margin-bottom: 8px;
-    }
-
-    .mult-toggle.active {
-      border-color: var(--accent3);
-      color: var(--accent3);
-    }
-
-    .stepper {
-      display: flex;
-      align-items: center;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
-    .stepper-btn {
-      width: 44px;
-      height: 44px;
-      background: var(--surface2);
-      border: none;
-      color: var(--text);
-      font-size: 20px;
-      cursor: pointer;
-    }
-
-    .stepper input {
-      flex: 1;
-      text-align: center;
-      border: none;
-      border-radius: 0;
-      border-left: 1px solid var(--border);
-      border-right: 1px solid var(--border);
-      font-size: 18px;
-      padding: 10px 4px;
-    }
-
-    .result-section {
-      border-radius: 10px;
-      padding: 13px;
-      margin-bottom: 10px;
-      border-left: 3px solid;
-    }
-
-    .result-section.clean { background: rgba(16,185,129,.08); border-color: var(--clean); }
-    .result-section.ext { background: rgba(59,130,246,.08); border-color: var(--ext); }
-    .result-section.lf { background: rgba(139,92,246,.08); border-color: var(--lf); }
-    .result-section.flat { background: rgba(239,68,68,.08); border-color: var(--flat); }
-    .result-section.final { background: rgba(245,158,11,.12); border-color: var(--final); }
-
-    .result-title {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-      opacity: .8;
-    }
-
-    .result-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      gap: 12px;
-      margin-bottom: 4px;
-    }
-
-    .result-key { font-size: 13px; color: var(--muted); }
-    .result-val {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 18px;
-      font-weight: 700;
-      text-align: right;
-    }
-
-    .green { color: var(--clean); }
-    .blue { color: var(--ext); }
-    .purple { color: var(--lf); }
-    .red { color: var(--flat); }
-    .gold { color: var(--final); }
-
-    .history-item {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 13px;
-      margin-bottom: 10px;
-    }
-
-    .history-name {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .history-date {
-      font-size: 11px;
-      color: var(--muted);
-      margin-bottom: 8px;
-    }
-
-    .history-issue {
-      display: inline-block;
-      margin-bottom: 8px;
-      padding: 5px 9px;
-      border-radius: 999px;
-      background: rgba(245, 158, 11, .12);
-      border: 1px solid rgba(245, 158, 11, .35);
-      color: var(--warning);
-      font-size: 11px;
-      font-weight: 600;
-    }
-
-    .history-totals {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-    }
-
-    .history-total-item {
-      background: var(--bg);
-      border-radius: 6px;
-      padding: 6px 10px;
-    }
-
-    .history-total-label {
-      font-size: 10px;
-      color: var(--muted);
-    }
-
-    .history-total-val {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--accent2);
-    }
-
-    .history-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-    }
-
-    .plot-group {
+    .section {
+      padding: 24px;
       margin-bottom: 18px;
     }
-
-    .plot-group-title {
+    .section h2, .section h3 {
+      margin: 0 0 6px;
+      font-size: 22px;
+    }
+    .subtext {
+      color: var(--muted);
+      margin: 0;
+    }
+    .toolbar {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+    .toolbar .search-wrap { flex: 1; min-width: 260px; }
+    .search-wrap, .inline-input {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: var(--accent);
-      margin: 10px 0 8px;
-      padding-bottom: 6px;
-      border-bottom: 1px solid var(--border);
-      max-width: 900px;
-      margin-left: auto;
-      margin-right: auto;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .plot-chevron {
-      font-size: 14px;
-      color: var(--muted);
-      margin-right: 8px;
-    }
-
-    .plot-group-body.hidden {
-      display: none;
-    }
-
-    .saved-toolbar {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
       gap: 10px;
-      margin-top: 10px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 0 16px;
+      min-height: 56px;
     }
-
-    .saved-toolbar input,
-    .saved-toolbar select {
-      width: 100%;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--muted);
-    }
-
-    .empty-state .icon {
-      font-size: 40px;
-      margin-bottom: 10px;
-    }
-
-    .empty-state p {
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    .action-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: var(--surface);
-      border-top: 1px solid var(--border);
-      padding: 12px 16px;
-      display: flex;
-      gap: 10px;
-      z-index: 200;
-    }
-
-    .action-bar .btn {
+    .search-wrap input, .inline-input input {
       flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+      min-height: 52px;
     }
-
-    .toast {
-      position: fixed;
-      top: 80px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-10px);
-      background: var(--accent2);
-      color: white;
-      padding: 10px 20px;
-      border-radius: 20px;
-      font-size: 13px;
+    .btn {
+      border: none;
+      cursor: pointer;
+      border-radius: 18px;
+      padding: 14px 22px;
       font-weight: 600;
-      opacity: 0;
-      pointer-events: none;
-      transition: all .3s;
-      z-index: 999;
-      max-width: calc(100vw - 32px);
-      text-align: center;
     }
-
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-secondary { background: #fff; color: var(--text); border: 1px solid var(--border); }
+    .btn-danger { background: #fff; color: var(--danger); border: 1px solid #efc1bb; }
+    .btn.full { width: 100%; }
+    .grid-2 { display: grid; grid-template-columns: 1.95fr 1fr; gap: 18px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    .goal-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    .goal {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      color: var(--muted);
+      background: #fff;
+      min-height: 76px;
+      display: flex;
+      align-items: center;
     }
-
-    .install-hint,
-    .status-card {
-      border-radius: 10px;
-      padding: 12px;
-      font-size: 12px;
-      line-height: 1.5;
+    .list {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: #fff;
+    }
+    .list-row {
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      border-top: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .list-row:first-child { border-top: none; }
+    .list-row:hover { background: var(--surface-2); }
+    .list-title { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+    .list-sub { color: var(--muted); }
+    .count { color: var(--muted); font-size: 16px; white-space: nowrap; }
+    .workflow-stack { display: grid; gap: 12px; margin-top: 18px; }
+    .workflow-item {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      color: var(--muted);
+      background: #fff;
+    }
+    .page { display: none; }
+    .page.active { display: block; }
+    .crumb {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      color: var(--text);
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
       margin-bottom: 14px;
     }
-
-    .install-hint {
-      background: var(--surface2);
-      border: 1px dashed var(--border);
-      color: var(--muted);
-    }
-
-    .install-hint strong {
-      color: var(--accent);
-    }
-
-    .status-card {
-      background: rgba(59,130,246,.08);
-      border: 1px solid rgba(59,130,246,.2);
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .photo-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .photo-item {
-      position: relative;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      overflow: hidden;
-      aspect-ratio: 1 / 1;
-    }
-
-    .photo-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    .page-header h2 { margin: 0; font-size: 24px; }
+    .page-header p { margin: 6px 0 0; color: var(--muted); }
+    .record-layout { display: grid; grid-template-columns: 2.2fr 1fr; gap: 18px; }
+    .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .field { margin-bottom: 14px; }
+    .field label {
       display: block;
-      cursor: pointer;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
     }
-
+    .field input, .field textarea, .field select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 14px;
+      outline: none;
+      background: #fff;
+      color: var(--text);
+    }
+    .field textarea { min-height: 110px; resize: vertical; }
+    .notice {
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--accent-soft);
+      color: var(--muted);
+      margin-top: 12px;
+    }
+    .metric {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px 16px;
+      background: #fff;
+    }
+    .metric-label { color: var(--muted); font-size: 13px; margin-bottom: 6px; }
+    .metric-value { font-size: 18px; font-weight: 700; }
+    .side-stack { display: grid; gap: 18px; }
+    .action-stack { display: grid; gap: 10px; margin-top: 14px; }
+    .action-btn {
+      width: 100%;
+      text-align: left;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: #fff;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .action-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .photo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .photo-card {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--surface-2);
+      min-height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      overflow: hidden;
+      position: relative;
+    }
+    .photo-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .photo-remove {
       position: absolute;
-      top: 6px;
-      right: 6px;
-      width: 28px;
-      height: 28px;
+      top: 8px;
+      right: 8px;
       border: none;
+      background: rgba(15,23,42,.8);
+      color: #fff;
       border-radius: 999px;
-      background: rgba(15,17,23,.85);
-      color: white;
+      width: 30px;
+      height: 30px;
       cursor: pointer;
     }
-
-    .sync-pill {
-      font-size: 11px;
-      padding: 4px 8px;
-      border-radius: 999px;
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,.28);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 999;
+    }
+    .modal-backdrop.show { display: flex; }
+    .modal {
+      width: min(1100px, 100%);
+      max-height: calc(100vh - 40px);
+      overflow: auto;
+      background: var(--surface);
+      border-radius: 26px;
       border: 1px solid var(--border);
-      color: var(--muted);
+      box-shadow: 0 20px 50px rgba(15,23,42,.18);
+      padding: 26px;
     }
-
-    .sync-pill.ok {
-      color: var(--accent2);
-      border-color: rgba(16,185,129,.4);
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
     }
-
-    .sync-pill.warn {
-      color: #f59e0b;
-      border-color: rgba(245,158,11,.4);
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 999px;
+      display: none;
+      z-index: 1000;
+      box-shadow: var(--shadow);
     }
-
-    .section-note {
+    .toast.show { display: block; }
+    .calc-section .field-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .piece-block {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      background: #fff;
+      margin-bottom: 12px;
+    }
+    .piece-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .piece-title { font-weight: 700; }
+    .result-box {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      background: var(--surface-2);
+      margin-top: 12px;
+    }
+    .result-row { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; }
+    .muted { color: var(--muted); }
+    .hidden { display: none !important; }
+    .pill-status {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 6px 12px;
+      background: var(--accent-soft);
+      color: var(--accent);
       font-size: 12px;
-      color: var(--muted);
-      line-height: 1.5;
-      margin-top: 8px;
+      font-weight: 700;
     }
 
-    #resultsInner {
-      max-width: 900px;
-      margin: 0 auto;
+    @media (max-width: 1100px) {
+      .grid-2, .record-layout, .goal-grid, .grid-4 { grid-template-columns: 1fr; }
+      .field-grid, .calc-section .field-grid.three { grid-template-columns: 1fr; }
     }
 
-    @media (max-width: 380px) {
-      .result-row {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .result-val {
-        text-align: left;
-      }
-
-      .history-totals,
-      .btn-row,
-      .saved-toolbar {
-        grid-template-columns: 1fr;
-      }
-
-      .photo-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (min-width: 900px) {
-      body {
-        padding-top: 20px;
-      }
-
-      .card {
-        padding: 18px;
-      }
+    @media (max-width: 700px) {
+      .shell { padding: 14px 14px 80px; }
+      .topbar, .page-header, .toolbar { flex-direction: column; align-items: stretch; }
+      .nav-pill { align-self: flex-start; }
+      .modal { padding: 18px; }
     }
   </style>
 </head>
 <body>
-<div class="app-container">
-  <div class="header">
-    <h1>ML <span>Monument</span> Calc</h1>
-    <div class="header-sub">FIELD MEASUREMENT TOOL</div>
+  <div class="shell">
+    <div class="topbar">
+      <div class="title">
+        <h1>ML Monument App Redesign Preview</h1>
+        <p>Interactive mockup of the new structure</p>
+      </div>
+      <div class="nav-pill">
+        <button id="navHome" class="active" onclick="switchMainTab('home')">Home</button>
+        <button id="navPlots" onclick="switchMainTab('plots')">Plots</button>
+      </div>
+    </div>
+
+    <div id="page-home" class="page active"></div>
+    <div id="page-plots" class="page"></div>
+
+    <div class="card section">
+      <div class="muted" style="font-weight:700; margin-bottom:10px;">Updated preview goals</div>
+      <div class="goal-grid">
+        <div class="goal">Home can search or create a new record shell</div>
+        <div class="goal">Measurements are not required when creating from Home</div>
+        <div class="goal">Existing records are easy to edit from a phone while in the field</div>
+        <div class="goal">Each record can store a location label and Google Maps link for directions</div>
+      </div>
+    </div>
   </div>
 
-  <div class="tab-nav">
-    <button class="tab-btn active" onclick="switchTab('calc')">⚒ Calculator</button>
-    <button class="tab-btn" onclick="switchTab('saved')">🗂 Saved Jobs</button>
+  <div class="modal-backdrop" id="newJobModalWrap">
+    <div class="modal">
+      <h2 style="margin:0 0 8px; font-size:24px;">Create New Job From Home</h2>
+      <p class="subtext" style="margin-bottom:22px;">Only Owner Name, Owner ID, and Plot are required here.</p>
+      <div class="field-grid">
+        <div class="field">
+          <label>Owner Name *</label>
+          <input id="newOwnerName" type="text" placeholder="Enter owner name"/>
+        </div>
+        <div class="field">
+          <label>Owner ID *</label>
+          <input id="newOwnerId" type="text" placeholder="Enter owner ID"/>
+        </div>
+        <div class="field">
+          <label>Plot *</label>
+          <select id="newPlot"></select>
+        </div>
+        <div class="field">
+          <label>Location / Google Maps</label>
+          <input id="newMapsUrl" type="text" placeholder="Paste maps link or add location note"/>
+        </div>
+      </div>
+      <div class="field">
+        <label>Location Label</label>
+        <input id="newLocationLabel" type="text" placeholder="Optional location label"/>
+      </div>
+      <div class="notice">Measurements are not required here. You can create the record now, then open it on your phone later and edit everything while you are in the field.</div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeNewJobModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="createRecordFromModal()">Create Record</button>
+      </div>
+    </div>
   </div>
 
-  <div id="toast" class="toast"></div>
-
-  <div id="page-calc" class="page active">
-    <div class="install-hint">📱 <strong>Install as app:</strong> Open the hosted HTTPS version in Safari, tap Share, then <strong>Add to Home Screen</strong>.</div>
-    <div class="status-card hidden" id="storageWarning"><strong>Storage warning:</strong> opening the file straight from Files can break saved jobs. Use the hosted version.</div>
-
-    <div class="card hidden" id="installCard">
-      <div class="card-title">Install App</div>
-      <div class="btn-row">
-        <button class="btn btn-primary" id="installBtn">⬇ Install</button>
-        <button class="btn btn-ghost" onclick="dismissInstallCard()">Later</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Job Setup <span class="sync-pill" id="syncStatus">Local only</span></div>
-
-      <div class="field-row">
-        <div class="field-label">Owner Name</div>
-        <input type="text" id="ownerName" placeholder="e.g. John Smith" autocomplete="off"/>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">Owner ID</div>
-        <input type="text" id="ownerId" placeholder="e.g. #4821" autocomplete="off"/>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">Plot</div>
-        <select id="plotSelect"></select>
-        <button class="btn btn-ghost btn-sm" style="margin-top:8px;" onclick="togglePlotEditor()">Edit Plots</button>
-      </div>
-
-      <div class="card hidden" id="plotEditorCard" style="margin-top:10px;">
-        <div class="card-title">Manage Plots</div>
-
-        <div class="field-row">
-          <div class="field-label">Add Plot</div>
-          <input type="text" id="newPlotInput" placeholder="e.g. Poplar"/>
-        </div>
-
-        <div class="btn-row">
-          <button class="btn btn-primary" onclick="addPlotOption()">Add Plot</button>
-          <button class="btn btn-danger" onclick="removeSelectedPlot()">Remove Selected</button>
-        </div>
-
-        <div class="btn-row" style="margin-top:10px;">
-          <button class="btn btn-ghost" onclick="resetDefaultPlots()">Reset Default Plots</button>
-          <button class="btn btn-ghost" onclick="togglePlotEditor()">Close</button>
-        </div>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">Issue Type</div>
-        <select id="issueType">
-          <option value="">None</option>
-          <option>Fallen / Cracked Monument or Headstone</option>
-          <option>Inscription Different From Owner</option>
-          <option>Multiple Headstones, Different Names, Same Owner</option>
-          <option>No Monument At All</option>
-        </select>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">Issue Note</div>
-        <textarea id="issueNote" placeholder="Describe the issue if needed"></textarea>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">Job Type</div>
-        <div class="mode-toggle">
-          <button class="mode-btn active" id="jobTypeMonument" onclick="setJobType('Monument')">Monument</button>
-          <button class="mode-btn" id="jobTypeMausoleum" onclick="setJobType('Mausoleum')">Mausoleum</button>
-        </div>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">Notes</div>
-        <textarea id="jobNotes" placeholder="Optional notes"></textarea>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Input Mode</div>
-      <div class="mode-toggle">
-        <button class="mode-btn active" id="modeInches" onclick="setMode('inches')">Inches Only</button>
-        <button class="mode-btn" id="modeFeet" onclick="setMode('feetInches')">Feet & Inches</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">
-        <span id="piecesTitle">Monument Pieces</span>
-        <span class="badge" id="pieceCount">1</span>
-      </div>
-      <div id="piecesContainer"></div>
-      <button class="btn btn-ghost btn-full" onclick="addPiece()">+ Add Piece</button>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Footstones</div>
-
-      <div class="field-row">
-        <div class="field-label">Flats</div>
-        <div class="stepper">
-          <button class="stepper-btn" onclick="stepperChange('numFlats',-1)">−</button>
-          <input type="number" id="numFlats" value="" placeholder="0" min="0" inputmode="numeric"/>
-          <button class="stepper-btn" onclick="stepperChange('numFlats',1)">+</button>
-        </div>
-      </div>
-
-      <div class="field-row">
-        <div class="field-label">Slants</div>
-        <div class="stepper">
-          <button class="stepper-btn" onclick="stepperChange('numSlants',-1)">−</button>
-          <input type="number" id="numSlants" value="" placeholder="0" min="0" inputmode="numeric"/>
-          <button class="stepper-btn" onclick="stepperChange('numSlants',1)">+</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="card" id="repointingCard">
-      <div class="card-title">Re-pointing</div>
-      <div class="field-row">
-        <div class="field-label">LF (Linear Feet)</div>
-        <input type="number" id="lfPointing" value="" placeholder="0" inputmode="decimal"/>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Photos <span class="badge" id="photoCount">0</span></div>
-
-      <div class="field-row">
-        <div class="field-label">Add up to 3 photos</div>
-
-        <div class="btn-row">
-          <button type="button" class="btn btn-primary" onclick="document.getElementById('cameraInput').click()">📷 Take Photo</button>
-          <button type="button" class="btn btn-ghost" onclick="document.getElementById('photoLibraryInput').click()">🖼 Choose From Library</button>
-        </div>
-
-        <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden"/>
-        <input type="file" id="photoLibraryInput" accept="image/*" multiple class="hidden"/>
-
-        <div class="section-note">Photos upload to Cloudinary on save and can be loaded on your phone or PC later.</div>
-      </div>
-
-      <div class="photo-grid" id="photoGrid"></div>
-    </div>
-
-    <div id="resultsContainer" class="hidden">
-      <div class="card">
-        <div class="card-title">Results</div>
-        <div id="resultsInner"></div>
-      </div>
-    </div>
-
-    <div style="height:20px;"></div>
-  </div>
-
-  <div id="page-saved" class="page">
-    <div class="card">
-      <div class="card-title">Saved Jobs Tools</div>
-
-      <div class="saved-toolbar">
-        <div>
-          <div class="field-label">Filter by Plot</div>
-          <select id="savedPlotFilter" onchange="renderHistory()"></select>
-        </div>
-        <div>
-          <div class="field-label">Search Owner Name / ID</div>
-          <input type="text" id="savedSearch" placeholder="Type to search..." oninput="renderHistory()"/>
-        </div>
-      </div>
-
-      <div class="btn-row">
-        <button class="btn btn-ghost" onclick="exportBackup()">Export Backup</button>
-        <label class="btn btn-primary" for="importFile">Import Backup</label>
-      </div>
-
-      <div class="btn-row" style="margin-top:10px;">
-        <button class="btn btn-ghost" onclick="exportCsv()">Export CSV</button>
-        <button class="btn btn-danger" onclick="clearAllJobs()">Delete All</button>
-      </div>
-
-      <div class="section-note">Filter by plot, search by owner, and open one plot section at a time.</div>
-      <input type="file" id="importFile" accept="application/json" class="hidden"/>
-    </div>
-
-    <div id="historyContainer"></div>
-  </div>
-
-  <div class="action-bar" id="calcActions">
-    <button class="btn btn-success" onclick="calculateML()">⚡ Calculate</button>
-    <button class="btn btn-ghost" onclick="saveJob()" id="saveBtn" style="display:none;">💾 Save</button>
-    <button class="btn btn-danger btn-sm" onclick="resetCalculator()" style="flex:0; min-width:68px;">↺ Reset</button>
-  </div>
-</div>
+  <div class="toast" id="toast"></div>
 
 <script src="./config.js"></script>
 <script>
 const CONFIG = window.ML_APP_CONFIG || {};
-const STORAGE_KEY = 'ml_saved_jobs_v4';
+const STORAGE_KEY = 'ml_saved_jobs_v5';
 const PLOTS_STORAGE_KEY = 'ml_plot_options_v1';
-const LAST_SELECTED_PLOT_KEY = 'ml_last_selected_plot_v1';
-
 const DEFAULT_PLOTS = [
   '0','Acacia','ALP HILL','Alpine Hill','Althea','Arbor','Arbutus','Ash','ASTER','Aurora Hill',
   'Azalea','Balsam','Beech','Birch Hill','Bluebell','Brookside','Butternut','Canna','Catalpa','Cedar',
@@ -941,29 +449,22 @@ const DEFAULT_PLOTS = [
   'White Oak','Whitewood','Wild Rose','Wintergreen','Wistaria','Woodbine','Woodlawn','Yew','Zinnia'
 ];
 
-let mode = 'inches';
-let jobType = 'Monument';
-let pieces = [];
-let photos = [];
-let pieceIdCounter = 0;
-let lastResults = null;
 let storageReady = false;
-let deferredPrompt = null;
-let openPlotName = '';
+let recordsCache = [];
+let currentTab = 'home';
+let plotsViewMode = 'list'; // list | records | detail
+let selectedPlot = '';
+let selectedRecordId = '';
+let currentSearch = '';
+let plotSearch = '';
+let currentRecordDraft = null;
+let pieceIdCounter = 0;
 
 window.onload = async () => {
   storageReady = canUseStorage();
-  document.getElementById('storageWarning').classList.toggle('hidden', storageReady);
-  bindImport();
-  bindPhotos();
-  updateSyncBadge();
-  registerServiceWorker();
-  renderPlotOptions(getLastSelectedPlot());
-  addPiece(true);
-  renderPhotoGrid();
-  renderSavedPlotFilterOptions();
-  await renderHistory();
-  updateJobTypeUI();
+  renderPlotSelects();
+  await refreshRecords();
+  renderAll();
 };
 
 function canUseStorage() {
@@ -994,332 +495,712 @@ function getPlots() {
   return [...DEFAULT_PLOTS];
 }
 
-function savePlots(plots) {
-  safeLocalSet(PLOTS_STORAGE_KEY, JSON.stringify(plots));
+function renderPlotSelects() {
+  const html = '<option value="">Choose plot</option>' + getPlots().slice().sort((a,b) => a.localeCompare(b)).map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
+  const select = document.getElementById('newPlot');
+  if (select) select.innerHTML = html;
 }
 
-function getLastSelectedPlot() {
-  return safeLocalGet(LAST_SELECTED_PLOT_KEY) || '';
+function getLocalRecords() {
+  try { return JSON.parse(safeLocalGet(STORAGE_KEY) || '[]') || []; } catch { return []; }
 }
 
-function saveLastSelectedPlot(plot) {
-  safeLocalSet(LAST_SELECTED_PLOT_KEY, plot || '');
+function setLocalRecords(records) {
+  safeLocalSet(STORAGE_KEY, JSON.stringify(records));
 }
 
-function renderPlotOptions(selectedValue = '') {
-  const select = document.getElementById('plotSelect');
-  if (!select) return;
-
-  const plots = getPlots().slice().sort((a, b) => a.localeCompare(b));
-  select.innerHTML =
-    '<option value="">Select a plot</option>' +
-    plots.map(plot => `<option value="${escapeHtml(plot)}">${escapeHtml(plot)}</option>`).join('');
-
-  const finalValue = selectedValue && plots.includes(selectedValue) ? selectedValue : '';
-  select.value = finalValue;
+function mergeRecords(localRecords, remoteRecords) {
+  const merged = [];
+  const seen = new Set();
+  [...remoteRecords, ...localRecords].forEach(record => {
+    const key = record.airtableRecordId || record.id;
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    merged.push(normalizeRecord(record));
+  });
+  return merged.sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
 }
 
-function togglePlotEditor() {
-  document.getElementById('plotEditorCard').classList.toggle('hidden');
-}
-
-function addPlotOption() {
-  const input = document.getElementById('newPlotInput');
-  const value = (input.value || '').trim();
-  if (!value) return showToast('Enter a plot name');
-
-  const plots = getPlots();
-  if (plots.some(p => p.toLowerCase() === value.toLowerCase())) {
-    return showToast('Plot already exists');
-  }
-
-  plots.push(value);
-  savePlots(plots);
-  renderPlotOptions(value);
-  saveLastSelectedPlot(value);
-  input.value = '';
-  showToast('Plot added');
-}
-
-function removeSelectedPlot() {
-  const select = document.getElementById('plotSelect');
-  const value = (select.value || '').trim();
-  if (!value) return showToast('Select a plot first');
-
-  const plots = getPlots().filter(p => p !== value);
-  savePlots(plots);
-  renderPlotOptions('');
-  saveLastSelectedPlot('');
-  showToast('Plot removed');
-}
-
-function resetDefaultPlots() {
-  savePlots([...DEFAULT_PLOTS]);
-  renderPlotOptions(getLastSelectedPlot());
-  showToast('Default plots restored');
-}
-
-function renderSavedPlotFilterOptions() {
-  const select = document.getElementById('savedPlotFilter');
-  if (!select) return;
-
-  const jobs = getLocalJobs();
-  const plotNames = Array.from(
-    new Set(jobs.map(job => (job.snapshot?.plot || 'Unassigned Plot').trim() || 'Unassigned Plot'))
-  ).sort((a, b) => a.localeCompare(b));
-
-  const current = select.value || '';
-  select.innerHTML =
-    '<option value="">All Plots</option>' +
-    plotNames.map(plot => `<option value="${escapeHtml(plot)}">${escapeHtml(plot)}</option>`).join('');
-
-  if (current && plotNames.includes(current)) {
-    select.value = current;
-  }
-}
-
-function togglePlotSection(plotName) {
-  openPlotName = openPlotName === plotName ? '' : plotName;
-  renderHistory();
-}
-
-function switchTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', ['calc', 'saved'][i] === tab));
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + tab).classList.add('active');
-  document.getElementById('calcActions').style.display = tab === 'calc' ? 'flex' : 'none';
-  if (tab === 'saved') renderHistory();
-}
-
-function setJobType(type) {
-  if (jobType === type) return;
-  jobType = type;
-  updateJobTypeUI();
-  if (lastResults) renderResults(lastResults);
-}
-
-function updateJobTypeUI() {
-  document.getElementById('jobTypeMonument').classList.toggle('active', jobType === 'Monument');
-  document.getElementById('jobTypeMausoleum').classList.toggle('active', jobType === 'Mausoleum');
-  document.getElementById('piecesTitle').textContent = jobType === 'Monument' ? 'Monument Pieces' : 'Mausoleum Pieces';
-  document.getElementById('repointingCard').classList.toggle('hidden', jobType !== 'Mausoleum');
-  updatePieceLabels();
-}
-
-function setMode(newMode) {
-  if (mode === newMode) return;
-  const snapshot = getCurrentSnapshot();
-  mode = newMode;
-  document.getElementById('modeInches').classList.toggle('active', mode === 'inches');
-  document.getElementById('modeFeet').classList.toggle('active', mode === 'feetInches');
-  rebuildPieces(snapshot.pieces || []);
-}
-
-function rebuildPieces(savedPieces = []) {
-  document.getElementById('piecesContainer').innerHTML = '';
-  pieces = [];
-  pieceIdCounter = 0;
-  if (!savedPieces.length) {
-    addPiece(true);
-    return;
-  }
-  savedPieces.forEach((piece, index) => addPiece(index === 0, piece));
-  updatePieceLabels();
-}
-
-function addPiece(isMain = false, existingData = null) {
-  const id = pieceIdCounter++;
-  pieces.push({ id, isMain });
-  renderPiece(id, isMain, existingData || { l:'', w:'', h:'', mult:'', multOpen:false });
-  updatePieceCount();
-  updatePieceLabels();
-}
-
-function updatePieceCount() {
-  document.getElementById('pieceCount').textContent = pieces.length;
-}
-
-function updatePieceLabels() {
-  let count = 0;
-  pieces.forEach(piece => {
-    const labelEl = document.querySelector('#piece-' + piece.id + ' .piece-label');
-    if (!labelEl) return;
-    if (piece.isMain) {
-      labelEl.textContent = jobType === 'Monument' ? 'Main Monument' : 'Main Mausoleum';
-      labelEl.classList.add('main');
-    } else {
-      count += 1;
-      labelEl.textContent = (jobType === 'Monument' ? 'Monument Piece ' : 'Mausoleum Piece ') + count;
-      labelEl.classList.remove('main');
+async function refreshRecords() {
+  const local = getLocalRecords().map(normalizeRecord);
+  if (airtableReady() && navigator.onLine) {
+    try {
+      const remote = (await airtableFetchRecords()).map(normalizeRecord);
+      recordsCache = mergeRecords(local, remote);
+      setLocalRecords(recordsCache);
+      return;
+    } catch (err) {
+      console.error(err);
     }
+  }
+  recordsCache = local;
+}
+
+function getRecordById(id) {
+  return recordsCache.find(r => r.id === id || r.airtableRecordId === id) || null;
+}
+
+function normalizeRecord(record) {
+  const snapshot = record.snapshot || {};
+  const results = record.results || {};
+  const normalized = {
+    id: record.id || ('local-' + Date.now()),
+    airtableRecordId: record.airtableRecordId || '',
+    name: record.name || `${snapshot.ownerName || ''} ${snapshot.ownerId || ''}`.trim() || 'Unnamed Record',
+    date: record.date || new Date().toISOString(),
+    snapshot: {
+      mode: snapshot.mode || 'inches',
+      jobType: snapshot.jobType || 'Monument',
+      ownerName: snapshot.ownerName || '',
+      ownerId: snapshot.ownerId || '',
+      plot: snapshot.plot || '',
+      locationLabel: snapshot.locationLabel || '',
+      mapsUrl: snapshot.mapsUrl || '',
+      status: snapshot.status || '',
+      issueType: snapshot.issueType || '',
+      issueNote: snapshot.issueNote || '',
+      notes: snapshot.notes || '',
+      lfPointing: Number(snapshot.lfPointing || 0),
+      numFlats: Number(snapshot.numFlats || 0),
+      numSlants: Number(snapshot.numSlants || 0),
+      pieces: Array.isArray(snapshot.pieces) ? snapshot.pieces : [],
+      photos: Array.isArray(snapshot.photos) ? snapshot.photos : []
+    },
+    results: {
+      jobType: results.jobType || snapshot.jobType || 'Monument',
+      totalSqFt: Number(results.totalSqFt || 0),
+      hasDimensions: Boolean(results.hasDimensions || false),
+      mlClean: Number(results.mlClean || 0),
+      priceClean: Number(results.priceClean || 0),
+      cleanLabel: results.cleanLabel || '',
+      mlExt: Number(results.mlExt || 0),
+      priceExt: Number(results.priceExt || 0),
+      lfPointing: Number(results.lfPointing || snapshot.lfPointing || 0),
+      mlLF: Number(results.mlLF || 0),
+      priceLF: Number(results.priceLF || 0),
+      numFlats: Number(results.numFlats || snapshot.numFlats || 0),
+      numSlants: Number(results.numSlants || snapshot.numSlants || 0),
+      priceFlats: Number(results.priceFlats || 0),
+      priceSlants: Number(results.priceSlants || 0),
+      footTotal: Number(results.footTotal || 0),
+      finalTotal: Number(results.finalTotal || 0)
+    }
+  };
+  normalized.snapshot.status = computeStatus(normalized);
+  return normalized;
+}
+
+function computeStatus(record) {
+  const snap = record.snapshot || {};
+  const hasIssue = Boolean((snap.issueType || '').trim() || (snap.issueNote || '').trim());
+  const hasPieces = Array.isArray(snap.pieces) && snap.pieces.some(piece => Number(piece.l || 0) > 0 || Number(piece.w || 0) > 0 || Number(piece.h || 0) > 0);
+  const hasResults = Number(record.results?.finalTotal || 0) > 0 || Boolean(record.results?.hasDimensions);
+  if (!hasPieces && !hasResults && hasIssue) return 'Issue recorded';
+  if (!hasPieces && !hasResults) return 'Not measured yet';
+  if (hasIssue) return 'Needs field edit';
+  return 'Ready';
+}
+
+function switchMainTab(tab) {
+  currentTab = tab;
+  document.getElementById('navHome').classList.toggle('active', tab === 'home');
+  document.getElementById('navPlots').classList.toggle('active', tab === 'plots');
+  document.getElementById('page-home').classList.toggle('active', tab === 'home');
+  document.getElementById('page-plots').classList.toggle('active', tab === 'plots');
+  renderAll();
+}
+
+function renderAll() {
+  renderHomePage();
+  renderPlotsPage();
+}
+
+function renderHomePage() {
+  const page = document.getElementById('page-home');
+  const filtered = getFilteredHomeRecords();
+  const recent = recordsCache.slice(0, 6);
+  page.innerHTML = `
+    <div class="card section">
+      <div style="display:flex; justify-content:space-between; gap:16px; align-items:flex-start; flex-wrap:wrap;">
+        <div>
+          <h2>Home Dashboard</h2>
+          <p class="subtext">Search existing records or create a job shell before going into the field</p>
+        </div>
+        <button class="btn btn-primary" onclick="openNewJobModal()">＋ New Job</button>
+      </div>
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span>🔎</span>
+          <input type="text" placeholder="Search Owner Name or Owner ID" value="${escapeHtml(currentSearch)}" oninput="setHomeSearch(this.value)"/>
+        </div>
+        <button class="btn btn-secondary" onclick="clearHomeSearch()">Recent</button>
+      </div>
+      ${currentSearch.trim() ? `
+        <div style="margin-top:18px;">
+          <div class="list">
+            ${filtered.length ? filtered.map(renderRecordRow).join('') : `<div class="list-row" style="cursor:default;"><div><div class="list-title">No records found</div><div class="list-sub">Try a different owner name or ID.</div></div></div>`}
+          </div>
+        </div>` : ''}
+    </div>
+
+    <div class="grid-2">
+      <div class="card section">
+        <h2>Recent Records</h2>
+        <div class="list" style="margin-top:18px;">
+          ${recent.length ? recent.map(renderRecordRow).join('') : `<div class="list-row" style="cursor:default;"><div><div class="list-title">No records yet</div><div class="list-sub">Create your first record from Home.</div></div></div>`}
+        </div>
+      </div>
+      <div class="card section">
+        <h2>Workflow</h2>
+        <div class="workflow-stack">
+          <div class="workflow-item">Search from Home and pull a specific person fast</div>
+          <div class="workflow-item">Create a new record from Home without entering measurements yet</div>
+          <div class="workflow-item">Open that same record on your phone later and edit it in the field</div>
+          <div class="workflow-item">Save a Google Maps link so the app can direct you to the job</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function getFilteredHomeRecords() {
+  const term = currentSearch.trim().toLowerCase();
+  if (!term) return [];
+  return recordsCache.filter(record => {
+    const ownerName = (record.snapshot.ownerName || '').toLowerCase();
+    const ownerId = (record.snapshot.ownerId || '').toLowerCase();
+    return ownerName.includes(term) || ownerId.includes(term) || `${ownerName} ${ownerId}`.includes(term);
   });
 }
 
-function renderPiece(id, isMain, data) {
-  const div = document.createElement('div');
-  div.className = 'piece-block';
-  div.id = 'piece-' + id;
+function setHomeSearch(value) {
+  currentSearch = value || '';
+  renderHomePage();
+}
 
-  const removeBtn = isMain ? '' : `<button class="btn btn-danger btn-sm" onclick="removePiece(${id})">Remove</button>`;
+function clearHomeSearch() {
+  currentSearch = '';
+  renderHomePage();
+}
 
-  function fiMarkup(prefix, totalInches) {
-    const total = totalInches === '' || totalInches === null || typeof totalInches === 'undefined' ? '' : Number(totalInches);
-    const ft = total === '' ? '' : Math.floor(total / 12);
-    const inch = total === '' ? '' : Number((total - ft * 12).toFixed(2));
+function renderPlotsPage() {
+  const page = document.getElementById('page-plots');
+  if (plotsViewMode === 'list') {
+    const grouped = groupByPlot(recordsCache);
+    const plotNames = Object.keys(grouped).sort((a,b) => a.localeCompare(b));
+    page.innerHTML = `
+      <div class="card section">
+        <h2>Plots</h2>
+        <div class="list" style="margin-top:18px;">
+          ${plotNames.length ? plotNames.map(plot => `
+            <div class="list-row" onclick="openPlot('${escapeJs(plot)}')">
+              <div class="list-title" style="margin:0;">${escapeHtml(plot)}</div>
+              <div class="count">${grouped[plot].length} ›</div>
+            </div>
+          `).join('') : `<div class="list-row" style="cursor:default;"><div><div class="list-title">No plots yet</div><div class="list-sub">Create records first and they will appear here.</div></div></div>`}
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  if (plotsViewMode === 'records') {
+    const items = recordsCache.filter(r => (r.snapshot.plot || 'Unassigned').trim() === selectedPlot)
+      .filter(r => {
+        const term = plotSearch.trim().toLowerCase();
+        if (!term) return true;
+        const ownerName = (r.snapshot.ownerName || '').toLowerCase();
+        const ownerId = (r.snapshot.ownerId || '').toLowerCase();
+        return ownerName.includes(term) || ownerId.includes(term);
+      });
+
+    page.innerHTML = `
+      <div class="page-header">
+        <div>
+          <div class="crumb" onclick="backToPlots()">← Back to Plots</div>
+          <h2>${escapeHtml(selectedPlot)}</h2>
+          <p>Browse names in this plot</p>
+        </div>
+      </div>
+      <div class="card section">
+        <div class="search-wrap" style="margin-bottom:18px;">
+          <span>🔎</span>
+          <input type="text" placeholder="Search within this plot" value="${escapeHtml(plotSearch)}" oninput="setPlotSearch(this.value)"/>
+        </div>
+        <div class="list">
+          ${items.length ? items.map(renderPlotRecordRow).join('') : `<div class="list-row" style="cursor:default;"><div><div class="list-title">No matching records</div><div class="list-sub">Try a different search inside this plot.</div></div></div>`}
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  if (plotsViewMode === 'detail') {
+    const record = getRecordById(selectedRecordId);
+    if (!record) {
+      backToPlotRecords();
+      return;
+    }
+    currentRecordDraft = cloneRecord(record);
+    page.innerHTML = renderRecordDetail(currentRecordDraft);
+    syncDraftIntoDom();
+  }
+}
+
+function renderRecordRow(record) {
+  return `
+    <div class="list-row" onclick="openRecordDetail('${escapeJs(record.id)}')">
+      <div>
+        <div class="list-title">${escapeHtml(record.snapshot.ownerName || 'Unnamed')} (${escapeHtml(record.snapshot.ownerId || 'No ID')})</div>
+        <div class="list-sub">${escapeHtml(record.snapshot.plot || 'No plot')} · ${escapeHtml(record.snapshot.status || computeStatus(record))}</div>
+      </div>
+      <div class="count">›</div>
+    </div>
+  `;
+}
+
+function renderPlotRecordRow(record) {
+  return `
+    <div class="list-row" onclick="openRecordDetail('${escapeJs(record.id)}')">
+      <div>
+        <div class="list-title">${escapeHtml(record.snapshot.ownerName || 'Unnamed')} (${escapeHtml(record.snapshot.ownerId || 'No ID')})</div>
+        <div class="list-sub">${escapeHtml(record.snapshot.status || computeStatus(record))}</div>
+      </div>
+      <div class="count">›</div>
+    </div>
+  `;
+}
+
+function groupByPlot(records) {
+  return records.reduce((acc, record) => {
+    const plot = (record.snapshot.plot || 'Unassigned').trim() || 'Unassigned';
+    if (!acc[plot]) acc[plot] = [];
+    acc[plot].push(record);
+    return acc;
+  }, {});
+}
+
+function openPlot(plot) {
+  selectedPlot = plot;
+  plotSearch = '';
+  plotsViewMode = 'records';
+  renderPlotsPage();
+}
+
+function backToPlots() {
+  plotsViewMode = 'list';
+  selectedPlot = '';
+  plotSearch = '';
+  renderPlotsPage();
+}
+
+function backToPlotRecords() {
+  plotsViewMode = 'records';
+  renderPlotsPage();
+}
+
+function setPlotSearch(value) {
+  plotSearch = value || '';
+  renderPlotsPage();
+}
+
+function openRecordDetail(id) {
+  selectedRecordId = id;
+  plotsViewMode = 'detail';
+  currentTab = 'plots';
+  document.getElementById('navHome').classList.remove('active');
+  document.getElementById('navPlots').classList.add('active');
+  document.getElementById('page-home').classList.remove('active');
+  document.getElementById('page-plots').classList.add('active');
+  renderPlotsPage();
+}
+
+function renderRecordDetail(record) {
+  const photos = Array.isArray(record.snapshot.photos) ? record.snapshot.photos : [];
+  const results = record.results || {};
+  const metricClean = (record.snapshot.jobType || 'Monument') === 'Monument' ? Number(results.mlClean || 0).toFixed(2) : Number(results.mlExt || 0).toFixed(2);
+  const metricLabel = (record.snapshot.jobType || 'Monument') === 'Monument' ? 'Clean ML' : 'Exterior ML';
+  return `
+    <div class="page-header">
+      <div>
+        <div class="crumb" onclick="backToPlotRecords()">← Back</div>
+        <h2>${escapeHtml(record.snapshot.ownerName || 'Unnamed')} (${escapeHtml(record.snapshot.ownerId || 'No ID')})</h2>
+        <p>Field-ready editable record</p>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-secondary" onclick="openDirections()">Directions</button>
+        <button class="btn btn-primary" onclick="saveCurrentRecord()">Save Changes</button>
+      </div>
+    </div>
+
+    <div class="grid-4" style="margin-bottom:18px;">
+      <div class="metric"><div class="metric-label">Status</div><div class="metric-value">${escapeHtml(record.snapshot.status)}</div></div>
+      <div class="metric"><div class="metric-label">${metricLabel}</div><div class="metric-value">${metricClean}</div></div>
+      <div class="metric"><div class="metric-label">Job Total</div><div class="metric-value">$${Number(results.finalTotal || 0).toFixed(2)}</div></div>
+      <div class="metric"><div class="metric-label">Photos</div><div class="metric-value">${photos.length}</div></div>
+    </div>
+
+    <div class="record-layout">
+      <div class="card section">
+        <h2>Quick Edit While in the Field</h2>
+        <div class="field-grid" style="margin-top:18px;">
+          <div class="field"><label>Owner Name *</label><input id="record_ownerName" type="text"/></div>
+          <div class="field"><label>Owner ID *</label><input id="record_ownerId" type="text"/></div>
+          <div class="field"><label>Plot *</label><select id="record_plot"></select></div>
+          <div class="field"><label>Issue Type</label>
+            <select id="record_issueType">
+              <option value="">None</option>
+              <option>Fallen / Cracked Monument or Headstone</option>
+              <option>Inscription Different From Owner</option>
+              <option>Multiple Headstones, Different Names, Same Owner</option>
+              <option>No Monument At All</option>
+            </select>
+          </div>
+          <div class="field"><label>Job Type</label>
+            <select id="record_jobType">
+              <option>Monument</option>
+              <option>Mausoleum</option>
+            </select>
+          </div>
+          <div class="field"><label>Status</label><input id="record_status" type="text" readonly/></div>
+          <div class="field"><label>Location Label</label><input id="record_locationLabel" type="text"/></div>
+          <div class="field"><label>Google Maps Link</label><input id="record_mapsUrl" type="text"/></div>
+        </div>
+        <div class="field"><label>Issue Note</label><textarea id="record_issueNote"></textarea></div>
+        <div class="field"><label>General Notes</label><textarea id="record_notes"></textarea></div>
+      </div>
+
+      <div class="side-stack">
+        <div class="card section">
+          <h2>Field Actions</h2>
+          <div class="action-stack">
+            <button class="action-btn primary" onclick="scrollToMeasurements()">Edit Measurements</button>
+            <button class="action-btn" onclick="triggerPhotoInput()">Add / Review Photos</button>
+            <button class="action-btn" onclick="openDirections()">Open Directions</button>
+            <button class="action-btn" onclick="deleteCurrentRecord()">Delete Record</button>
+          </div>
+          <input id="record_photoInput" type="file" accept="image/*" multiple class="hidden" onchange="handleRecordPhotos(event)"/>
+        </div>
+
+        <div class="card section">
+          <h2>Location Preview</h2>
+          <div class="workflow-item" style="margin-top:14px;">
+            <div style="font-weight:700; margin-bottom:4px;" id="locationPreviewLabel">—</div>
+            <div class="list-sub" id="locationPreviewUrl">—</div>
+          </div>
+          <div class="photo-grid" id="recordPhotoGrid" style="margin-top:14px;">
+            ${photos.length ? photos.map((photo, index) => `
+              <div class="photo-card">
+                <img src="${escapeHtml(photo.url || photo.dataUrl || '')}" alt="Photo ${index + 1}"/>
+                <button class="photo-remove" onclick="removeRecordPhoto(${index}, event)">×</button>
+              </div>
+            `).join('') : `
+              <div class="photo-card">Photo 1</div>
+              <div class="photo-card">Photo 2</div>
+            `}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card section calc-section" id="measurementSection" style="margin-top:18px;">
+      <h2>Measurements & Calculator</h2>
+      <div class="field-grid" style="margin-top:18px;">
+        <div class="field"><label>Input Mode</label>
+          <select id="record_mode" onchange="renderPiecesForCurrentRecord()">
+            <option value="inches">Inches Only</option>
+            <option value="feetInches">Feet & Inches</option>
+          </select>
+        </div>
+        <div class="field"><label>Flats</label><input id="record_numFlats" type="number" min="0"/></div>
+        <div class="field"><label>Slants</label><input id="record_numSlants" type="number" min="0"/></div>
+      </div>
+      <div class="field hidden" id="repointingWrap"><label>Re-pointing LF</label><input id="record_lfPointing" type="number" min="0" step="0.01"/></div>
+      <div id="piecesContainer"></div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+        <button class="btn btn-secondary" onclick="addDraftPiece()">Add Piece</button>
+        <button class="btn btn-primary" onclick="calculateCurrentRecord()">Calculate</button>
+      </div>
+      <div id="resultsBox" class="result-box" style="margin-top:18px;"></div>
+    </div>
+
+    <div class="card section">
+      <h2>Convenient Field Workflow</h2>
+      <div class="goal-grid" style="margin-top:18px;">
+        <div class="goal">Search or create a record from Home before leaving</div>
+        <div class="goal">Open the saved record on your phone in the field</div>
+        <div class="goal">Edit measurements, notes, issue info, and photos there</div>
+        <div class="goal">Use the saved Google Maps link for directions</div>
+      </div>
+    </div>
+  `;
+}
+
+function syncDraftIntoDom() {
+  if (!currentRecordDraft) return;
+  const snap = currentRecordDraft.snapshot;
+  renderPlotSelectInto('record_plot', snap.plot || '');
+  setValue('record_ownerName', snap.ownerName);
+  setValue('record_ownerId', snap.ownerId);
+  setValue('record_issueType', snap.issueType);
+  setValue('record_jobType', snap.jobType || 'Monument');
+  setValue('record_status', snap.status);
+  setValue('record_locationLabel', snap.locationLabel);
+  setValue('record_mapsUrl', snap.mapsUrl);
+  setValue('record_issueNote', snap.issueNote);
+  setValue('record_notes', snap.notes);
+  setValue('record_mode', snap.mode || 'inches');
+  setValue('record_numFlats', snap.numFlats || '');
+  setValue('record_numSlants', snap.numSlants || '');
+  setValue('record_lfPointing', snap.lfPointing || '');
+  document.getElementById('repointingWrap').classList.toggle('hidden', (snap.jobType || 'Monument') !== 'Mausoleum');
+  document.getElementById('record_jobType').addEventListener('change', () => {
+    document.getElementById('repointingWrap').classList.toggle('hidden', document.getElementById('record_jobType').value !== 'Mausoleum');
+  });
+  updateLocationPreview();
+  renderPiecesForCurrentRecord();
+  renderResultsBox(currentRecordDraft.results || {});
+}
+
+function setValue(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.value = value ?? '';
+}
+
+function renderPlotSelectInto(id, selectedValue) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = '<option value="">Choose plot</option>' + getPlots().slice().sort((a,b) => a.localeCompare(b)).map(plot => `<option value="${escapeHtml(plot)}">${escapeHtml(plot)}</option>`).join('');
+  el.value = selectedValue || '';
+}
+
+function cloneRecord(record) {
+  return JSON.parse(JSON.stringify(record));
+}
+
+function openNewJobModal() {
+  document.getElementById('newOwnerName').value = '';
+  document.getElementById('newOwnerId').value = '';
+  document.getElementById('newPlot').value = '';
+  document.getElementById('newMapsUrl').value = '';
+  document.getElementById('newLocationLabel').value = '';
+  document.getElementById('newJobModalWrap').classList.add('show');
+}
+
+function closeNewJobModal() {
+  document.getElementById('newJobModalWrap').classList.remove('show');
+}
+
+async function createRecordFromModal() {
+  const ownerName = document.getElementById('newOwnerName').value.trim();
+  const ownerId = document.getElementById('newOwnerId').value.trim();
+  const plot = document.getElementById('newPlot').value.trim();
+  const mapsUrl = document.getElementById('newMapsUrl').value.trim();
+  const locationLabel = document.getElementById('newLocationLabel').value.trim();
+
+  if (!ownerName || !ownerId || !plot) {
+    return showToast('Owner Name, Owner ID, and Plot are required');
+  }
+
+  const record = normalizeRecord({
+    id: 'local-' + Date.now(),
+    date: new Date().toISOString(),
+    name: `${ownerName} ${ownerId}`.trim(),
+    snapshot: {
+      ownerName,
+      ownerId,
+      plot,
+      locationLabel,
+      mapsUrl,
+      issueType: '',
+      issueNote: '',
+      notes: '',
+      status: 'Not measured yet',
+      mode: 'inches',
+      jobType: 'Monument',
+      lfPointing: 0,
+      numFlats: 0,
+      numSlants: 0,
+      pieces: [makePiece(true)],
+      photos: []
+    },
+    results: {
+      jobType: 'Monument',
+      finalTotal: 0
+    }
+  });
+
+  try {
+    if (airtableReady()) {
+      const recordId = await airtableCreateRecord(record);
+      record.airtableRecordId = recordId || '';
+    }
+    recordsCache = mergeRecords(recordsCache, [record]);
+    setLocalRecords(recordsCache);
+    closeNewJobModal();
+    showToast('Record created');
+    selectedPlot = plot;
+    selectedRecordId = record.id;
+    plotsViewMode = 'detail';
+    switchMainTab('plots');
+  } catch (err) {
+    console.error(err);
+    showToast(err.message || 'Create failed');
+  }
+}
+
+function makePiece(isMain = false) {
+  return { id: 'piece-' + (++pieceIdCounter), isMain, l: '', w: '', h: '', mult: isMain ? 1 : '' };
+}
+
+function renderPiecesForCurrentRecord() {
+  if (!currentRecordDraft) return;
+  currentRecordDraft.snapshot.mode = document.getElementById('record_mode')?.value || currentRecordDraft.snapshot.mode || 'inches';
+  const container = document.getElementById('piecesContainer');
+  const snap = currentRecordDraft.snapshot;
+  if (!Array.isArray(snap.pieces) || !snap.pieces.length) snap.pieces = [makePiece(true)];
+  container.innerHTML = snap.pieces.map((piece, index) => renderPieceBlock(piece, index, snap.mode)).join('');
+}
+
+function renderPieceBlock(piece, index, mode) {
+  const title = piece.isMain ? ((currentRecordDraft.snapshot.jobType || 'Monument') === 'Mausoleum' ? 'Main Mausoleum' : 'Main Monument') : `Piece ${index}`;
+  if (mode === 'feetInches') {
     return `
-      <div class="fi-row">
-        <input type="number" id="p${id}_${prefix}ft" placeholder="Feet" inputmode="decimal" value="${ft === '' ? '' : ft}"/>
-        <input type="number" id="p${id}_${prefix}in" placeholder="Inches" inputmode="decimal" value="${inch === '' ? '' : inch}"/>
+      <div class="piece-block">
+        <div class="piece-header">
+          <div class="piece-title">${escapeHtml(title)}</div>
+          ${piece.isMain ? '' : `<button class="btn btn-danger" onclick="removeDraftPiece('${escapeJs(piece.id)}')">Remove</button>`}
+        </div>
+        <div class="field-grid three">
+          ${renderFeetInchesInputs(piece, 'l', 'Length')}
+          ${renderFeetInchesInputs(piece, 'w', 'Width')}
+          ${renderFeetInchesInputs(piece, 'h', 'Height')}
+        </div>
+        <div class="field" style="margin-top:12px;"><label>Multiplier</label><input type="number" min="1" value="${escapeHtml(piece.mult || '')}" onchange="updatePieceValue('${escapeJs(piece.id)}','mult',this.value)"/></div>
       </div>
     `;
   }
-
-  let dimFields = '';
-  if (mode === 'feetInches') {
-    dimFields = `
-      <div class="field-row"><div class="field-label">Length</div>${fiMarkup('l', data.l)}</div>
-      <div class="field-row"><div class="field-label">Width</div>${fiMarkup('w', data.w)}</div>
-      <div class="field-row"><div class="field-label">Height</div>${fiMarkup('h', data.h)}</div>
-    `;
-  } else {
-    dimFields = `
-      <div class="field-row"><div class="field-label">Length (in)</div><input type="number" id="p${id}_lin" placeholder="0" inputmode="decimal" value="${data.l ?? ''}"/></div>
-      <div class="field-row"><div class="field-label">Width (in)</div><input type="number" id="p${id}_win" placeholder="0" inputmode="decimal" value="${data.w ?? ''}"/></div>
-      <div class="field-row"><div class="field-label">Height (in)</div><input type="number" id="p${id}_hin" placeholder="0" inputmode="decimal" value="${data.h ?? ''}"/></div>
-    `;
-  }
-
-  const multOpen = Boolean(data.multOpen) || Number(data.mult || 0) > 1;
-
-  div.innerHTML = `
-    <div class="piece-header">
-      <span class="piece-label"></span>
-      ${removeBtn}
-    </div>
-    ${dimFields}
-    <button class="mult-toggle ${multOpen ? 'active' : ''}" id="multtoggle${id}" onclick="toggleMult(${id})">
-      ${multOpen ? '✕ Hide multiplier' : '✕ Multiply this piece (tap to expand)'}
-    </button>
-    <div id="multfield${id}" style="display:${multOpen ? 'block' : 'none'};">
-      <div class="field-label">Quantity / Multiplier</div>
-      <input type="number" id="p${id}_mult" value="${data.mult ?? ''}" placeholder="1" min="1" inputmode="numeric"/>
+  return `
+    <div class="piece-block">
+      <div class="piece-header">
+        <div class="piece-title">${escapeHtml(title)}</div>
+        ${piece.isMain ? '' : `<button class="btn btn-danger" onclick="removeDraftPiece('${escapeJs(piece.id)}')">Remove</button>`}
+      </div>
+      <div class="field-grid three">
+        <div class="field"><label>Length (in)</label><input type="number" value="${escapeHtml(piece.l || '')}" onchange="updatePieceValue('${escapeJs(piece.id)}','l',this.value)"/></div>
+        <div class="field"><label>Width (in)</label><input type="number" value="${escapeHtml(piece.w || '')}" onchange="updatePieceValue('${escapeJs(piece.id)}','w',this.value)"/></div>
+        <div class="field"><label>Height (in)</label><input type="number" value="${escapeHtml(piece.h || '')}" onchange="updatePieceValue('${escapeJs(piece.id)}','h',this.value)"/></div>
+      </div>
+      <div class="field" style="margin-top:12px;"><label>Multiplier</label><input type="number" min="1" value="${escapeHtml(piece.mult || '')}" onchange="updatePieceValue('${escapeJs(piece.id)}','mult',this.value)"/></div>
     </div>
   `;
-
-  document.getElementById('piecesContainer').appendChild(div);
 }
 
-function toggleMult(id) {
-  const field = document.getElementById('multfield' + id);
-  const btn = document.getElementById('multtoggle' + id);
-  const visible = field.style.display !== 'none';
-  field.style.display = visible ? 'none' : 'block';
-  btn.classList.toggle('active', !visible);
-  btn.textContent = visible ? '✕ Multiply this piece (tap to expand)' : '✕ Hide multiplier';
+function renderFeetInchesInputs(piece, key, label) {
+  const total = Number(piece[key] || 0);
+  const feet = total ? Math.floor(total / 12) : '';
+  const inches = total ? Number((total - (Math.floor(total / 12) * 12)).toFixed(2)) : '';
+  return `
+    <div class="field">
+      <label>${label}</label>
+      <div class="field-grid" style="grid-template-columns:1fr 1fr; gap:10px;">
+        <input type="number" placeholder="Feet" value="${feet}" onchange="updateFeetInches('${escapeJs(piece.id)}','${key}','ft',this.value)"/>
+        <input type="number" placeholder="Inches" value="${inches}" onchange="updateFeetInches('${escapeJs(piece.id)}','${key}','in',this.value)"/>
+      </div>
+    </div>
+  `;
 }
 
-function removePiece(id) {
-  pieces = pieces.filter(p => p.id !== id);
-  const node = document.getElementById('piece-' + id);
-  if (node) node.remove();
-  updatePieceCount();
-  updatePieceLabels();
+function updatePieceValue(pieceId, key, value) {
+  const piece = currentRecordDraft.snapshot.pieces.find(p => p.id === pieceId);
+  if (!piece) return;
+  piece[key] = value;
 }
 
-function stepperChange(fieldId, delta) {
-  const el = document.getElementById(fieldId);
-  el.value = Math.max(0, (parseInt(el.value || '0', 10) || 0) + delta);
+function updateFeetInches(pieceId, key, unit, value) {
+  const piece = currentRecordDraft.snapshot.pieces.find(p => p.id === pieceId);
+  if (!piece) return;
+  piece.__fi = piece.__fi || { lft:'', lin:'', wft:'', win:'', hft:'', hin:'' };
+  piece.__fi[key + unit] = value;
+  const feet = parseFloat(piece.__fi[key + 'ft']) || 0;
+  const inches = parseFloat(piece.__fi[key + 'in']) || 0;
+  piece[key] = feet * 12 + inches;
 }
 
-function n(id) {
-  const el = document.getElementById(id);
-  return el ? parseFloat(el.value) || 0 : 0;
+function addDraftPiece() {
+  if (!currentRecordDraft) return;
+  currentRecordDraft.snapshot.pieces.push(makePiece(false));
+  renderPiecesForCurrentRecord();
 }
 
-function getPieceDims(id) {
-  let l, w, h;
-  if (mode === 'feetInches') {
-    l = n(`p${id}_lft`) * 12 + n(`p${id}_lin`);
-    w = n(`p${id}_wft`) * 12 + n(`p${id}_win`);
-    h = n(`p${id}_hft`) * 12 + n(`p${id}_hin`);
-  } else {
-    l = n(`p${id}_lin`);
-    w = n(`p${id}_win`);
-    h = n(`p${id}_hin`);
-  }
-  const mult = Math.max(1, n(`p${id}_mult`) || 1);
-  const multField = document.getElementById('multfield' + id);
-  return { l, w, h, mult, multOpen: multField ? multField.style.display !== 'none' : false };
+function removeDraftPiece(pieceId) {
+  if (!currentRecordDraft) return;
+  currentRecordDraft.snapshot.pieces = currentRecordDraft.snapshot.pieces.filter(piece => piece.id !== pieceId);
+  renderPiecesForCurrentRecord();
 }
 
-function getCombinedMeasurements() {
-  let total = { length: 0, width: 0, height: 0 };
-  pieces.forEach((p) => {
-    const dims = getPieceDims(p.id);
-    const mult = parseInt(dims.mult, 10) || 1;
-    total.length += dims.l * mult;
-    total.width += dims.w * mult;
-    total.height += dims.h * mult;
-  });
-  return total;
+function hydrateDraftFromForm() {
+  if (!currentRecordDraft) return null;
+  const snap = currentRecordDraft.snapshot;
+  snap.ownerName = document.getElementById('record_ownerName').value.trim();
+  snap.ownerId = document.getElementById('record_ownerId').value.trim();
+  snap.plot = document.getElementById('record_plot').value.trim();
+  snap.issueType = document.getElementById('record_issueType').value.trim();
+  snap.jobType = document.getElementById('record_jobType').value.trim() || 'Monument';
+  snap.locationLabel = document.getElementById('record_locationLabel').value.trim();
+  snap.mapsUrl = document.getElementById('record_mapsUrl').value.trim();
+  snap.issueNote = document.getElementById('record_issueNote').value.trim();
+  snap.notes = document.getElementById('record_notes').value.trim();
+  snap.mode = document.getElementById('record_mode').value || 'inches';
+  snap.numFlats = Number(document.getElementById('record_numFlats').value || 0);
+  snap.numSlants = Number(document.getElementById('record_numSlants').value || 0);
+  snap.lfPointing = snap.jobType === 'Mausoleum' ? Number(document.getElementById('record_lfPointing').value || 0) : 0;
+  currentRecordDraft.results.jobType = snap.jobType;
+  currentRecordDraft.name = `${snap.ownerName} ${snap.ownerId}`.trim() || 'Unnamed Record';
+  currentRecordDraft.snapshot.status = computeStatus(currentRecordDraft);
+  return currentRecordDraft;
 }
 
-function calculateML() {
-  const totals = getCombinedMeasurements();
+function calculateCurrentRecord() {
+  const record = hydrateDraftFromForm();
+  if (!record) return;
+  const totals = getCombinedMeasurements(record.snapshot.pieces || []);
   const length = totals.length;
   const width = totals.width;
   const height = totals.height;
-
-  const lfPointing = jobType === 'Mausoleum'
-    ? (parseFloat(document.getElementById('lfPointing')?.value) || 0)
-    : 0;
-
-  const numFlats = parseInt(document.getElementById('numFlats')?.value || '0', 10) || 0;
-  const numSlants = parseInt(document.getElementById('numSlants')?.value || '0', 10) || 0;
-
+  const lfPointing = record.snapshot.jobType === 'Mausoleum' ? Number(record.snapshot.lfPointing || 0) : 0;
+  const numFlats = Number(record.snapshot.numFlats || 0);
+  const numSlants = Number(record.snapshot.numSlants || 0);
   const hasDimensions = length > 0 && width > 0 && height > 0;
 
-  let totalSqInches = 0, totalSqFt = 0, mlClean = 0, priceClean = 0, cleanLabel = '', mlExt = 0, priceExt = 0;
-
+  let totalSqFt = 0, mlClean = 0, priceClean = 0, cleanLabel = '', mlExt = 0, priceExt = 0;
   if (hasDimensions) {
     const top = length * width;
     const side = length * height * 2;
     const front = width * height * 2;
-
-    totalSqInches = top + side + front;
-    totalSqFt = totalSqInches / 144;
-
-    mlClean = parseFloat((totalSqFt / 25).toFixed(2));
-    if (mlClean < 2) mlClean = 2;
-
+    totalSqFt = (top + side + front) / 144;
+    mlClean = Math.max(2, parseFloat((totalSqFt / 25).toFixed(2)));
     mlExt = parseFloat((totalSqFt / 50).toFixed(2));
-
     const isUnderSize = (length < 72 && height < 120);
     const cleanRate = isUnderSize ? 155 : 195;
     cleanLabel = isUnderSize ? 'Standard Upright @ $155' : 'Standard Special @ $195';
     priceClean = parseFloat((mlClean * cleanRate).toFixed(2));
-
-    const exteriorCleaningRate = 159;
-    priceExt = parseFloat((mlExt * exteriorCleaningRate).toFixed(2));
+    priceExt = parseFloat((mlExt * 159).toFixed(2));
   }
 
   const mlLF = parseFloat((lfPointing / 50).toFixed(2));
   const priceLF = parseFloat((mlLF * 564).toFixed(2));
-
   const priceFlats = numFlats > 0 ? 155 + (numFlats - 1) * (155 / 2) : 0;
   const priceSlants = numSlants > 0 ? 195 + (numSlants - 1) * (195 / 2) : 0;
   const footTotal = parseFloat((priceFlats + priceSlants).toFixed(2));
+  const finalTotal = record.snapshot.jobType === 'Monument'
+    ? parseFloat((priceClean + footTotal).toFixed(2))
+    : parseFloat((priceExt + priceLF + footTotal).toFixed(2));
 
-  const monumentTotal = parseFloat((priceClean + footTotal).toFixed(2));
-  const mausoleumTotal = parseFloat((priceExt + priceLF + footTotal).toFixed(2));
-
-  lastResults = {
-    jobType,
+  currentRecordDraft.results = {
+    jobType: record.snapshot.jobType,
     totalSqFt,
     hasDimensions,
-    mainL: length,
-    mainW: width,
-    mainH: height,
     mlClean,
     priceClean,
     cleanLabel,
@@ -1333,118 +1214,153 @@ function calculateML() {
     priceFlats,
     priceSlants,
     footTotal,
-    monumentTotal,
-    mausoleumTotal,
-    finalTotal: jobType === 'Monument' ? monumentTotal : mausoleumTotal
+    finalTotal
   };
-
-  renderResults(lastResults);
-  document.getElementById('saveBtn').style.display = 'flex';
-  document.getElementById('resultsContainer').classList.remove('hidden');
-  setTimeout(() => {
-    document.getElementById('resultsContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, 80);
+  currentRecordDraft.snapshot.status = computeStatus(currentRecordDraft);
+  setValue('record_status', currentRecordDraft.snapshot.status);
+  renderResultsBox(currentRecordDraft.results);
+  showToast('Calculated');
 }
 
-function renderResults(r) {
-  const inner = document.getElementById('resultsInner');
-  let html = '';
+function getCombinedMeasurements(pieces) {
+  return (pieces || []).reduce((acc, piece) => {
+    const mult = Math.max(1, Number(piece.mult || 1));
+    acc.length += Number(piece.l || 0) * mult;
+    acc.width += Number(piece.w || 0) * mult;
+    acc.height += Number(piece.h || 0) * mult;
+    return acc;
+  }, { length: 0, width: 0, height: 0 });
+}
 
-  if (!r.hasDimensions && !r.numFlats && !r.numSlants && !(r.jobType === 'Mausoleum' && r.lfPointing > 0)) {
-    inner.innerHTML = '<p style="color:var(--muted);font-size:14px;">Enter at least one measurement to calculate.</p>';
-    return;
-  }
-
-  if (r.hasDimensions && r.jobType === 'Monument') {
-    html += `
-      <div class="result-section clean">
-        <div class="result-title">🟢 Monument Cleaning</div>
-        <div class="result-row"><span class="result-key">Total Area</span><span class="result-val green">${r.totalSqFt.toFixed(2)} sq ft</span></div>
-        <div class="result-row"><span class="result-key">Clean ML</span><span class="result-val green">${r.mlClean.toFixed(2)}${r.mlClean === 2 ? ' (min)' : ''}</span></div>
-        <div class="result-row"><span class="result-key">${r.cleanLabel}</span><span class="result-val green">$${r.priceClean.toFixed(2)}</span></div>
-      </div>
-    `;
-  }
-
-  if (r.hasDimensions && r.jobType === 'Mausoleum') {
-    html += `
-      <div class="result-section ext">
-        <div class="result-title">🔵 Mausoleum Exterior Cleaning</div>
-        <div class="result-row"><span class="result-key">Total Area</span><span class="result-val blue">${r.totalSqFt.toFixed(2)} sq ft</span></div>
-        <div class="result-row"><span class="result-key">Exterior ML</span><span class="result-val blue">${r.mlExt.toFixed(2)}</span></div>
-        <div class="result-row"><span class="result-key">Exterior Cleaning @ $159</span><span class="result-val blue">$${r.priceExt.toFixed(2)}</span></div>
-      </div>
-    `;
-  }
-
-  if (r.jobType === 'Mausoleum' && r.lfPointing > 0) {
-    html += `
-      <div class="result-section lf">
-        <div class="result-title">🟣 Re-pointing</div>
-        <div class="result-row"><span class="result-key">LF</span><span class="result-val purple">${r.lfPointing.toFixed(2)}</span></div>
-        <div class="result-row"><span class="result-key">Re-pointing ML</span><span class="result-val purple">${r.mlLF.toFixed(2)}</span></div>
-        <div class="result-row"><span class="result-key">Re-pointing Total</span><span class="result-val purple">$${r.priceLF.toFixed(2)}</span></div>
-      </div>
-    `;
-  }
-
-  if (r.numFlats > 0 || r.numSlants > 0) {
-    html += `
-      <div class="result-section flat">
-        <div class="result-title">🔴 Footstones</div>
-        ${r.numFlats > 0 ? `<div class="result-row"><span class="result-key">Flats (${r.numFlats})</span><span class="result-val red">$${r.priceFlats.toFixed(2)}</span></div>` : ''}
-        ${r.numSlants > 0 ? `<div class="result-row"><span class="result-key">Slants (${r.numSlants})</span><span class="result-val red">$${r.priceSlants.toFixed(2)}</span></div>` : ''}
-        <div class="result-row"><span class="result-key">Footstones Total</span><span class="result-val red">$${r.footTotal.toFixed(2)}</span></div>
-      </div>
-    `;
-  }
-
-  html += `
-    <div class="result-section final">
-      <div class="result-title">⭐ Final Total</div>
-      <div class="result-row">
-        <span class="result-key">${r.jobType === 'Monument' ? 'Monument Total' : 'Mausoleum Total'}</span>
-        <span class="result-val gold" style="font-size:24px;">$${r.finalTotal.toFixed(2)}</span>
-      </div>
-    </div>
+function renderResultsBox(results) {
+  const box = document.getElementById('resultsBox');
+  if (!box) return;
+  const r = results || {};
+  box.innerHTML = `
+    <div class="result-row"><strong>Total Area</strong><span>${Number(r.totalSqFt || 0).toFixed(2)} sq ft</span></div>
+    <div class="result-row"><span class="muted">Clean ML</span><span>${Number(r.mlClean || 0).toFixed(2)}</span></div>
+    <div class="result-row"><span class="muted">Exterior ML</span><span>${Number(r.mlExt || 0).toFixed(2)}</span></div>
+    <div class="result-row"><span class="muted">Re-pointing ML</span><span>${Number(r.mlLF || 0).toFixed(2)}</span></div>
+    <div class="result-row"><span class="muted">Flats / Slants</span><span>${Number(r.numFlats || 0)} / ${Number(r.numSlants || 0)}</span></div>
+    <div class="result-row" style="font-size:20px; font-weight:700; padding-top:10px; border-top:1px solid var(--border); margin-top:10px;"><span>Final Total</span><span>$${Number(r.finalTotal || 0).toFixed(2)}</span></div>
   `;
-
-  inner.innerHTML = html;
 }
 
-function getCurrentSnapshot() {
-  return {
-    mode,
-    jobType,
-    ownerName: document.getElementById('ownerName').value.trim(),
-    ownerId: document.getElementById('ownerId').value.trim(),
-    plot: document.getElementById('plotSelect').value.trim(),
-    issueType: document.getElementById('issueType').value.trim(),
-    issueNote: document.getElementById('issueNote').value.trim(),
-    notes: document.getElementById('jobNotes').value.trim(),
-    lfPointing: n('lfPointing'),
-    numFlats: parseInt(document.getElementById('numFlats').value || '0', 10) || 0,
-    numSlants: parseInt(document.getElementById('numSlants').value || '0', 10) || 0,
-    pieces: pieces.map(p => ({ ...getPieceDims(p.id), isMain: p.isMain })),
-    photos: photos.map(p => ({
-      url: p.url || '',
-      filename: p.filename || p.name || '',
-      dataUrl: p.dataUrl || ''
-    }))
-  };
+async function saveCurrentRecord() {
+  const record = hydrateDraftFromForm();
+  if (!record) return;
+  if (!record.snapshot.ownerName || !record.snapshot.ownerId || !record.snapshot.plot) {
+    return showToast('Owner Name, Owner ID, and Plot are required');
+  }
+
+  try {
+    record.snapshot.photos = await uploadPendingPhotos(record.snapshot.photos || []);
+    record.snapshot.status = computeStatus(record);
+    record.date = new Date().toISOString();
+    record.name = `${record.snapshot.ownerName} ${record.snapshot.ownerId}`.trim();
+
+    if (record.airtableRecordId && airtableReady()) {
+      await airtableUpdateRecord(record.airtableRecordId, record);
+    } else if (airtableReady()) {
+      record.airtableRecordId = await airtableCreateRecord(record);
+    }
+
+    recordsCache = recordsCache.filter(r => (r.airtableRecordId || r.id) !== (record.airtableRecordId || record.id));
+    recordsCache.unshift(normalizeRecord(record));
+    setLocalRecords(recordsCache);
+    currentRecordDraft = cloneRecord(normalizeRecord(record));
+    showToast('Record saved');
+    renderPlotsPage();
+    renderHomePage();
+  } catch (err) {
+    console.error(err);
+    showToast(err.message || 'Save failed');
+  }
 }
 
-function makeJobRecord(existingRecordId = '') {
-  const snapshot = getCurrentSnapshot();
-  const displayName = `${snapshot.ownerName} ${snapshot.ownerId}`.trim();
-  return {
-    id: existingRecordId || ('local-' + Date.now()),
-    airtableRecordId: existingRecordId || '',
-    name: displayName || 'Unnamed Job',
-    date: new Date().toISOString(),
-    snapshot,
-    results: { ...lastResults }
-  };
+async function deleteCurrentRecord() {
+  const record = hydrateDraftFromForm();
+  if (!record) return;
+  if (!window.confirm('Delete this record?')) return;
+  try {
+    if (record.airtableRecordId && airtableReady()) {
+      await airtableDeleteRecord(record.airtableRecordId);
+    }
+    recordsCache = recordsCache.filter(r => (r.airtableRecordId || r.id) !== (record.airtableRecordId || record.id));
+    setLocalRecords(recordsCache);
+    plotsViewMode = 'records';
+    selectedRecordId = '';
+    showToast('Record deleted');
+    renderAll();
+  } catch (err) {
+    console.error(err);
+    showToast(err.message || 'Delete failed');
+  }
+}
+
+function scrollToMeasurements() {
+  document.getElementById('measurementSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function triggerPhotoInput() {
+  document.getElementById('record_photoInput')?.click();
+}
+
+function handleRecordPhotos(event) {
+  const files = Array.from(event.target.files || []).slice(0, 6);
+  if (!currentRecordDraft || !files.length) return;
+  const readers = files.map(file => new Promise(resolve => {
+    const fr = new FileReader();
+    fr.onload = () => resolve({ name: file.name, filename: file.name, dataUrl: fr.result, url: '' });
+    fr.readAsDataURL(file);
+  }));
+  Promise.all(readers).then(items => {
+    currentRecordDraft.snapshot.photos = [...(currentRecordDraft.snapshot.photos || []), ...items].slice(0, 6);
+    renderPlotsPage();
+  });
+}
+
+function removeRecordPhoto(index, event) {
+  if (event) event.stopPropagation();
+  if (!currentRecordDraft) return;
+  currentRecordDraft.snapshot.photos.splice(index, 1);
+  renderPlotsPage();
+}
+
+function openDirections() {
+  const url = document.getElementById('record_mapsUrl')?.value.trim();
+  if (!url) return showToast('No Google Maps link saved');
+  window.open(url, '_blank', 'noopener');
+}
+
+function updateLocationPreview() {
+  const label = document.getElementById('record_locationLabel')?.value || '—';
+  const url = document.getElementById('record_mapsUrl')?.value || '—';
+  const labelEl = document.getElementById('locationPreviewLabel');
+  const urlEl = document.getElementById('locationPreviewUrl');
+  if (labelEl) labelEl.textContent = label;
+  if (urlEl) urlEl.textContent = url;
+  ['record_locationLabel', 'record_mapsUrl'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.dataset.boundPreview) {
+      el.addEventListener('input', updateLocationPreview);
+      el.dataset.boundPreview = '1';
+    }
+  });
+}
+
+async function uploadPendingPhotos(photos) {
+  const uploaded = [];
+  for (const photo of photos || []) {
+    if (photo.url) {
+      uploaded.push({ url: photo.url, filename: photo.filename || photo.name || 'photo.jpg' });
+    } else if (photo.dataUrl) {
+      if (!cloudinaryReady()) throw new Error('Cloudinary not configured for photo upload');
+      const result = await uploadToCloudinary(photo.dataUrl, photo.filename || photo.name || 'photo.jpg');
+      uploaded.push(result);
+    }
+  }
+  return uploaded;
 }
 
 function cloudinaryReady() {
@@ -1453,22 +1369,14 @@ function cloudinaryReady() {
 }
 
 async function uploadToCloudinary(dataUrl, filename = 'photo.jpg') {
-  if (!cloudinaryReady()) throw new Error('Cloudinary is not configured');
-
   const cloud = CONFIG.cloudinary.cloudName;
   const preset = CONFIG.cloudinary.uploadPreset;
   const url = `https://api.cloudinary.com/v1_1/${cloud}/image/upload`;
-
   const formData = new FormData();
   formData.append('file', dataUrl);
   formData.append('upload_preset', preset);
   formData.append('folder', 'monument-photos');
-
-  const res = await fetch(url, {
-    method: 'POST',
-    body: formData
-  });
-
+  const res = await fetch(url, { method: 'POST', body: formData });
   if (!res.ok) {
     let detail = '';
     try {
@@ -1477,595 +1385,23 @@ async function uploadToCloudinary(dataUrl, filename = 'photo.jpg') {
     } catch {}
     throw new Error(detail ? `Cloudinary upload failed: ${detail}` : 'Cloudinary upload failed');
   }
-
   const data = await res.json();
-  return {
-    url: data.secure_url,
-    filename: filename || data.original_filename || 'photo.jpg'
-  };
-}
-
-async function uploadPendingPhotos() {
-  const uploaded = [];
-  for (const photo of photos) {
-    if (photo.url) {
-      uploaded.push({ url: photo.url, filename: photo.filename || photo.name || 'photo.jpg' });
-    } else if (photo.dataUrl) {
-      const result = await uploadToCloudinary(photo.dataUrl, photo.name || 'photo.jpg');
-      uploaded.push(result);
-    }
-  }
-  return uploaded;
-}
-
-async function saveJob() {
-  if (!lastResults) return showToast('Calculate first');
-
-  const ownerName = document.getElementById('ownerName')?.value.trim();
-  const ownerId = document.getElementById('ownerId')?.value.trim();
-  const plot = document.getElementById('plotSelect')?.value.trim();
-
-  if (!ownerName || !ownerId) return showToast('Owner Name and ID required');
-  if (!plot) return showToast('Select a plot');
-  if (!cloudinaryReady()) return showToast('Cloudinary not configured');
-
-  saveLastSelectedPlot(plot);
-
-  try {
-    const uploadedPhotos = await uploadPendingPhotos();
-    photos = uploadedPhotos.map(p => ({ url: p.url, filename: p.filename }));
-
-    const job = makeJobRecord();
-    job.snapshot.photos = photos.map(p => ({ url: p.url, filename: p.filename }));
-
-    let savedToAirtable = false;
-    if (airtableReady()) {
-      const recordId = await airtableCreateRecord(job);
-      job.airtableRecordId = recordId || '';
-      savedToAirtable = true;
-    }
-
-    await cacheMergedJob(job);
-    document.getElementById('saveBtn').style.display = 'none';
-    await renderHistory();
-    resetCalculator();
-    showToast(savedToAirtable ? 'Saved to Airtable & cleared' : 'Saved locally & cleared');
-  } catch (err) {
-    console.error(err);
-    showToast(err.message || 'Save failed');
-  }
-}
-
-async function cacheMergedJob(job) {
-  const jobs = getLocalJobs().filter(j => j.id !== job.id && j.airtableRecordId !== job.airtableRecordId);
-  jobs.unshift(job);
-  safeLocalSet(STORAGE_KEY, JSON.stringify(jobs));
-  renderSavedPlotFilterOptions();
-}
-
-function getLocalJobs() {
-  try { return JSON.parse(safeLocalGet(STORAGE_KEY) || '[]') || []; } catch { return []; }
-}
-
-function mergeJobs(localJobs, remoteJobs) {
-  const merged = [];
-  const seen = new Set();
-  [...remoteJobs, ...localJobs].forEach(job => {
-    const key = job.airtableRecordId || job.id;
-    if (!key || seen.has(key)) return;
-    seen.add(key);
-    merged.push(job);
-  });
-  return merged.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
-}
-
-async function getJobs() {
-  const localJobs = getLocalJobs();
-  if (airtableReady() && navigator.onLine) {
-    try {
-      const remote = await airtableFetchJobs();
-      const merged = mergeJobs(localJobs, remote);
-      safeLocalSet(STORAGE_KEY, JSON.stringify(merged));
-      return merged;
-    } catch (err) {
-      console.error(err);
-      return localJobs;
-    }
-  }
-  return localJobs;
-}
-
-async function deleteJob(id, event) {
-  if (event) event.stopPropagation();
-  const jobs = await getJobs();
-  const job = jobs.find(j => j.id === id);
-
-  if (job?.airtableRecordId && airtableReady()) {
-    try { await airtableDeleteRecord(job.airtableRecordId); } catch (err) { console.error(err); }
-  }
-
-  safeLocalSet(STORAGE_KEY, JSON.stringify(jobs.filter(j => j.id !== id)));
-  renderSavedPlotFilterOptions();
-  await renderHistory();
-  showToast('Saved job deleted');
-}
-
-async function clearAllJobs() {
-  const jobs = await getJobs();
-  if (!jobs.length) return showToast('No saved jobs to delete');
-  if (!window.confirm('Delete all saved jobs? This cannot be undone.')) return;
-
-  if (airtableReady()) {
-    for (const job of jobs) {
-      if (job.airtableRecordId) {
-        try { await airtableDeleteRecord(job.airtableRecordId); } catch (err) { console.error(err); }
-      }
-    }
-  }
-
-  safeLocalSet(STORAGE_KEY, JSON.stringify([]));
-  openPlotName = '';
-  renderSavedPlotFilterOptions();
-  await renderHistory();
-  showToast('All saved jobs deleted');
-}
-
-function loadJob(id, event) {
-  if (event) event.stopPropagation();
-
-  const job = getLocalJobs().find(j => j.id === id);
-  if (!job) return;
-
-  const snap = job.snapshot || {};
-  mode = snap.mode || 'inches';
-  jobType = snap.jobType || 'Monument';
-  photos = Array.isArray(snap.photos)
-    ? snap.photos.map(p => ({ url: p.url || '', filename: p.filename || p.name || '' }))
-    : [];
-
-  document.getElementById('modeInches').classList.toggle('active', mode === 'inches');
-  document.getElementById('modeFeet').classList.toggle('active', mode === 'feetInches');
-
-  document.getElementById('ownerName').value = snap.ownerName || '';
-  document.getElementById('ownerId').value = snap.ownerId || '';
-  renderPlotOptions(snap.plot || getLastSelectedPlot());
-  document.getElementById('issueType').value = snap.issueType || '';
-  document.getElementById('issueNote').value = snap.issueNote || '';
-  document.getElementById('jobNotes').value = snap.notes || '';
-  document.getElementById('lfPointing').value = snap.lfPointing || '';
-  document.getElementById('numFlats').value = snap.numFlats || '';
-  document.getElementById('numSlants').value = snap.numSlants || '';
-
-  if (snap.plot) saveLastSelectedPlot(snap.plot);
-
-  updateJobTypeUI();
-  rebuildPieces(snap.pieces || []);
-  renderPhotoGrid();
-
-  lastResults = job.results || null;
-  if (lastResults) {
-    document.getElementById('resultsContainer').classList.remove('hidden');
-    renderResults(lastResults);
-  } else {
-    document.getElementById('resultsContainer').classList.add('hidden');
-  }
-
-  document.getElementById('saveBtn').style.display = 'none';
-  switchTab('calc');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  showToast('Loaded saved job');
-}
-
-async function renderHistory() {
-  const container = document.getElementById('historyContainer');
-
-  if (!storageReady) {
-    container.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>Saved jobs can break when this file is opened directly from Files.<br>Use the hosted PWA version.</p></div>';
-    return;
-  }
-
-  const jobs = await getJobs();
-  renderSavedPlotFilterOptions();
-
-  if (!jobs.length) {
-    container.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>No saved jobs yet.<br>Calculate and save a job to see it here.</p></div>';
-    return;
-  }
-
-  const selectedPlot = (document.getElementById('savedPlotFilter')?.value || '').trim();
-  const searchTerm = (document.getElementById('savedSearch')?.value || '').trim().toLowerCase();
-
-  const filteredJobs = jobs.filter(job => {
-    const snap = job.snapshot || {};
-    const plot = (snap.plot || 'Unassigned Plot').trim() || 'Unassigned Plot';
-    const ownerName = (snap.ownerName || '').toLowerCase();
-    const ownerId = (snap.ownerId || '').toLowerCase();
-    const combined = `${ownerName} ${ownerId}`.trim();
-    const plotMatch = !selectedPlot || plot === selectedPlot;
-    const searchMatch = !searchTerm || ownerName.includes(searchTerm) || ownerId.includes(searchTerm) || combined.includes(searchTerm);
-    return plotMatch && searchMatch;
-  });
-
-  if (!filteredJobs.length) {
-    container.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>No jobs matched your filter or search.</p></div>';
-    return;
-  }
-
-  const grouped = {};
-  filteredJobs.forEach(job => {
-    const plot = (job.snapshot?.plot || 'Unassigned Plot').trim() || 'Unassigned Plot';
-    if (!grouped[plot]) grouped[plot] = [];
-    grouped[plot].push(job);
-  });
-
-  const plotNames = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
-  if (!openPlotName || !plotNames.includes(openPlotName)) openPlotName = plotNames[0];
-
-  container.innerHTML = plotNames.map(plotName => {
-    const plotJobs = grouped[plotName];
-    const isOpen = openPlotName === plotName;
-
-    return `
-      <div class="plot-group">
-        <div class="plot-group-title" onclick="togglePlotSection('${escapeJs(plotName)}')">
-          <span><span class="plot-chevron">${isOpen ? '▼' : '▶'}</span>${escapeHtml(plotName)}</span>
-          <span class="badge">${plotJobs.length}</span>
-        </div>
-
-        <div class="plot-group-body ${isOpen ? '' : 'hidden'}">
-          ${plotJobs.map(job => {
-            const r = job.results || {};
-            const snap = job.snapshot || {};
-            const date =
-              new Date(job.date).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) +
-              ' • ' +
-              new Date(job.date).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
-
-            const displayName = (((snap.ownerName || '') + ' ' + (snap.ownerId || '')).trim()) || job.name || 'Unnamed Job';
-
-            return `
-              <div class="history-item">
-                <div class="history-name">${escapeHtml(displayName)}</div>
-                <div class="history-date">${date} • ${escapeHtml(snap.jobType || 'Monument')}</div>
-                ${snap.issueType ? `<div class="history-issue">${escapeHtml(snap.issueType)}</div>` : ''}
-
-                <div class="history-totals">
-                  ${
-                    (snap.jobType || 'Monument') === 'Monument'
-                    ? `
-                      <div class="history-total-item"><div class="history-total-label">Clean ML</div><div class="history-total-val">${Number(r.mlClean || 0).toFixed(2)}</div></div>
-                      <div class="history-total-item"><div class="history-total-label">Clean Total</div><div class="history-total-val">$${Number(r.priceClean || 0).toFixed(2)}</div></div>
-                    `
-                    : `
-                      <div class="history-total-item"><div class="history-total-label">Exterior ML</div><div class="history-total-val">${Number(r.mlExt || 0).toFixed(2)}</div></div>
-                      <div class="history-total-item"><div class="history-total-label">Exterior Total</div><div class="history-total-val">$${Number(r.priceExt || 0).toFixed(2)}</div></div>
-                    `
-                  }
-
-                  <div class="history-total-item"><div class="history-total-label">Flats / Slants</div><div class="history-total-val">${Number(r.numFlats || 0)} / ${Number(r.numSlants || 0)}</div></div>
-
-                  ${
-                    (snap.jobType || 'Monument') === 'Mausoleum'
-                    ? `<div class="history-total-item"><div class="history-total-label">Re-pointing</div><div class="history-total-val">$${Number(r.priceLF || 0).toFixed(2)}</div></div>`
-                    : `<div class="history-total-item"><div class="history-total-label">Job Total</div><div class="history-total-val">$${Number(r.finalTotal || 0).toFixed(2)}</div></div>`
-                  }
-                </div>
-
-                <div class="history-actions">
-                  <button class="btn btn-ghost btn-sm" onclick="loadJob('${escapeJs(job.id)}', event)">Open</button>
-                  <button class="btn btn-danger btn-sm" onclick="deleteJob('${escapeJs(job.id)}', event)">Delete</button>
-                </div>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-function resetCalculator() {
-  document.getElementById('ownerName').value = '';
-  document.getElementById('ownerId').value = '';
-  renderPlotOptions(getLastSelectedPlot());
-  document.getElementById('issueType').value = '';
-  document.getElementById('issueNote').value = '';
-  document.getElementById('jobNotes').value = '';
-  document.getElementById('lfPointing').value = '';
-  document.getElementById('numFlats').value = '';
-  document.getElementById('numSlants').value = '';
-
-  mode = 'inches';
-  jobType = 'Monument';
-  photos = [];
-  pieces = [];
-  pieceIdCounter = 0;
-  lastResults = null;
-
-  document.getElementById('modeInches').classList.add('active');
-  document.getElementById('modeFeet').classList.remove('active');
-
-  updateJobTypeUI();
-  rebuildPieces([]);
-  renderPhotoGrid();
-
-  document.getElementById('resultsContainer').classList.add('hidden');
-  document.getElementById('saveBtn').style.display = 'none';
-
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function bindPhotos() {
-  const cameraInput = document.getElementById('cameraInput');
-  const libraryInput = document.getElementById('photoLibraryInput');
-
-  async function handleFiles(fileList) {
-    const files = Array.from(fileList || []);
-    if (!files.length) return;
-
-    const remaining = Math.max(0, 3 - photos.length);
-    if (remaining <= 0) return showToast('You can save up to 3 photos');
-
-    const selected = files.slice(0, remaining);
-    for (const file of selected) {
-      const compressed = await compressImage(file, 1600, 0.72);
-      photos.push({
-        name: compressed.filename,
-        filename: compressed.filename,
-        dataUrl: compressed.dataUrl
-      });
-    }
-
-    renderPhotoGrid();
-  }
-
-  cameraInput.addEventListener('change', async (e) => {
-    await handleFiles(e.target.files);
-    e.target.value = '';
-  });
-
-  libraryInput.addEventListener('change', async (e) => {
-    await handleFiles(e.target.files);
-    e.target.value = '';
-  });
-}
-
-function renderPhotoGrid() {
-  const grid = document.getElementById('photoGrid');
-  document.getElementById('photoCount').textContent = photos.length;
-
-  grid.innerHTML = photos.map((p, i) => {
-    const src = p.url || p.dataUrl || '';
-    const name = p.filename || p.name || `Photo ${i + 1}`;
-    return `
-      <div class="photo-item">
-        <img src="${src}" alt="${escapeHtml(name)}" onclick="openPhoto('${escapeJs(src)}')"/>
-        <button class="photo-remove" onclick="removePhoto(${i})">✕</button>
-      </div>
-    `;
-  }).join('');
-}
-
-function openPhoto(url) {
-  if (!url) return;
-  window.open(url, '_blank');
-}
-
-function removePhoto(index) {
-  photos.splice(index, 1);
-  renderPhotoGrid();
-}
-
-function compressImage(file, maxSide, quality) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const ratio = Math.min(1, maxSide / Math.max(img.width, img.height));
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.round(img.width * ratio);
-        canvas.height = Math.round(img.height * ratio);
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL('image/jpeg', quality);
-        resolve({
-          dataUrl,
-          filename: (file.name || 'photo').replace(/\.[^.]+$/, '') + '.jpg'
-        });
-      };
-      img.onerror = reject;
-      img.src = reader.result;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-function exportBackup() {
-  const jobs = getLocalJobs();
-  if (!jobs.length) return showToast('No saved jobs to export');
-  downloadBlob(new Blob([JSON.stringify(jobs, null, 2)], { type:'application/json' }), 'ml-monument-saved-jobs-backup.json');
-  showToast('Backup exported');
-}
-
-function bindImport() {
-  document.getElementById('importFile').addEventListener('change', async (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-
-    try {
-      const text = await file.text();
-      const incoming = JSON.parse(text);
-      if (!Array.isArray(incoming)) throw new Error('Invalid backup');
-
-      const current = getLocalJobs();
-      const map = new Map();
-      [...incoming, ...current].forEach(job => map.set(job.id, job));
-      const merged = Array.from(map.values()).sort((a, b) => new Date(b.date) - new Date(a.date));
-      safeLocalSet(STORAGE_KEY, JSON.stringify(merged));
-      renderSavedPlotFilterOptions();
-      await renderHistory();
-      showToast('Backup imported');
-    } catch (err) {
-      console.error(err);
-      showToast('Import failed');
-    }
-
-    e.target.value = '';
-  });
-}
-
-function csvEscape(value) {
-  const str = String(value ?? '');
-  return '"' + str.replace(/"/g, '""') + '"';
-}
-
-function exportCsv() {
-  const jobs = getLocalJobs();
-  if (!jobs.length) return showToast('No saved jobs to export');
-
-  const headers = [
-    'Saved At','Owner Name','Owner ID','Plot','Issue Type','Issue Note','Job Name','Job Type','Mode',
-    'Main Length In','Main Width In','Main Height In','Area Sq Ft',
-    'Clean ML','Clean Total','Exterior ML','Exterior Total',
-    'Re-pointing LF','Re-pointing ML','Re-pointing Total',
-    'Flats','Flats Total','Slants','Slants Total','Footstones Total',
-    'Job Total','Notes','Photo Count','Photo URLs'
-  ];
-
-  const rows = jobs.map(job => {
-    const snap = job.snapshot || {};
-    const r = job.results || {};
-    const urls = Array.isArray(snap.photos) ? snap.photos.map(p => p.url).filter(Boolean).join('\n') : '';
-    return [
-      job.date || '',
-      snap.ownerName || '',
-      snap.ownerId || '',
-      snap.plot || '',
-      snap.issueType || '',
-      snap.issueNote || '',
-      job.name || '',
-      snap.jobType || '',
-      snap.mode || '',
-      Number(r.mainL || 0).toFixed(2),
-      Number(r.mainW || 0).toFixed(2),
-      Number(r.mainH || 0).toFixed(2),
-      Number(r.totalSqFt || 0).toFixed(2),
-      Number(r.mlClean || 0).toFixed(2),
-      Number(r.priceClean || 0).toFixed(2),
-      Number(r.mlExt || 0).toFixed(2),
-      Number(r.priceExt || 0).toFixed(2),
-      Number(r.lfPointing || 0).toFixed(2),
-      Number(r.mlLF || 0).toFixed(2),
-      Number(r.priceLF || 0).toFixed(2),
-      Number(r.numFlats || 0),
-      Number(r.priceFlats || 0).toFixed(2),
-      Number(r.numSlants || 0),
-      Number(r.priceSlants || 0).toFixed(2),
-      Number(r.footTotal || 0).toFixed(2),
-      Number(r.finalTotal || 0).toFixed(2),
-      snap.notes || '',
-      Array.isArray(snap.photos) ? snap.photos.length : 0,
-      urls
-    ];
-  });
-
-  let csv = headers.map(csvEscape).join(',') + '\n' + rows.map(row => row.map(csvEscape).join(',')).join('\n');
-
-  const pieceLines = [];
-  jobs.forEach(job =>
-    (job.snapshot?.pieces || []).forEach((piece, idx) =>
-      pieceLines.push([
-        job.name || '',
-        idx === 0 ? (job.snapshot?.jobType === 'Mausoleum' ? 'Main Mausoleum' : 'Main Monument') : `Piece ${idx}`,
-        Number(piece.l || 0).toFixed(2),
-        Number(piece.w || 0).toFixed(2),
-        Number(piece.h || 0).toFixed(2),
-        Number(piece.mult || 1)
-      ])
-    )
-  );
-
-  if (pieceLines.length) {
-    csv += '\n\n' + ['Piece Details'].map(csvEscape).join(',') + '\n';
-    csv += ['Job Name','Piece Label','Length In','Width In','Height In','Multiplier'].map(csvEscape).join(',') + '\n';
-    csv += pieceLines.map(row => row.map(csvEscape).join(',')).join('\n');
-  }
-
-  downloadBlob(new Blob([csv], { type:'text/csv;charset=utf-8;' }), 'ml-monument-saved-jobs.csv');
-  showToast('CSV exported');
-}
-
-function downloadBlob(blob, filename) {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(a.href);
+  return { url: data.secure_url, filename: filename || data.original_filename || 'photo.jpg' };
 }
 
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(() => t.classList.remove('show'), 2400);
 }
 
 function escapeHtml(str) {
-  return String(str).replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+  return String(str ?? '').replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
 }
-
 function escapeJs(str) {
-  return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-}
-
-async function registerServiceWorker() {
-  if (!('serviceWorker' in navigator)) return;
-  try {
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (refreshing) return;
-      refreshing = true;
-      window.location.reload();
-    });
-    const reg = await navigator.serviceWorker.register('./service-worker.js?v=6');
-    await reg.update();
-  } catch (err) {
-    console.warn('SW registration failed', err);
-  }
-}
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  document.getElementById('installCard').classList.remove('hidden');
-});
-
-document.getElementById('installBtn').addEventListener('click', async () => {
-  if (!deferredPrompt) return showToast('On iPhone: Share → Add to Home Screen');
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  dismissInstallCard();
-});
-
-function dismissInstallCard() {
-  document.getElementById('installCard').classList.add('hidden');
-}
-
-function updateSyncBadge() {
-  const badge = document.getElementById('syncStatus');
-  if (airtableReady() && cloudinaryReady()) {
-    badge.textContent = 'Cloud sync ready';
-    badge.className = 'sync-pill ok';
-  } else if ((CONFIG.airtable && CONFIG.airtable.enabled) || CONFIG.cloudinary) {
-    badge.textContent = 'Sync incomplete';
-    badge.className = 'sync-pill warn';
-  } else {
-    badge.textContent = 'Local only';
-    badge.className = 'sync-pill';
-  }
+  return String(str ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
 function airtableReady() {
@@ -2078,6 +1414,9 @@ function getFieldMap() {
     ownerName: 'Owner Name',
     ownerId: 'Owner ID',
     plot: 'Plot',
+    locationLabel: 'Location Label',
+    mapsUrl: 'Maps URL',
+    status: 'Status',
     photos: 'Photos',
     photoUrls: 'Photo URLs',
     issueType: 'Issue Type',
@@ -2113,28 +1452,25 @@ function airtableUrl() {
   return `https://api.airtable.com/v0/${CONFIG.airtable.baseId}/${encodeURIComponent(CONFIG.airtable.tableName)}`;
 }
 
-function toAirtableFields(job) {
+function toAirtableFields(record) {
   const f = getFieldMap();
-  const snap = job.snapshot || {};
-  const r = job.results || {};
+  const snap = record.snapshot || {};
+  const r = record.results || {};
   const isMonument = (snap.jobType || 'Monument') === 'Monument';
-  const photoAttachments = Array.isArray(snap.photos)
-    ? snap.photos
-        .filter(p => p.url)
-        .map(p => ({ url: p.url, filename: p.filename || 'photo.jpg' }))
-    : [];
-  const photoUrls = photoAttachments.map(p => p.url).join('\n');
-
+  const photoAttachments = Array.isArray(snap.photos) ? snap.photos.filter(p => p.url).map(p => ({ url: p.url, filename: p.filename || 'photo.jpg' })) : [];
   return {
     [f.ownerName]: snap.ownerName || '',
     [f.ownerId]: snap.ownerId || '',
     [f.plot]: snap.plot || '',
+    [f.locationLabel]: snap.locationLabel || '',
+    [f.mapsUrl]: snap.mapsUrl || '',
+    [f.status]: snap.status || computeStatus(record),
     [f.issueType]: snap.issueType || '',
     [f.issueNote]: snap.issueNote || '',
     [f.photos]: photoAttachments,
-    [f.photoUrls]: photoUrls,
-    [f.jobName]: job.name || '',
-    [f.date]: (job.date || new Date().toISOString()).slice(0, 10),
+    [f.photoUrls]: photoAttachments.map(p => p.url).join('\n'),
+    [f.jobName]: record.name || '',
+    [f.date]: (record.date || new Date().toISOString()).slice(0, 10),
     [f.jobType]: snap.jobType || 'Monument',
     [f.areaSqFt]: Number(r.totalSqFt || 0),
     [f.cleanML]: isMonument ? Number(r.mlClean || 0) : 0,
@@ -2144,29 +1480,28 @@ function toAirtableFields(job) {
     [f.repointingLF]: isMonument ? 0 : Number(r.lfPointing || 0),
     [f.repointingML]: isMonument ? 0 : Number(r.mlLF || 0),
     [f.repointingTotal]: isMonument ? 0 : Number(r.priceLF || 0),
-    [f.flats]: Number(r.numFlats || 0),
-    [f.slants]: Number(r.numSlants || 0),
+    [f.flats]: Number(snap.numFlats || 0),
+    [f.slants]: Number(snap.numSlants || 0),
     [f.jobTotal]: Number(r.finalTotal || 0),
     [f.notes]: snap.notes || '',
     [f.photoCount]: photoAttachments.length,
     [f.detailsJson]: JSON.stringify({
-      ...job,
+      ...record,
       snapshot: {
         ...snap,
-        photos: photoAttachments.map(p => ({ url: p.url, filename: p.filename })),
-        photoCount: photoAttachments.length
+        photos: photoAttachments,
+        status: snap.status || computeStatus(record)
       }
     })
   };
 }
 
-async function airtableCreateRecord(job) {
+async function airtableCreateRecord(record) {
   const res = await fetch(airtableUrl(), {
     method: 'POST',
     headers: airtableHeaders(),
-    body: JSON.stringify({ records: [{ fields: toAirtableFields(job) }] })
+    body: JSON.stringify({ records: [{ fields: toAirtableFields(record) }] })
   });
-
   if (!res.ok) {
     let detail = '';
     try {
@@ -2175,17 +1510,28 @@ async function airtableCreateRecord(job) {
     } catch {}
     throw new Error(detail ? ('Airtable save failed: ' + detail) : 'Airtable save failed');
   }
-
   const data = await res.json();
   return data.records?.[0]?.id || '';
 }
 
-async function airtableDeleteRecord(recordId) {
+async function airtableUpdateRecord(recordId, record) {
   const res = await fetch(`${airtableUrl()}/${recordId}`, {
-    method: 'DELETE',
-    headers: airtableHeaders()
+    method: 'PATCH',
+    headers: airtableHeaders(),
+    body: JSON.stringify({ fields: toAirtableFields(record) })
   });
+  if (!res.ok) {
+    let detail = '';
+    try {
+      const data = await res.json();
+      detail = data?.error?.message || data?.error?.type || JSON.stringify(data);
+    } catch {}
+    throw new Error(detail ? ('Airtable update failed: ' + detail) : 'Airtable update failed');
+  }
+}
 
+async function airtableDeleteRecord(recordId) {
+  const res = await fetch(`${airtableUrl()}/${recordId}`, { method: 'DELETE', headers: airtableHeaders() });
   if (!res.ok) {
     let detail = '';
     try {
@@ -2196,60 +1542,46 @@ async function airtableDeleteRecord(recordId) {
   }
 }
 
-async function airtableFetchJobs() {
+async function airtableFetchRecords() {
   const f = getFieldMap();
   let url = airtableUrl() + '?pageSize=100&sort[0][field]=' + encodeURIComponent(f.date) + '&sort[0][direction]=desc';
   let records = [];
-
   while (url) {
     const res = await fetch(url, { headers: airtableHeaders() });
-    if (!res.ok) throw new Error('Failed to fetch Airtable jobs');
+    if (!res.ok) throw new Error('Failed to fetch Airtable records');
     const data = await res.json();
     records = records.concat(data.records || []);
     url = data.offset ? `${airtableUrl()}?pageSize=100&offset=${encodeURIComponent(data.offset)}` : '';
   }
-
   return records.map(record => {
     const fields = record.fields || {};
     let parsed = null;
-
     try {
       if (fields[f.detailsJson]) parsed = JSON.parse(fields[f.detailsJson]);
     } catch {}
-
-    const attachments = Array.isArray(fields[f.photos])
-      ? fields[f.photos].map(att => ({
-          url: att.url || '',
-          filename: att.filename || ''
-        })).filter(att => att.url)
-      : [];
-
-    const urlLines = String(fields[f.photoUrls] || '')
-      .split('\n')
-      .map(s => s.trim())
-      .filter(Boolean)
-      .map(url => ({ url, filename: '' }));
-
-    const mergedPhotos = attachments.length ? attachments : urlLines;
-
-    const job = parsed && parsed.snapshot ? parsed : {
+    const attachments = Array.isArray(fields[f.photos]) ? fields[f.photos].map(att => ({ url: att.url || '', filename: att.filename || '' })).filter(att => att.url) : [];
+    const fallback = parsed && parsed.snapshot ? parsed : {
       id: 'at-' + record.id,
-      name: fields[f.jobName] || 'Unnamed Job',
+      airtableRecordId: record.id,
+      name: fields[f.jobName] || 'Unnamed Record',
       date: fields[f.date] || new Date().toISOString(),
       snapshot: {
         ownerName: fields[f.ownerName] || '',
         ownerId: fields[f.ownerId] || '',
         plot: fields[f.plot] || '',
+        locationLabel: fields[f.locationLabel] || '',
+        mapsUrl: fields[f.mapsUrl] || '',
+        status: fields[f.status] || '',
         issueType: fields[f.issueType] || '',
         issueNote: fields[f.issueNote] || '',
-        jobType: fields[f.jobType] || 'Monument',
-        mode: 'inches',
         notes: fields[f.notes] || '',
+        mode: 'inches',
+        jobType: fields[f.jobType] || 'Monument',
         lfPointing: Number(fields[f.repointingLF] || 0),
         numFlats: Number(fields[f.flats] || 0),
         numSlants: Number(fields[f.slants] || 0),
         pieces: [],
-        photos: mergedPhotos
+        photos: attachments
       },
       results: {
         jobType: fields[f.jobType] || 'Monument',
@@ -2263,21 +1595,11 @@ async function airtableFetchJobs() {
         priceLF: Number(fields[f.repointingTotal] || 0),
         numFlats: Number(fields[f.flats] || 0),
         numSlants: Number(fields[f.slants] || 0),
-        finalTotal: Number(fields[f.jobTotal] || 0),
-        mainL: 0,
-        mainW: 0,
-        mainH: 0
+        finalTotal: Number(fields[f.jobTotal] || 0)
       }
     };
-
-    if (!job.snapshot) job.snapshot = {};
-    if (!Array.isArray(job.snapshot.photos) || !job.snapshot.photos.length) {
-      job.snapshot.photos = mergedPhotos;
-    }
-
-    job.airtableRecordId = record.id;
-    if (!job.id) job.id = 'at-' + record.id;
-    return job;
+    fallback.airtableRecordId = record.id;
+    return fallback;
   });
 }
 </script>
