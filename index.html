@@ -483,21 +483,30 @@ function mergeJobs(localJobs,remoteJobs){
 }
 
 async function getJobs(){
-  const local=getLocalJobs();
-  if(airtableReady()&&navigator.onLine){
-    try{
-      const remote=await airtableFetchJobs();
-      const merged=mergeJobs(local,remote);
-      saveLocalJobs(merged);
-      return merged;
-    }catch(e){
+  const isValidJob = (job) => {
+    const s = job?.snapshot || {};
+    return Boolean(
+      String(s.ownerName || '').trim() ||
+      String(s.ownerId || '').trim() ||
+      String(s.plot || '').trim()
+    );
+  };
+
+  if (airtableReady() && navigator.onLine) {
+    try {
+      const remote = await airtableFetchJobs();
+      const cleanRemote = remote.filter(isValidJob);
+      saveLocalJobs(cleanRemote);
+      return cleanRemote;
+    } catch (e) {
       console.error(e);
-      return local;
+      return getLocalJobs().filter(isValidJob);
     }
   }
-  return local;
-}
 
+  return getLocalJobs().filter(isValidJob);
+}
+  
 async function saveCurrentRecord(){
   if(!currentRecordId)return showToast('No record open');
   const snap=getCurrentSnapshot();
