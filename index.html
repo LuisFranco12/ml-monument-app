@@ -401,6 +401,63 @@
       font-weight: 700;
     }
 
+
+    .photo-toolbar { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+    .photo-toolbar .btn { padding: 12px 16px; }
+    .photo-actions { position:absolute; right:8px; bottom:8px; display:flex; gap:6px; flex-wrap:wrap; }
+    .photo-mini-btn {
+      border:none;
+      background: rgba(15,23,42,.82);
+      color:#fff;
+      border-radius: 999px;
+      min-width: 30px;
+      height: 30px;
+      padding: 0 8px;
+      cursor:pointer;
+      font-size:12px;
+    }
+    .photo-card.clickable img { cursor: zoom-in; }
+    .viewer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,.82);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1200;
+    }
+    .viewer-backdrop.show { display:flex; }
+    .viewer-inner {
+      position: relative;
+      max-width: min(96vw, 1100px);
+      max-height: 92vh;
+      width: 100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .viewer-img {
+      max-width: 100%;
+      max-height: 92vh;
+      object-fit: contain;
+      border-radius: 18px;
+      background: #000;
+    }
+    .viewer-close {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      border:none;
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      background: #fff;
+      cursor:pointer;
+      font-size: 22px;
+      line-height: 1;
+    }
+
     @media (max-width: 1100px) {
       .grid-2, .record-layout, .goal-grid, .grid-4, .results-grid { grid-template-columns: 1fr; }
       .field-grid, .calc-section .field-grid.three { grid-template-columns: 1fr; }
@@ -481,6 +538,14 @@
   </div>
 
   <div class="toast" id="toast"></div>
+
+  <div class="viewer-backdrop" id="photoViewer" onclick="closePhotoViewer(event)">
+    <div class="viewer-inner">
+      <button class="viewer-close" onclick="closePhotoViewer(event)">×</button>
+      <img id="photoViewerImg" class="viewer-img" src="" alt="Photo preview"/>
+    </div>
+  </div>
+
 
 <script src="./config.js"></script>
 <script>
@@ -1008,7 +1073,8 @@ function renderRecordDetail(record) {
           <div class="action-stack">
             ${recordEditMode ? `
               <button class="action-btn primary" onclick="scrollToMeasurements()">Edit Measurements</button>
-              <button class="action-btn" onclick="triggerPhotoInput()">Add / Review Photos</button>
+              <button class="action-btn" onclick="triggerCameraInput()">Take Photo</button>
+              <button class="action-btn" onclick="triggerPhotoInput()">Choose / Review Photos</button>
             ` : `
               <button class="action-btn primary" onclick="enterRecordEditMode()">Edit Record</button>
               <button class="action-btn" onclick="scrollToMeasurements()">View Measurements</button>
@@ -1017,6 +1083,7 @@ function renderRecordDetail(record) {
             <button class="action-btn" onclick="deleteCurrentRecord()">Delete Record</button>
           </div>
           <input id="record_photoInput" type="file" accept="image/*" multiple class="hidden" onchange="handleRecordPhotos(event)"/>
+          <input id="record_cameraInput" type="file" accept="image/*" capture="environment" class="hidden" onchange="handleRecordPhotos(event)"/>
         </div>
 
         <div class="card section">
@@ -1025,11 +1092,17 @@ function renderRecordDetail(record) {
             <div style="font-weight:700; margin-bottom:4px;" id="locationPreviewLabel">${escapeHtml(snap.locationLabel || '—')}</div>
             <div class="list-sub" id="locationPreviewUrl">${snap.mapsUrl ? escapeHtml(snap.mapsUrl) : '—'}</div>
           </div>
-          <div class="photo-grid" id="recordPhotoGrid" style="margin-top:14px;">
+          ${recordEditMode ? `<div class="photo-toolbar"><button class="btn btn-secondary" onclick="triggerCameraInput()">📷 Take Photo</button><button class="btn btn-secondary" onclick="triggerPhotoInput()">🖼 Choose Photos</button></div>` : ``}<div class="photo-grid" id="recordPhotoGrid" style="margin-top:14px;">
             ${photos.length ? photos.map((photo, index) => `
-              <div class="photo-card">
-                <img src="${escapeHtml(photo.url || photo.dataUrl || '')}" alt="Photo ${index + 1}"/>
-                ${recordEditMode ? `<button class="photo-remove" onclick="removeRecordPhoto(${index}, event)">×</button>` : ''}
+              <div class="photo-card clickable">
+                <img src="${escapeHtml(photo.url || photo.dataUrl || '')}" alt="Photo ${index + 1}" onclick="openPhotoViewer('${escapeJs(photo.url || photo.dataUrl || '')}')"/>
+                ${recordEditMode ? `
+                  <button class="photo-remove" onclick="removeRecordPhoto(${index}, event)">×</button>
+                  <div class="photo-actions">
+                    <button class="photo-mini-btn" onclick="movePhoto(${index}, -1, event)">←</button>
+                    <button class="photo-mini-btn" onclick="movePhoto(${index}, 1, event)">→</button>
+                  </div>
+                ` : ''}
               </div>
             `).join('') : `
               <div class="photo-card">No Photo</div>
@@ -1701,28 +1774,116 @@ function scrollToMeasurements() {
 }
 
 function triggerPhotoInput() {
-  document.getElementById('record_photoInput')?.click();
+  syncDraftFromVisibleInputs();
+  const input = document.getElementById('record_photoInput');
+  if (input) {
+    input.value = '';
+    input.click();
+  }
+}
+
+function triggerCameraInput() {
+  syncDraftFromVisibleInputs();
+  const input = document.getElementById('record_cameraInput');
+  if (input) {
+    input.value = '';
+    input.click();
+  }
+}
+
+function syncDraftFromVisibleInputs() {
+  if (!currentRecordDraft || !recordEditMode) return;
+  try {
+    hydrateDraftFromForm();
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+function refreshPhotoUI() {
+  if (!currentRecordDraft) return;
+  const photos = Array.isArray(currentRecordDraft.snapshot.photos) ? currentRecordDraft.snapshot.photos : [];
+  const grid = document.getElementById('recordPhotoGrid');
+  if (grid) {
+    grid.innerHTML = photos.length ? photos.map((photo, index) => `
+      <div class="photo-card clickable">
+        <img src="${escapeHtml(photo.url || photo.dataUrl || '')}" alt="Photo ${index + 1}" onclick="openPhotoViewer('${escapeJs(photo.url || photo.dataUrl || '')}')"/>
+        ${recordEditMode ? `
+          <button class="photo-remove" onclick="removeRecordPhoto(${index}, event)">×</button>
+          <div class="photo-actions">
+            <button class="photo-mini-btn" onclick="movePhoto(${index}, -1, event)">←</button>
+            <button class="photo-mini-btn" onclick="movePhoto(${index}, 1, event)">→</button>
+          </div>
+        ` : ''}
+      </div>
+    `).join('') : `<div class="photo-card">No Photo</div><div class="photo-card">No Photo</div>`;
+  }
+  const metrics = document.querySelectorAll('.metric-value');
+  if (metrics && metrics.length >= 4) metrics[3].textContent = String(photos.length);
 }
 
 function handleRecordPhotos(event) {
   const files = Array.from(event.target.files || []).slice(0, 6);
   if (!currentRecordDraft || !files.length) return;
-  const readers = files.map(file => new Promise(resolve => {
+  syncDraftFromVisibleInputs();
+  const remaining = Math.max(0, 6 - (currentRecordDraft.snapshot.photos || []).length);
+  const usable = files.slice(0, remaining);
+  if (!usable.length) {
+    showToast('Maximum 6 photos');
+    event.target.value = '';
+    return;
+  }
+  const readers = usable.map(file => new Promise(resolve => {
     const fr = new FileReader();
     fr.onload = () => resolve({ name: file.name, filename: file.name, dataUrl: fr.result, url: '' });
     fr.readAsDataURL(file);
   }));
   Promise.all(readers).then(items => {
     currentRecordDraft.snapshot.photos = [...(currentRecordDraft.snapshot.photos || []), ...items].slice(0, 6);
-    renderPlotsPage();
+    refreshPhotoUI();
+    showToast(items.length === 1 ? 'Photo added' : 'Photos added');
+    event.target.value = '';
+  }).catch(err => {
+    console.error(err);
+    showToast('Photo load failed');
+    event.target.value = '';
   });
 }
 
 function removeRecordPhoto(index, event) {
   if (event) event.stopPropagation();
   if (!currentRecordDraft) return;
+  syncDraftFromVisibleInputs();
   currentRecordDraft.snapshot.photos.splice(index, 1);
-  renderPlotsPage();
+  refreshPhotoUI();
+}
+
+function movePhoto(index, direction, event) {
+  if (event) event.stopPropagation();
+  if (!currentRecordDraft) return;
+  syncDraftFromVisibleInputs();
+  const photos = currentRecordDraft.snapshot.photos || [];
+  const newIndex = index + direction;
+  if (newIndex < 0 || newIndex >= photos.length) return;
+  [photos[index], photos[newIndex]] = [photos[newIndex], photos[index]];
+  refreshPhotoUI();
+}
+
+function openPhotoViewer(src) {
+  if (!src) return;
+  const viewer = document.getElementById('photoViewer');
+  const img = document.getElementById('photoViewerImg');
+  if (!viewer || !img) return;
+  img.src = src;
+  viewer.classList.add('show');
+}
+
+function closePhotoViewer(event) {
+  if (event) event.stopPropagation();
+  const viewer = document.getElementById('photoViewer');
+  const img = document.getElementById('photoViewerImg');
+  if (viewer) viewer.classList.remove('show');
+  if (img) img.src = '';
 }
 
 function openDirections() {
