@@ -351,6 +351,43 @@
       font-weight: 700;
     }
 
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    
+    .result-card {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      background: #fff;
+    }
+    
+    .result-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    
+    .result-card-total {
+      background: var(--surface-2);
+    }
+    
+    .total-row {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      font-size: 18px;
+      font-weight: 700;
+    }
+    
+    @media (max-width: 900px) {
+      .results-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media (max-width: 1100px) {
       .grid-2, .record-layout, .goal-grid, .grid-4 { grid-template-columns: 1fr; }
       .field-grid, .calc-section .field-grid.three { grid-template-columns: 1fr; }
@@ -1342,49 +1379,148 @@ function renderResultsBox(results) {
   if (!box) return;
 
   const r = results || {};
-  const isMausoleum = (currentRecordDraft?.snapshot?.jobType || 'Monument') === 'Mausoleum';
+  const jobType = currentRecordDraft?.snapshot?.jobType || 'Monument';
+  const isMausoleum = jobType === 'Mausoleum';
 
-  let html = '';
+  const hasAnything =
+    Number(r.totalSqFt || 0) > 0 ||
+    Number(r.mlClean || 0) > 0 ||
+    Number(r.mlExt || 0) > 0 ||
+    Number(r.mlLF || 0) > 0 ||
+    Number(r.numFlats || 0) > 0 ||
+    Number(r.numSlants || 0) > 0 ||
+    Number(r.finalTotal || 0) > 0;
 
-  if (!r.hasDimensions && !Number(r.lfPointing || 0) && !Number(r.numFlats || 0) && !Number(r.numSlants || 0)) {
-    box.innerHTML = '<div class="muted">Enter measurements or footstones to calculate.</div>';
+  if (!hasAnything) {
+    box.innerHTML = `<div class="muted">Enter measurements or footstones to calculate.</div>`;
     return;
   }
 
-  if (r.hasDimensions) {
-    html += `<div class="result-row"><strong>Total Area</strong><span>${Number(r.totalSqFt || 0).toFixed(2)} sq ft</span></div>`;
-  }
+  let html = `<div class="results-grid">`;
 
-  if (!isMausoleum) {
-    html += `
-      <div class="result-row"><span class="muted">ML for Standard Upright / Special</span><span>${Number(r.mlClean || 0).toFixed(2)}</span></div>
-      <div class="result-row"><span class="muted">${r.cleanLabel || 'Estimated Cleaning Price'}</span><span>$${Number(r.priceClean || 0).toFixed(2)}</span></div>
-    `;
-  } else {
-    html += `
-      <div class="result-row"><span class="muted">ML for Exterior Cleaning</span><span>${Number(r.mlExt || 0).toFixed(2)}</span></div>
-      <div class="result-row"><span class="muted">Estimated Price (Exterior Cleaning @ $159)</span><span>$${Number(r.priceExt || 0).toFixed(2)}</span></div>
-      <div class="result-row"><span class="muted">LF Re-pointing</span><span>${Number(r.lfPointing || 0).toFixed(2)}</span></div>
-      <div class="result-row"><span class="muted">ML for Re-pointing</span><span>${Number(r.mlLF || 0).toFixed(2)}</span></div>
-      <div class="result-row"><span class="muted">Estimated Price (Re-pointing @ $564)</span><span>$${Number(r.priceLF || 0).toFixed(2)}</span></div>
-    `;
-  }
-
-  if (Number(r.numFlats || 0) > 0 || Number(r.numSlants || 0) > 0) {
-    html += `
-      <div class="result-row"><span class="muted">Flats Entered</span><span>${Number(r.numFlats || 0)} — $${Number(r.priceFlats || 0).toFixed(2)}</span></div>
-      <div class="result-row"><span class="muted">Slants Entered</span><span>${Number(r.numSlants || 0)} — $${Number(r.priceSlants || 0).toFixed(2)}</span></div>
-      <div class="result-row"><span class="muted">Footstones Total</span><span>$${Number(r.footTotal || 0).toFixed(2)}</span></div>
-    `;
-  }
-
+  // Square footage
   html += `
-    <div class="result-row" style="font-size:20px; font-weight:700; padding-top:10px; border-top:1px solid var(--border); margin-top:10px;">
-      <span>${isMausoleum ? 'Final Total (Exterior + Re-pointing + Flats + Slants)' : 'Final Total (Standard Upright/Special + Flats + Slants)'}</span>
-      <span>$${Number(r.finalTotal || 0).toFixed(2)}</span>
+    <div class="result-card">
+      <div class="result-card-title">Square Feet</div>
+      <div class="result-row">
+        <span class="muted">Total Area</span>
+        <span>${Number(r.totalSqFt || 0).toFixed(2)} sq ft</span>
+      </div>
     </div>
   `;
 
+  // ML section
+  if (!isMausoleum) {
+    html += `
+      <div class="result-card">
+        <div class="result-card-title">Monument ML</div>
+        <div class="result-row">
+          <span class="muted">Clean ML</span>
+          <span>${Number(r.mlClean || 0).toFixed(2)}</span>
+        </div>
+        <div class="result-row">
+          <span class="muted">${r.cleanLabel || 'Cleaning Price'}</span>
+          <span>$${Number(r.priceClean || 0).toFixed(2)}</span>
+        </div>
+      </div>
+    `;
+  } else {
+    html += `
+      <div class="result-card">
+        <div class="result-card-title">Mausoleum ML</div>
+        <div class="result-row">
+          <span class="muted">Exterior ML</span>
+          <span>${Number(r.mlExt || 0).toFixed(2)}</span>
+        </div>
+        <div class="result-row">
+          <span class="muted">Exterior Cleaning Total</span>
+          <span>$${Number(r.priceExt || 0).toFixed(2)}</span>
+        </div>
+      </div>
+    `;
+
+    html += `
+      <div class="result-card">
+        <div class="result-card-title">Re-pointing</div>
+        <div class="result-row">
+          <span class="muted">LF Total</span>
+          <span>${Number(r.lfPointing || 0).toFixed(2)} LF</span>
+        </div>
+        <div class="result-row">
+          <span class="muted">ML Total</span>
+          <span>${Number(r.mlLF || 0).toFixed(2)}</span>
+        </div>
+        <div class="result-row">
+          <span class="muted">Re-pointing Total</span>
+          <span>$${Number(r.priceLF || 0).toFixed(2)}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  // Flats / Slants
+  html += `
+    <div class="result-card">
+      <div class="result-card-title">Flats / Slants</div>
+      <div class="result-row">
+        <span class="muted">Flats</span>
+        <span>${Number(r.numFlats || 0)} — $${Number(r.priceFlats || 0).toFixed(2)}</span>
+      </div>
+      <div class="result-row">
+        <span class="muted">Slants</span>
+        <span>${Number(r.numSlants || 0)} — $${Number(r.priceSlants || 0).toFixed(2)}</span>
+      </div>
+      <div class="result-row">
+        <span class="muted">Footstones Total</span>
+        <span>$${Number(r.footTotal || 0).toFixed(2)}</span>
+      </div>
+    </div>
+  `;
+
+  // Totals
+  if (!isMausoleum) {
+    html += `
+      <div class="result-card result-card-total">
+        <div class="result-card-title">Totals</div>
+        <div class="result-row">
+          <span class="muted">Cleaning Total</span>
+          <span>$${Number(r.priceClean || 0).toFixed(2)}</span>
+        </div>
+        <div class="result-row">
+          <span class="muted">Footstones Total</span>
+          <span>$${Number(r.footTotal || 0).toFixed(2)}</span>
+        </div>
+        <div class="result-row total-row">
+          <span>Total Job Cost</span>
+          <span>$${Number(r.finalTotal || 0).toFixed(2)}</span>
+        </div>
+      </div>
+    `;
+  } else {
+    html += `
+      <div class="result-card result-card-total">
+        <div class="result-card-title">Totals</div>
+        <div class="result-row">
+          <span class="muted">Exterior Cleaning Total</span>
+          <span>$${Number(r.priceExt || 0).toFixed(2)}</span>
+        </div>
+        <div class="result-row">
+          <span class="muted">Re-pointing Total</span>
+          <span>$${Number(r.priceLF || 0).toFixed(2)}</span>
+        </div>
+        <div class="result-row">
+          <span class="muted">Footstones Total</span>
+          <span>$${Number(r.footTotal || 0).toFixed(2)}</span>
+        </div>
+        <div class="result-row total-row">
+          <span>Total Job Cost</span>
+          <span>$${Number(r.finalTotal || 0).toFixed(2)}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  html += `</div>`;
   box.innerHTML = html;
 }
 
