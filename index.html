@@ -394,30 +394,46 @@
   <div class="modal-backdrop" id="newJobModalWrap">
     <div class="modal">
       <h2 style="margin:0 0 8px; font-size:24px;">Create New Job From Home</h2>
-      <p class="subtext" style="margin-bottom:22px;">Only Owner Name, Owner ID, and Plot are required here.</p>
+      <p class="subtext" style="margin-bottom:22px;">Owner Name, Owner ID, Plot, and Job Type are required here.</p>
+
       <div class="field-grid">
         <div class="field">
           <label>Owner Name *</label>
           <input id="newOwnerName" type="text" placeholder="Enter owner name"/>
         </div>
+
         <div class="field">
           <label>Owner ID *</label>
           <input id="newOwnerId" type="text" placeholder="Enter owner ID"/>
         </div>
+
         <div class="field">
           <label>Plot *</label>
           <select id="newPlot"></select>
         </div>
+
+        <div class="field">
+          <label>Job Type *</label>
+          <select id="newJobType">
+            <option value="">Choose job type</option>
+            <option value="Monument">Monument</option>
+            <option value="Mausoleum">Mausoleum</option>
+          </select>
+        </div>
+
         <div class="field">
           <label>Location / Google Maps</label>
           <input id="newMapsUrl" type="text" placeholder="Paste maps link or add location note"/>
         </div>
+
+        <div class="field">
+          <label>Location Label</label>
+          <input id="newLocationLabel" type="text" placeholder="Optional location label"/>
+        </div>
       </div>
-      <div class="field">
-        <label>Location Label</label>
-        <input id="newLocationLabel" type="text" placeholder="Optional location label"/>
-      </div>
+
       <div class="notice">Measurements are not required here. You can create the record now, then open it on your phone later and edit everything while you are in the field.</div>
+
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeNewJobModal()">Cancel</button>
         <button class="btn btn-primary" onclick="createRecordFromModal()">Create Record</button>
@@ -549,7 +565,7 @@ function normalizeRecord(record) {
     name: record.name || `${snapshot.ownerName || ''} ${snapshot.ownerId || ''}`.trim() || 'Unnamed Record',
     date: record.date || new Date().toISOString(),
     snapshot: {
-      mode: snapshot.mode || 'inches',
+      mode: snapshot.mode || 'feetInches',
       jobType: snapshot.jobType || 'Monument',
       ownerName: snapshot.ownerName || '',
       ownerId: snapshot.ownerId || '',
@@ -905,22 +921,33 @@ function renderRecordDetail(record) {
 
     <div class="card section calc-section" id="measurementSection" style="margin-top:18px;">
       <h2>Measurements & Calculator</h2>
-      <div class="field-grid" style="margin-top:18px;">
-        <div class="field"><label>Input Mode</label>
-          <select id="record_mode" onchange="renderPiecesForCurrentRecord()">
-            <option value="inches">Inches Only</option>
-            <option value="feetInches">Feet & Inches</option>
-          </select>
-        </div>
-        <div class="field"><label>Flats</label><input id="record_numFlats" type="number" min="0"/></div>
-        <div class="field"><label>Slants</label><input id="record_numSlants" type="number" min="0"/></div>
-      </div>
-      <div class="field hidden" id="repointingWrap"><label>Re-pointing LF</label><input id="record_lfPointing" type="number" min="0" step="0.01"/></div>
-      <div id="piecesContainer"></div>
+
+      <div id="piecesContainer" style="margin-top:18px;"></div>
+
       <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
         <button class="btn btn-secondary" onclick="addDraftPiece()">Add Piece</button>
+      </div>
+
+      <div class="field-grid" style="margin-top:18px;">
+        <div class="field">
+          <label>Flats</label>
+          <input id="record_numFlats" type="number" min="0"/>
+        </div>
+        <div class="field">
+          <label>Slants</label>
+          <input id="record_numSlants" type="number" min="0"/>
+        </div>
+      </div>
+
+      <div class="field hidden" id="repointingWrap">
+        <label>Re-pointing LF</label>
+        <input id="record_lfPointing" type="number" min="0" step="0.01"/>
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
         <button class="btn btn-primary" onclick="calculateCurrentRecord()">Calculate</button>
       </div>
+
       <div id="resultsBox" class="result-box" style="margin-top:18px;"></div>
     </div>
 
@@ -938,7 +965,9 @@ function renderRecordDetail(record) {
 
 function syncDraftIntoDom() {
   if (!currentRecordDraft) return;
+
   const snap = currentRecordDraft.snapshot;
+
   renderPlotSelectInto('record_plot', snap.plot || '');
   setValue('record_ownerName', snap.ownerName);
   setValue('record_ownerId', snap.ownerId);
@@ -949,14 +978,33 @@ function syncDraftIntoDom() {
   setValue('record_mapsUrl', snap.mapsUrl);
   setValue('record_issueNote', snap.issueNote);
   setValue('record_notes', snap.notes);
-  setValue('record_mode', snap.mode || 'inches');
   setValue('record_numFlats', snap.numFlats || '');
   setValue('record_numSlants', snap.numSlants || '');
   setValue('record_lfPointing', snap.lfPointing || '');
-  document.getElementById('repointingWrap').classList.toggle('hidden', (snap.jobType || 'Monument') !== 'Mausoleum');
-  document.getElementById('record_jobType').addEventListener('change', () => {
-    document.getElementById('repointingWrap').classList.toggle('hidden', document.getElementById('record_jobType').value !== 'Mausoleum');
-  });
+
+  document.getElementById('repointingWrap').classList.toggle(
+    'hidden',
+    (snap.jobType || 'Monument') !== 'Mausoleum'
+  );
+
+  const jobTypeEl = document.getElementById('record_jobType');
+  if (jobTypeEl && !jobTypeEl.dataset.boundJobTypeChange) {
+    jobTypeEl.addEventListener('change', () => {
+      const selectedType = document.getElementById('record_jobType').value || 'Monument';
+      currentRecordDraft.snapshot.jobType = selectedType;
+
+      if (selectedType !== 'Mausoleum') {
+        currentRecordDraft.snapshot.lfPointing = 0;
+        setValue('record_lfPointing', '');
+      }
+
+      document.getElementById('repointingWrap').classList.toggle('hidden', selectedType !== 'Mausoleum');
+      renderPiecesForCurrentRecord();
+      renderResultsBox(currentRecordDraft.results || {});
+    });
+    jobTypeEl.dataset.boundJobTypeChange = '1';
+  }
+
   updateLocationPreview();
   renderPiecesForCurrentRecord();
   renderResultsBox(currentRecordDraft.results || {});
@@ -982,6 +1030,7 @@ function openNewJobModal() {
   document.getElementById('newOwnerName').value = '';
   document.getElementById('newOwnerId').value = '';
   document.getElementById('newPlot').value = '';
+  document.getElementById('newJobType').value = '';
   document.getElementById('newMapsUrl').value = '';
   document.getElementById('newLocationLabel').value = '';
   document.getElementById('newJobModalWrap').classList.add('show');
@@ -995,11 +1044,12 @@ async function createRecordFromModal() {
   const ownerName = document.getElementById('newOwnerName').value.trim();
   const ownerId = document.getElementById('newOwnerId').value.trim();
   const plot = document.getElementById('newPlot').value.trim();
+  const jobType = document.getElementById('newJobType').value.trim();
   const mapsUrl = document.getElementById('newMapsUrl').value.trim();
   const locationLabel = document.getElementById('newLocationLabel').value.trim();
 
-  if (!ownerName || !ownerId || !plot) {
-    return showToast('Owner Name, Owner ID, and Plot are required');
+  if (!ownerName || !ownerId || !plot || !jobType) {
+    return showToast('Owner Name, Owner ID, Plot, and Job Type are required');
   }
 
   const record = normalizeRecord({
@@ -1016,8 +1066,8 @@ async function createRecordFromModal() {
       issueNote: '',
       notes: '',
       status: 'Not measured yet',
-      mode: 'inches',
-      jobType: 'Monument',
+      mode: 'feetInches',
+      jobType,
       lfPointing: 0,
       numFlats: 0,
       numSlants: 0,
@@ -1025,7 +1075,22 @@ async function createRecordFromModal() {
       photos: []
     },
     results: {
-      jobType: 'Monument',
+      jobType,
+      totalSqFt: 0,
+      hasDimensions: false,
+      mlClean: 0,
+      priceClean: 0,
+      cleanLabel: '',
+      mlExt: 0,
+      priceExt: 0,
+      lfPointing: 0,
+      mlLF: 0,
+      priceLF: 0,
+      numFlats: 0,
+      numSlants: 0,
+      priceFlats: 0,
+      priceSlants: 0,
+      footTotal: 0,
       finalTotal: 0
     }
   });
@@ -1050,56 +1115,84 @@ async function createRecordFromModal() {
 }
 
 function makePiece(isMain = false) {
-  return { id: 'piece-' + (++pieceIdCounter), isMain, l: '', w: '', h: '', mult: isMain ? 1 : '' };
+  return {
+    id: 'piece-' + (++pieceIdCounter),
+    isMain,
+    l: '',
+    w: '',
+    h: '',
+    mult: 1,
+    __fi: {
+      lft: '', lin: '', wft: '', win: '', hft: '', hin: ''
+    }
+  };
 }
 
 function renderPiecesForCurrentRecord() {
   if (!currentRecordDraft) return;
-  currentRecordDraft.snapshot.mode = document.getElementById('record_mode')?.value || currentRecordDraft.snapshot.mode || 'inches';
+
+  currentRecordDraft.snapshot.mode = 'feetInches';
+
   const container = document.getElementById('piecesContainer');
   const snap = currentRecordDraft.snapshot;
   if (!Array.isArray(snap.pieces) || !snap.pieces.length) snap.pieces = [makePiece(true)];
-  container.innerHTML = snap.pieces.map((piece, index) => renderPieceBlock(piece, index, snap.mode)).join('');
+
+  container.innerHTML = snap.pieces.map((piece, index) => renderPieceBlock(piece, index)).join('');
 }
 
-function renderPieceBlock(piece, index, mode) {
-  const title = piece.isMain ? ((currentRecordDraft.snapshot.jobType || 'Monument') === 'Mausoleum' ? 'Main Mausoleum' : 'Main Monument') : `Piece ${index}`;
-  if (mode === 'feetInches') {
-    return `
-      <div class="piece-block">
-        <div class="piece-header">
-          <div class="piece-title">${escapeHtml(title)}</div>
-          ${piece.isMain ? '' : `<button class="btn btn-danger" onclick="removeDraftPiece('${escapeJs(piece.id)}')">Remove</button>`}
-        </div>
-        <div class="field-grid three">
-          ${renderFeetInchesInputs(piece, 'l', 'Length')}
-          ${renderFeetInchesInputs(piece, 'w', 'Width')}
-          ${renderFeetInchesInputs(piece, 'h', 'Height')}
-        </div>
-        <div class="field" style="margin-top:12px;"><label>Multiplier</label><input type="number" min="1" value="${escapeHtml(piece.mult || '')}" onchange="updatePieceValue('${escapeJs(piece.id)}','mult',this.value)"/></div>
-      </div>
-    `;
-  }
+function renderPieceBlock(piece, index) {
+  const isMausoleum = (currentRecordDraft.snapshot.jobType || 'Monument') === 'Mausoleum';
+  const title = piece.isMain
+    ? (isMausoleum ? 'Main Mausoleum' : 'Main Monument')
+    : `Additional Piece ${index}`;
+
+  const multValue = Number(piece.mult || 1);
+
   return `
     <div class="piece-block">
       <div class="piece-header">
         <div class="piece-title">${escapeHtml(title)}</div>
         ${piece.isMain ? '' : `<button class="btn btn-danger" onclick="removeDraftPiece('${escapeJs(piece.id)}')">Remove</button>`}
       </div>
+
       <div class="field-grid three">
-        <div class="field"><label>Length (in)</label><input type="number" value="${escapeHtml(piece.l || '')}" onchange="updatePieceValue('${escapeJs(piece.id)}','l',this.value)"/></div>
-        <div class="field"><label>Width (in)</label><input type="number" value="${escapeHtml(piece.w || '')}" onchange="updatePieceValue('${escapeJs(piece.id)}','w',this.value)"/></div>
-        <div class="field"><label>Height (in)</label><input type="number" value="${escapeHtml(piece.h || '')}" onchange="updatePieceValue('${escapeJs(piece.id)}','h',this.value)"/></div>
+        ${renderFeetInchesInputs(piece, 'l', 'Length')}
+        ${renderFeetInchesInputs(piece, 'w', 'Width')}
+        ${renderFeetInchesInputs(piece, 'h', 'Height')}
       </div>
-      <div class="field" style="margin-top:12px;"><label>Multiplier</label><input type="number" min="1" value="${escapeHtml(piece.mult || '')}" onchange="updatePieceValue('${escapeJs(piece.id)}','mult',this.value)"/></div>
+
+      ${piece.isMain ? `
+        <div class="field" style="margin-top:12px;">
+          <label>Multiply Main ${isMausoleum ? 'Mausoleum' : 'Monument'}</label>
+          <input type="number" min="1" value="${multValue}" onchange="updatePieceValue('${escapeJs(piece.id)}','mult',this.value)"/>
+        </div>
+      ` : `
+        <div class="field" style="margin-top:12px;">
+          <label>Multiply This Piece</label>
+          <input type="number" min="1" value="${multValue}" onchange="updatePieceValue('${escapeJs(piece.id)}','mult',this.value)"/>
+        </div>
+      `}
     </div>
   `;
 }
 
 function renderFeetInchesInputs(piece, key, label) {
-  const total = Number(piece[key] || 0);
-  const feet = total ? Math.floor(total / 12) : '';
-  const inches = total ? Number((total - (Math.floor(total / 12) * 12)).toFixed(2)) : '';
+  piece.__fi = piece.__fi || { lft:'', lin:'', wft:'', win:'', hft:'', hin:'' };
+
+  let feet = piece.__fi[key + 'ft'];
+  let inches = piece.__fi[key + 'in'];
+
+  if ((feet === '' || feet == null) && (inches === '' || inches == null)) {
+    const total = Number(piece[key] || 0);
+    if (total > 0) {
+      feet = Math.floor(total / 12);
+      inches = Number((total - feet * 12).toFixed(2));
+    } else {
+      feet = '';
+      inches = '';
+    }
+  }
+
   return `
     <div class="field">
       <label>${label}</label>
@@ -1151,7 +1244,7 @@ function hydrateDraftFromForm() {
   snap.mapsUrl = document.getElementById('record_mapsUrl').value.trim();
   snap.issueNote = document.getElementById('record_issueNote').value.trim();
   snap.notes = document.getElementById('record_notes').value.trim();
-  snap.mode = document.getElementById('record_mode').value || 'inches';
+  snap.mode = 'feetInches';
   snap.numFlats = Number(document.getElementById('record_numFlats').value || 0);
   snap.numSlants = Number(document.getElementById('record_numSlants').value || 0);
   snap.lfPointing = snap.jobType === 'Mausoleum' ? Number(document.getElementById('record_lfPointing').value || 0) : 0;
@@ -1164,38 +1257,49 @@ function hydrateDraftFromForm() {
 function calculateCurrentRecord() {
   const record = hydrateDraftFromForm();
   if (!record) return;
-  const totals = getCombinedMeasurements(record.snapshot.pieces || []);
-  const length = totals.length;
-  const width = totals.width;
-  const height = totals.height;
+
+  const { length, width, height } = getCombinedMeasurements(record.snapshot.pieces || []);
   const lfPointing = record.snapshot.jobType === 'Mausoleum' ? Number(record.snapshot.lfPointing || 0) : 0;
   const numFlats = Number(record.snapshot.numFlats || 0);
   const numSlants = Number(record.snapshot.numSlants || 0);
   const hasDimensions = length > 0 && width > 0 && height > 0;
 
-  let totalSqFt = 0, mlClean = 0, priceClean = 0, cleanLabel = '', mlExt = 0, priceExt = 0;
+  let top = 0, side = 0, front = 0, totalSqInches = 0, totalSqFt = 0;
+  let mlClean = 0, mlExt = 0, priceClean = 0, priceExt = 0, cleanLabel = '';
+
   if (hasDimensions) {
-    const top = length * width;
-    const side = length * height * 2;
-    const front = width * height * 2;
-    totalSqFt = (top + side + front) / 144;
-    mlClean = Math.max(2, parseFloat((totalSqFt / 25).toFixed(2)));
+    top = length * width;
+    side = length * height * 2;
+    front = width * height * 2;
+    totalSqInches = top + side + front;
+    totalSqFt = totalSqInches / 144;
+
+    mlClean = parseFloat((totalSqFt / 25).toFixed(2));
+    if (mlClean < 2) mlClean = 2;
+
     mlExt = parseFloat((totalSqFt / 50).toFixed(2));
+
     const isUnderSize = (length < 72 && height < 120);
     const cleanRate = isUnderSize ? 155 : 195;
     cleanLabel = isUnderSize ? 'Standard Upright @ $155' : 'Standard Special @ $195';
     priceClean = parseFloat((mlClean * cleanRate).toFixed(2));
-    priceExt = parseFloat((mlExt * 159).toFixed(2));
+
+    const exteriorCleaningRate = 159;
+    priceExt = parseFloat((mlExt * exteriorCleaningRate).toFixed(2));
   }
 
   const mlLF = parseFloat((lfPointing / 50).toFixed(2));
   const priceLF = parseFloat((mlLF * 564).toFixed(2));
-  const priceFlats = numFlats > 0 ? 155 + (numFlats - 1) * (155 / 2) : 0;
-  const priceSlants = numSlants > 0 ? 195 + (numSlants - 1) * (195 / 2) : 0;
+
+  const flatRate = 155;
+  const priceFlats = numFlats > 0 ? flatRate + (numFlats - 1) * (flatRate / 2) : 0;
+
+  const slantRate = 195;
+  const priceSlants = numSlants > 0 ? slantRate + (numSlants - 1) * (slantRate / 2) : 0;
+
   const footTotal = parseFloat((priceFlats + priceSlants).toFixed(2));
-  const finalTotal = record.snapshot.jobType === 'Monument'
-    ? parseFloat((priceClean + footTotal).toFixed(2))
-    : parseFloat((priceExt + priceLF + footTotal).toFixed(2));
+  const monumentTotal = parseFloat((priceClean + footTotal).toFixed(2));
+  const mausoleumTotal = parseFloat((priceExt + priceLF + footTotal).toFixed(2));
 
   currentRecordDraft.results = {
     jobType: record.snapshot.jobType,
@@ -1214,8 +1318,9 @@ function calculateCurrentRecord() {
     priceFlats,
     priceSlants,
     footTotal,
-    finalTotal
+    finalTotal: record.snapshot.jobType === 'Monument' ? monumentTotal : mausoleumTotal
   };
+
   currentRecordDraft.snapshot.status = computeStatus(currentRecordDraft);
   setValue('record_status', currentRecordDraft.snapshot.status);
   renderResultsBox(currentRecordDraft.results);
@@ -1224,7 +1329,7 @@ function calculateCurrentRecord() {
 
 function getCombinedMeasurements(pieces) {
   return (pieces || []).reduce((acc, piece) => {
-    const mult = Math.max(1, Number(piece.mult || 1));
+    const mult = Math.max(1, parseInt(piece.mult || 1, 10) || 1);
     acc.length += Number(piece.l || 0) * mult;
     acc.width += Number(piece.w || 0) * mult;
     acc.height += Number(piece.h || 0) * mult;
@@ -1235,15 +1340,52 @@ function getCombinedMeasurements(pieces) {
 function renderResultsBox(results) {
   const box = document.getElementById('resultsBox');
   if (!box) return;
+
   const r = results || {};
-  box.innerHTML = `
-    <div class="result-row"><strong>Total Area</strong><span>${Number(r.totalSqFt || 0).toFixed(2)} sq ft</span></div>
-    <div class="result-row"><span class="muted">Clean ML</span><span>${Number(r.mlClean || 0).toFixed(2)}</span></div>
-    <div class="result-row"><span class="muted">Exterior ML</span><span>${Number(r.mlExt || 0).toFixed(2)}</span></div>
-    <div class="result-row"><span class="muted">Re-pointing ML</span><span>${Number(r.mlLF || 0).toFixed(2)}</span></div>
-    <div class="result-row"><span class="muted">Flats / Slants</span><span>${Number(r.numFlats || 0)} / ${Number(r.numSlants || 0)}</span></div>
-    <div class="result-row" style="font-size:20px; font-weight:700; padding-top:10px; border-top:1px solid var(--border); margin-top:10px;"><span>Final Total</span><span>$${Number(r.finalTotal || 0).toFixed(2)}</span></div>
+  const isMausoleum = (currentRecordDraft?.snapshot?.jobType || 'Monument') === 'Mausoleum';
+
+  let html = '';
+
+  if (!r.hasDimensions && !Number(r.lfPointing || 0) && !Number(r.numFlats || 0) && !Number(r.numSlants || 0)) {
+    box.innerHTML = '<div class="muted">Enter measurements or footstones to calculate.</div>';
+    return;
+  }
+
+  if (r.hasDimensions) {
+    html += `<div class="result-row"><strong>Total Area</strong><span>${Number(r.totalSqFt || 0).toFixed(2)} sq ft</span></div>`;
+  }
+
+  if (!isMausoleum) {
+    html += `
+      <div class="result-row"><span class="muted">ML for Standard Upright / Special</span><span>${Number(r.mlClean || 0).toFixed(2)}</span></div>
+      <div class="result-row"><span class="muted">${r.cleanLabel || 'Estimated Cleaning Price'}</span><span>$${Number(r.priceClean || 0).toFixed(2)}</span></div>
+    `;
+  } else {
+    html += `
+      <div class="result-row"><span class="muted">ML for Exterior Cleaning</span><span>${Number(r.mlExt || 0).toFixed(2)}</span></div>
+      <div class="result-row"><span class="muted">Estimated Price (Exterior Cleaning @ $159)</span><span>$${Number(r.priceExt || 0).toFixed(2)}</span></div>
+      <div class="result-row"><span class="muted">LF Re-pointing</span><span>${Number(r.lfPointing || 0).toFixed(2)}</span></div>
+      <div class="result-row"><span class="muted">ML for Re-pointing</span><span>${Number(r.mlLF || 0).toFixed(2)}</span></div>
+      <div class="result-row"><span class="muted">Estimated Price (Re-pointing @ $564)</span><span>$${Number(r.priceLF || 0).toFixed(2)}</span></div>
+    `;
+  }
+
+  if (Number(r.numFlats || 0) > 0 || Number(r.numSlants || 0) > 0) {
+    html += `
+      <div class="result-row"><span class="muted">Flats Entered</span><span>${Number(r.numFlats || 0)} — $${Number(r.priceFlats || 0).toFixed(2)}</span></div>
+      <div class="result-row"><span class="muted">Slants Entered</span><span>${Number(r.numSlants || 0)} — $${Number(r.priceSlants || 0).toFixed(2)}</span></div>
+      <div class="result-row"><span class="muted">Footstones Total</span><span>$${Number(r.footTotal || 0).toFixed(2)}</span></div>
+    `;
+  }
+
+  html += `
+    <div class="result-row" style="font-size:20px; font-weight:700; padding-top:10px; border-top:1px solid var(--border); margin-top:10px;">
+      <span>${isMausoleum ? 'Final Total (Exterior + Re-pointing + Flats + Slants)' : 'Final Total (Standard Upright/Special + Flats + Slants)'}</span>
+      <span>$${Number(r.finalTotal || 0).toFixed(2)}</span>
+    </div>
   `;
+
+  box.innerHTML = html;
 }
 
 async function saveCurrentRecord() {
@@ -1456,30 +1598,22 @@ function toAirtableFields(record) {
   const f = getFieldMap();
   const snap = record.snapshot || {};
   const r = record.results || {};
-  const computedStatus = snap.status || computeStatus(record);
-  const jobType = snap.jobType || 'Monument';
-  const isMonument = jobType === 'Monument';
-
-  const photoAttachments = Array.isArray(snap.photos)
-    ? snap.photos
-        .filter(p => p && p.url)
-        .map(p => ({
-          url: p.url,
-          filename: p.filename || 'photo.jpg'
-        }))
-    : [];
-
-  const fields = {
+  const isMonument = (snap.jobType || 'Monument') === 'Monument';
+  const photoAttachments = Array.isArray(snap.photos) ? snap.photos.filter(p => p.url).map(p => ({ url: p.url, filename: p.filename || 'photo.jpg' })) : [];
+  return {
     [f.ownerName]: snap.ownerName || '',
     [f.ownerId]: snap.ownerId || '',
     [f.plot]: snap.plot || '',
     [f.locationLabel]: snap.locationLabel || '',
     [f.mapsUrl]: snap.mapsUrl || '',
+    [f.status]: snap.status || computeStatus(record),
+    [f.issueType]: snap.issueType || '',
     [f.issueNote]: snap.issueNote || '',
     [f.photos]: photoAttachments,
     [f.photoUrls]: photoAttachments.map(p => p.url).join('\n'),
     [f.jobName]: record.name || '',
     [f.date]: (record.date || new Date().toISOString()).slice(0, 10),
+    [f.jobType]: snap.jobType || 'Monument',
     [f.areaSqFt]: Number(r.totalSqFt || 0),
     [f.cleanML]: isMonument ? Number(r.mlClean || 0) : 0,
     [f.cleanTotal]: isMonument ? Number(r.priceClean || 0) : 0,
@@ -1498,26 +1632,10 @@ function toAirtableFields(record) {
       snapshot: {
         ...snap,
         photos: photoAttachments,
-        status: computedStatus,
-        jobType
+        status: snap.status || computeStatus(record)
       }
     })
   };
-
-  // Only send select/text values when they actually have content
-  if (computedStatus && String(computedStatus).trim()) {
-    fields[f.status] = String(computedStatus).trim();
-  }
-
-  if (jobType && String(jobType).trim()) {
-    fields[f.jobType] = String(jobType).trim();
-  }
-
-  if (snap.issueType && String(snap.issueType).trim()) {
-    fields[f.issueType] = String(snap.issueType).trim();
-  }
-
-  return fields;
 }
 
 async function airtableCreateRecord(record) {
@@ -1599,7 +1717,7 @@ async function airtableFetchRecords() {
         issueType: fields[f.issueType] || '',
         issueNote: fields[f.issueNote] || '',
         notes: fields[f.notes] || '',
-        mode: 'inches',
+        mode: 'feetInches',
         jobType: fields[f.jobType] || 'Monument',
         lfPointing: Number(fields[f.repointingLF] || 0),
         numFlats: Number(fields[f.flats] || 0),
