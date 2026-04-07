@@ -356,24 +356,20 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 14px;
     }
-    
     .result-card {
       border: 1px solid var(--border);
       border-radius: 18px;
       padding: 16px;
       background: #fff;
     }
-    
     .result-card-title {
       font-size: 15px;
       font-weight: 700;
       margin-bottom: 12px;
     }
-    
     .result-card-total {
       background: var(--surface-2);
     }
-    
     .total-row {
       margin-top: 10px;
       padding-top: 10px;
@@ -381,15 +377,9 @@
       font-size: 18px;
       font-weight: 700;
     }
-    
-    @media (max-width: 900px) {
-      .results-grid {
-        grid-template-columns: 1fr;
-      }
-    }
 
     @media (max-width: 1100px) {
-      .grid-2, .record-layout, .goal-grid, .grid-4 { grid-template-columns: 1fr; }
+      .grid-2, .record-layout, .goal-grid, .grid-4, .results-grid { grid-template-columns: 1fr; }
       .field-grid, .calc-section .field-grid.three { grid-template-columns: 1fr; }
     }
 
@@ -1398,7 +1388,6 @@ function renderResultsBox(results) {
 
   let html = `<div class="results-grid">`;
 
-  // Square footage
   html += `
     <div class="result-card">
       <div class="result-card-title">Square Feet</div>
@@ -1409,7 +1398,6 @@ function renderResultsBox(results) {
     </div>
   `;
 
-  // ML section
   if (!isMausoleum) {
     html += `
       <div class="result-card">
@@ -1419,7 +1407,7 @@ function renderResultsBox(results) {
           <span>${Number(r.mlClean || 0).toFixed(2)}</span>
         </div>
         <div class="result-row">
-          <span class="muted">${r.cleanLabel || 'Cleaning Price'}</span>
+          <span class="muted">${r.cleanLabel || 'Cleaning Total'}</span>
           <span>$${Number(r.priceClean || 0).toFixed(2)}</span>
         </div>
       </div>
@@ -1437,9 +1425,6 @@ function renderResultsBox(results) {
           <span>$${Number(r.priceExt || 0).toFixed(2)}</span>
         </div>
       </div>
-    `;
-
-    html += `
       <div class="result-card">
         <div class="result-card-title">Re-pointing</div>
         <div class="result-row">
@@ -1458,7 +1443,6 @@ function renderResultsBox(results) {
     `;
   }
 
-  // Flats / Slants
   html += `
     <div class="result-card">
       <div class="result-card-title">Flats / Slants</div>
@@ -1477,7 +1461,6 @@ function renderResultsBox(results) {
     </div>
   `;
 
-  // Totals
   if (!isMausoleum) {
     html += `
       <div class="result-card result-card-total">
