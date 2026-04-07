@@ -1004,13 +1004,14 @@ function renderRecordDetail(record) {
         <h2>${escapeHtml(snap.ownerName || 'Unnamed')} (${escapeHtml(snap.ownerId || 'No ID')})</h2>
         <p>${recordEditMode ? 'Editing record' : 'Record profile'}</p>
       </div>
-      <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        <button class="btn btn-secondary" onclick="openDirections()">Directions</button>
+      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:flex-end;">
+        <button class="btn btn-primary" onclick="openDirections()">Directions</button>
         ${recordEditMode ? `
           <button class="btn btn-secondary" onclick="cancelRecordEdit()">Cancel</button>
-          <button class="btn btn-primary" onclick="saveCurrentRecord()">Save Changes</button>
+          <button class="btn btn-secondary" onclick="saveCurrentRecord()">Save Changes</button>
+          <button class="btn btn-danger" onclick="deleteCurrentRecord()">Delete</button>
         ` : `
-          <button class="btn btn-primary" onclick="enterRecordEditMode()">Edit</button>
+          <button class="btn btn-secondary" onclick="enterRecordEditMode()" style="margin-left:10px;">Edit</button>
         `}
       </div>
     </div>
@@ -1060,7 +1061,6 @@ function renderRecordDetail(record) {
             ${staticField('Job Type', escapeHtml(snap.jobType || ''))}
             ${staticField('Status', escapeHtml(snap.status || ''))}
             ${staticField('Location Label', escapeHtml(snap.locationLabel || ''))}
-            ${staticField('Google Maps Link', snap.mapsUrl ? `<a href="${escapeHtml(normalizeMapsUrl(snap.mapsUrl))}" target="_blank" rel="noopener noreferrer">Open map</a>` : '—')}
           </div>
           ${staticField('Issue Note', escapeHtml(snap.issueNote || ''))}
           ${staticField('General Notes', escapeHtml(snap.notes || ''))}
@@ -1069,49 +1069,11 @@ function renderRecordDetail(record) {
 
       <div class="side-stack">
         <div class="card section">
-          <h2>${recordEditMode ? 'Field Actions' : 'Quick Actions'}</h2>
-          <div class="action-stack">
-            ${recordEditMode ? `
-              <button class="action-btn primary" onclick="scrollToMeasurements()">Edit Measurements</button>
-              <button class="action-btn" onclick="triggerCameraInput()">Take Photo</button>
-              <button class="action-btn" onclick="triggerPhotoInput()">Choose / Review Photos</button>
-            ` : `
-              <button class="action-btn primary" onclick="enterRecordEditMode()">Edit Record</button>
-              <button class="action-btn" onclick="scrollToMeasurements()">View Measurements</button>
-            `}
-            <button class="action-btn" onclick="openDirections()">Open Directions</button>
-            <button class="action-btn" onclick="deleteCurrentRecord()">Delete Record</button>
-          </div>
+          <h2>Photos</h2>
+          ${recordEditMode ? `<div class="photo-toolbar"><button class="btn btn-secondary" onclick="triggerCameraInput()">📷 Take Photo</button><button class="btn btn-secondary" onclick="triggerPhotoInput()">🖼 Choose Photos</button></div>` : ``}
           <input id="record_photoInput" type="file" accept="image/*" multiple class="hidden" onchange="handleRecordPhotos(event)"/>
           <input id="record_cameraInput" type="file" accept="image/*" capture="environment" class="hidden" onchange="handleRecordPhotos(event)"/>
-        </div>
-
-        <div class="card section">
-          <h2>Location Preview</h2>
-          <div class="workflow-item" style="margin-top:14px;">
-            <div style="font-weight:700; margin-bottom:4px;" id="locationPreviewLabel">${escapeHtml(snap.locationLabel || '—')}</div>
-            <div class="list-sub" id="locationPreviewUrl">
-              ${snap.mapsUrl ? `<a href="${escapeHtml(normalizeMapsUrl(snap.mapsUrl))}" target="_blank" rel="noopener noreferrer">Open map</a>` : '—'}
-            </div>
-            <div id="locationPreviewActions">
-              ${snap.mapsUrl ? `
-                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
-                  <a class="btn btn-secondary" href="${escapeHtml(normalizeMapsUrl(snap.mapsUrl))}" target="_blank" rel="noopener noreferrer">Open Directions</a>
-                  <button class="btn btn-primary" type="button" onclick="openDirections()">Directions</button>
-                </div>
-              ` : ''}
-            </div>
-          </div>
-          <div id="locationPreviewFrameWrap" style="margin-top:14px; ${snap.mapsUrl && !String(snap.mapsUrl).includes('maps.app.goo.gl') ? '' : 'display:none;'}">
-            <iframe
-              id="locationPreviewFrame"
-              src="${snap.mapsUrl && !String(snap.mapsUrl).includes('maps.app.goo.gl') ? escapeHtml(normalizeMapsUrl(snap.mapsUrl)) : ''}"
-              style="width:100%; height:260px; border:1px solid var(--border); border-radius:18px; background:#fff;"
-              loading="lazy"
-              referrerpolicy="no-referrer-when-downgrade">
-            </iframe>
-          </div>
-          ${recordEditMode ? `<div class="photo-toolbar"><button class="btn btn-secondary" onclick="triggerCameraInput()">📷 Take Photo</button><button class="btn btn-secondary" onclick="triggerPhotoInput()">🖼 Choose Photos</button></div>` : ``}<div class="photo-grid" id="recordPhotoGrid" style="margin-top:14px;">
+          <div class="photo-grid" id="recordPhotoGrid" style="margin-top:14px;">
             ${photos.length ? photos.map((photo, index) => `
               <div class="photo-card clickable">
                 <img src="${escapeHtml(photo.url || photo.dataUrl || '')}" alt="Photo ${index + 1}" onclick="openPhotoViewer('${escapeJs(photo.url || photo.dataUrl || '')}')"/>
