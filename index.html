@@ -48,10 +48,6 @@
       gap: 18px;
       margin-bottom: 18px;
     }
-    .title {
-      cursor: pointer;
-      user-select: none;
-    }
     .title h1 {
       margin: 0;
       font-size: 28px;
@@ -345,25 +341,6 @@
     .result-row { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; }
     .muted { color: var(--muted); }
     .hidden { display: none !important; }
-    .static-field label {
-      display: block;
-      margin-bottom: 7px;
-      color: var(--muted);
-      font-size: 14px;
-      font-weight: 500;
-    }
-    .static-value {
-      width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px 14px;
-      background: var(--surface-2);
-      min-height: 52px;
-      display: flex;
-      align-items: center;
-      line-height: 1.5;
-    }
-
     .pill-status {
       display: inline-block;
       border-radius: 999px;
@@ -374,92 +351,8 @@
       font-weight: 700;
     }
 
-    .results-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
-    }
-    .result-card {
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 16px;
-      background: #fff;
-    }
-    .result-card-title {
-      font-size: 15px;
-      font-weight: 700;
-      margin-bottom: 12px;
-    }
-    .result-card-total {
-      background: var(--surface-2);
-    }
-    .total-row {
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid var(--border);
-      font-size: 18px;
-      font-weight: 700;
-    }
-
-
-    .photo-toolbar { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
-    .photo-toolbar .btn { padding: 12px 16px; }
-    .photo-actions { position:absolute; right:8px; bottom:8px; display:flex; gap:6px; flex-wrap:wrap; }
-    .photo-mini-btn {
-      border:none;
-      background: rgba(15,23,42,.82);
-      color:#fff;
-      border-radius: 999px;
-      min-width: 30px;
-      height: 30px;
-      padding: 0 8px;
-      cursor:pointer;
-      font-size:12px;
-    }
-    .photo-card.clickable img { cursor: zoom-in; }
-    .viewer-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(15,23,42,.82);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      z-index: 1200;
-    }
-    .viewer-backdrop.show { display:flex; }
-    .viewer-inner {
-      position: relative;
-      max-width: min(96vw, 1100px);
-      max-height: 92vh;
-      width: 100%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-    .viewer-img {
-      max-width: 100%;
-      max-height: 92vh;
-      object-fit: contain;
-      border-radius: 18px;
-      background: #000;
-    }
-    .viewer-close {
-      position: absolute;
-      top: -10px;
-      right: -10px;
-      border:none;
-      width: 40px;
-      height: 40px;
-      border-radius: 999px;
-      background: #fff;
-      cursor:pointer;
-      font-size: 22px;
-      line-height: 1;
-    }
-
     @media (max-width: 1100px) {
-      .grid-2, .record-layout, .goal-grid, .grid-4, .results-grid { grid-template-columns: 1fr; }
+      .grid-2, .record-layout, .goal-grid, .grid-4 { grid-template-columns: 1fr; }
       .field-grid, .calc-section .field-grid.three { grid-template-columns: 1fr; }
     }
 
@@ -474,9 +367,9 @@
 <body>
   <div class="shell">
     <div class="topbar">
-      <div class="title" onclick="goHomeFromTitle()" title="Go home">
-        <h1>ML Monument Field App</h1>
-        <p>Search, map, measure, and price monument and mausoleum jobs</p>
+      <div class="title">
+        <h1>ML Monument App Redesign Preview</h1>
+        <p>Interactive mockup of the new structure</p>
       </div>
       <div class="nav-pill">
         <button id="navHome" class="active" onclick="switchMainTab('home')">Home</button>
@@ -487,49 +380,44 @@
     <div id="page-home" class="page active"></div>
     <div id="page-plots" class="page"></div>
 
+    <div class="card section">
+      <div class="muted" style="font-weight:700; margin-bottom:10px;">Updated preview goals</div>
+      <div class="goal-grid">
+        <div class="goal">Home can search or create a new record shell</div>
+        <div class="goal">Measurements are not required when creating from Home</div>
+        <div class="goal">Existing records are easy to edit from a phone while in the field</div>
+        <div class="goal">Each record can store a location label and Google Maps link for directions</div>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-backdrop" id="newJobModalWrap">
     <div class="modal">
-      <h2 style="margin:0 0 8px; font-size:24px;">Create New Record</h2>
-      <p class="subtext" style="margin-bottom:22px;">Start the record here, then open it later in the field to finish the details.</p>
-
+      <h2 style="margin:0 0 8px; font-size:24px;">Create New Job From Home</h2>
+      <p class="subtext" style="margin-bottom:22px;">Only Owner Name, Owner ID, and Plot are required here.</p>
       <div class="field-grid">
         <div class="field">
           <label>Owner Name *</label>
           <input id="newOwnerName" type="text" placeholder="Enter owner name"/>
         </div>
-
         <div class="field">
           <label>Owner ID *</label>
           <input id="newOwnerId" type="text" placeholder="Enter owner ID"/>
         </div>
-
         <div class="field">
           <label>Plot *</label>
           <select id="newPlot"></select>
         </div>
-
-        <div class="field">
-          <label>Job Type *</label>
-          <select id="newJobType">
-            <option value="">Choose job type</option>
-            <option value="Monument">Monument</option>
-            <option value="Mausoleum">Mausoleum</option>
-          </select>
-        </div>
-
         <div class="field">
           <label>Location / Google Maps</label>
           <input id="newMapsUrl" type="text" placeholder="Paste maps link or add location note"/>
         </div>
-
-        <div class="field">
-          <label>Location Label</label>
-          <input id="newLocationLabel" type="text" placeholder="Optional location label"/>
-        </div>
       </div>
-
+      <div class="field">
+        <label>Location Label</label>
+        <input id="newLocationLabel" type="text" placeholder="Optional location label"/>
+      </div>
       <div class="notice">Measurements are not required here. You can create the record now, then open it on your phone later and edit everything while you are in the field.</div>
-
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeNewJobModal()">Cancel</button>
         <button class="btn btn-primary" onclick="createRecordFromModal()">Create Record</button>
@@ -538,14 +426,6 @@
   </div>
 
   <div class="toast" id="toast"></div>
-
-  <div class="viewer-backdrop" id="photoViewer" onclick="closePhotoViewer(event)">
-    <div class="viewer-inner">
-      <button class="viewer-close" onclick="closePhotoViewer(event)">×</button>
-      <img id="photoViewerImg" class="viewer-img" src="" alt="Photo preview"/>
-    </div>
-  </div>
-
 
 <script src="./config.js"></script>
 <script>
@@ -579,7 +459,6 @@ let currentSearch = '';
 let plotSearch = '';
 let currentRecordDraft = null;
 let pieceIdCounter = 0;
-let recordEditMode = false;
 
 window.onload = async () => {
   storageReady = canUseStorage();
@@ -670,7 +549,7 @@ function normalizeRecord(record) {
     name: record.name || `${snapshot.ownerName || ''} ${snapshot.ownerId || ''}`.trim() || 'Unnamed Record',
     date: record.date || new Date().toISOString(),
     snapshot: {
-      mode: snapshot.mode || 'feetInches',
+      mode: snapshot.mode || 'inches',
       jobType: snapshot.jobType || 'Monument',
       ownerName: snapshot.ownerName || '',
       ownerId: snapshot.ownerId || '',
@@ -731,18 +610,6 @@ function switchMainTab(tab) {
   renderAll();
 }
 
-function goHomeFromTitle() {
-  if (recordEditMode) {
-    const record = getRecordById(selectedRecordId);
-    currentRecordDraft = record ? cloneRecord(record) : null;
-    recordEditMode = false;
-  }
-  plotsViewMode = 'list';
-  selectedPlot = '';
-  selectedRecordId = '';
-  switchMainTab('home');
-}
-
 function renderAll() {
   renderHomePage();
   renderPlotsPage();
@@ -750,6 +617,7 @@ function renderAll() {
 
 function renderHomePage() {
   const page = document.getElementById('page-home');
+  const filtered = getFilteredHomeRecords();
   const recent = recordsCache.slice(0, 6);
   page.innerHTML = `
     <div class="card section">
@@ -763,11 +631,16 @@ function renderHomePage() {
       <div class="toolbar">
         <div class="search-wrap">
           <span>🔎</span>
-          <input id="homeSearchInput" type="text" placeholder="Search Owner Name or Owner ID" value="${escapeHtml(currentSearch)}" oninput="setHomeSearch(this.value)"/>
+          <input type="text" placeholder="Search Owner Name or Owner ID" value="${escapeHtml(currentSearch)}" oninput="setHomeSearch(this.value)"/>
         </div>
         <button class="btn btn-secondary" onclick="clearHomeSearch()">Recent</button>
       </div>
-      <div id="homeSearchResults"></div>
+      ${currentSearch.trim() ? `
+        <div style="margin-top:18px;">
+          <div class="list">
+            ${filtered.length ? filtered.map(renderRecordRow).join('') : `<div class="list-row" style="cursor:default;"><div><div class="list-title">No records found</div><div class="list-sub">Try a different owner name or ID.</div></div></div>`}
+          </div>
+        </div>` : ''}
     </div>
 
     <div class="grid-2">
@@ -788,7 +661,6 @@ function renderHomePage() {
       </div>
     </div>
   `;
-  renderHomeSearchResults();
 }
 
 function getFilteredHomeRecords() {
@@ -801,39 +673,14 @@ function getFilteredHomeRecords() {
   });
 }
 
-function renderHomeSearchResults() {
-  const container = document.getElementById('homeSearchResults');
-  if (!container) return;
-
-  const filtered = getFilteredHomeRecords();
-
-  if (!currentSearch.trim()) {
-    container.innerHTML = '';
-    return;
-  }
-
-  container.innerHTML = `
-    <div style="margin-top:18px;">
-      <div class="list">
-        ${filtered.length ? filtered.map(renderRecordRow).join('') : `<div class="list-row" style="cursor:default;"><div><div class="list-title">No records found</div><div class="list-sub">Try a different owner name or ID.</div></div></div>`}
-      </div>
-    </div>
-  `;
-}
-
 function setHomeSearch(value) {
   currentSearch = value || '';
-  renderHomeSearchResults();
+  renderHomePage();
 }
 
 function clearHomeSearch() {
   currentSearch = '';
-  const input = document.getElementById('homeSearchInput');
-  if (input) {
-    input.value = '';
-    input.focus();
-  }
-  renderHomeSearchResults();
+  renderHomePage();
 }
 
 function renderPlotsPage() {
@@ -959,7 +806,6 @@ function setPlotSearch(value) {
 
 function openRecordDetail(id) {
   selectedRecordId = id;
-  recordEditMode = false;
   plotsViewMode = 'detail';
   currentTab = 'plots';
   document.getElementById('navHome').classList.remove('active');
@@ -972,51 +818,23 @@ function openRecordDetail(id) {
 function renderRecordDetail(record) {
   const photos = Array.isArray(record.snapshot.photos) ? record.snapshot.photos : [];
   const results = record.results || {};
-  const snap = record.snapshot || {};
-  const isMausoleum = (snap.jobType || 'Monument') === 'Mausoleum';
-  const metricClean = isMausoleum ? Number(results.mlExt || 0).toFixed(2) : Number(results.mlClean || 0).toFixed(2);
-  const metricLabel = isMausoleum ? 'Exterior ML' : 'Clean ML';
-  const staticField = (label, value) => `
-    <div class="field static-field">
-      <label>${label}</label>
-      <div class="static-value">${value || '—'}</div>
-    </div>
-  `;
-  const pieceSummary = Array.isArray(snap.pieces) && snap.pieces.length
-    ? snap.pieces.map((piece, index) => {
-        const title = piece.isMain ? (isMausoleum ? 'Main Mausoleum' : 'Main Monument') : `Additional Piece ${index}`;
-        const dims = `${formatInchesAsFeetInches(piece.l)} × ${formatInchesAsFeetInches(piece.w)} × ${formatInchesAsFeetInches(piece.h)}`;
-        const mult = Math.max(1, parseInt(piece.mult || 1, 10) || 1);
-        return `
-          <div class="piece-block">
-            <div class="piece-header"><div class="piece-title">${title}</div></div>
-            <div class="muted">${dims}</div>
-            <div class="muted" style="margin-top:8px;">Multiplier: ${mult}</div>
-          </div>
-        `;
-      }).join('')
-    : `<div class="muted">No measurements added yet.</div>`;
-
+  const metricClean = (record.snapshot.jobType || 'Monument') === 'Monument' ? Number(results.mlClean || 0).toFixed(2) : Number(results.mlExt || 0).toFixed(2);
+  const metricLabel = (record.snapshot.jobType || 'Monument') === 'Monument' ? 'Clean ML' : 'Exterior ML';
   return `
     <div class="page-header">
       <div>
         <div class="crumb" onclick="backToPlotRecords()">← Back</div>
-        <h2>${escapeHtml(snap.ownerName || 'Unnamed')} (${escapeHtml(snap.ownerId || 'No ID')})</h2>
-        <p>${recordEditMode ? 'Editing record' : 'Record profile'}</p>
+        <h2>${escapeHtml(record.snapshot.ownerName || 'Unnamed')} (${escapeHtml(record.snapshot.ownerId || 'No ID')})</h2>
+        <p>Field-ready editable record</p>
       </div>
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button class="btn btn-secondary" onclick="openDirections()">Directions</button>
-        ${recordEditMode ? `
-          <button class="btn btn-secondary" onclick="cancelRecordEdit()">Cancel</button>
-          <button class="btn btn-primary" onclick="saveCurrentRecord()">Save Changes</button>
-        ` : `
-          <button class="btn btn-primary" onclick="enterRecordEditMode()">Edit</button>
-        `}
+        <button class="btn btn-primary" onclick="saveCurrentRecord()">Save Changes</button>
       </div>
     </div>
 
     <div class="grid-4" style="margin-bottom:18px;">
-      <div class="metric"><div class="metric-label">Status</div><div class="metric-value">${escapeHtml(snap.status)}</div></div>
+      <div class="metric"><div class="metric-label">Status</div><div class="metric-value">${escapeHtml(record.snapshot.status)}</div></div>
       <div class="metric"><div class="metric-label">${metricLabel}</div><div class="metric-value">${metricClean}</div></div>
       <div class="metric"><div class="metric-label">Job Total</div><div class="metric-value">$${Number(results.finalTotal || 0).toFixed(2)}</div></div>
       <div class="metric"><div class="metric-label">Photos</div><div class="metric-value">${photos.length}</div></div>
@@ -1024,89 +842,61 @@ function renderRecordDetail(record) {
 
     <div class="record-layout">
       <div class="card section">
-        <h2>${recordEditMode ? 'Edit Record' : 'Record Details'}</h2>
-        ${recordEditMode ? `
-          <div class="field-grid" style="margin-top:18px;">
-            <div class="field"><label>Owner Name *</label><input id="record_ownerName" type="text"/></div>
-            <div class="field"><label>Owner ID *</label><input id="record_ownerId" type="text"/></div>
-            <div class="field"><label>Plot *</label><select id="record_plot"></select></div>
-            <div class="field"><label>Issue Type</label>
-              <select id="record_issueType">
-                <option value="">None</option>
-                <option>Fallen / Cracked Monument or Headstone</option>
-                <option>Inscription Different From Owner</option>
-                <option>Multiple Headstones, Different Names, Same Owner</option>
-                <option>No Monument At All</option>
-              </select>
-            </div>
-            <div class="field"><label>Job Type</label>
-              <select id="record_jobType">
-                <option>Monument</option>
-                <option>Mausoleum</option>
-              </select>
-            </div>
-            <div class="field"><label>Status</label><input id="record_status" type="text" readonly/></div>
-            <div class="field"><label>Location Label</label><input id="record_locationLabel" type="text"/></div>
-            <div class="field"><label>Google Maps Link</label><input id="record_mapsUrl" type="text"/></div>
+        <h2>Quick Edit While in the Field</h2>
+        <div class="field-grid" style="margin-top:18px;">
+          <div class="field"><label>Owner Name *</label><input id="record_ownerName" type="text"/></div>
+          <div class="field"><label>Owner ID *</label><input id="record_ownerId" type="text"/></div>
+          <div class="field"><label>Plot *</label><select id="record_plot"></select></div>
+          <div class="field"><label>Issue Type</label>
+            <select id="record_issueType">
+              <option value="">None</option>
+              <option>Fallen / Cracked Monument or Headstone</option>
+              <option>Inscription Different From Owner</option>
+              <option>Multiple Headstones, Different Names, Same Owner</option>
+              <option>No Monument At All</option>
+            </select>
           </div>
-          <div class="field"><label>Issue Note</label><textarea id="record_issueNote"></textarea></div>
-          <div class="field"><label>General Notes</label><textarea id="record_notes"></textarea></div>
-        ` : `
-          <div class="field-grid" style="margin-top:18px;">
-            ${staticField('Owner Name', escapeHtml(snap.ownerName || ''))}
-            ${staticField('Owner ID', escapeHtml(snap.ownerId || ''))}
-            ${staticField('Plot', escapeHtml(snap.plot || ''))}
-            ${staticField('Issue Type', escapeHtml(snap.issueType || ''))}
-            ${staticField('Job Type', escapeHtml(snap.jobType || ''))}
-            ${staticField('Status', escapeHtml(snap.status || ''))}
-            ${staticField('Location Label', escapeHtml(snap.locationLabel || ''))}
-            ${staticField('Google Maps Link', snap.mapsUrl ? `<a href="${escapeHtml(snap.mapsUrl)}" target="_blank" rel="noopener noreferrer">Open map</a>` : '—')}
+          <div class="field"><label>Job Type</label>
+            <select id="record_jobType">
+              <option>Monument</option>
+              <option>Mausoleum</option>
+            </select>
           </div>
-          ${staticField('Issue Note', escapeHtml(snap.issueNote || ''))}
-          ${staticField('General Notes', escapeHtml(snap.notes || ''))}
-        `}
+          <div class="field"><label>Status</label><input id="record_status" type="text" readonly/></div>
+          <div class="field"><label>Location Label</label><input id="record_locationLabel" type="text"/></div>
+          <div class="field"><label>Google Maps Link</label><input id="record_mapsUrl" type="text"/></div>
+        </div>
+        <div class="field"><label>Issue Note</label><textarea id="record_issueNote"></textarea></div>
+        <div class="field"><label>General Notes</label><textarea id="record_notes"></textarea></div>
       </div>
 
       <div class="side-stack">
         <div class="card section">
-          <h2>${recordEditMode ? 'Field Actions' : 'Quick Actions'}</h2>
+          <h2>Field Actions</h2>
           <div class="action-stack">
-            ${recordEditMode ? `
-              <button class="action-btn primary" onclick="scrollToMeasurements()">Edit Measurements</button>
-              <button class="action-btn" onclick="triggerCameraInput()">Take Photo</button>
-              <button class="action-btn" onclick="triggerPhotoInput()">Choose / Review Photos</button>
-            ` : `
-              <button class="action-btn primary" onclick="enterRecordEditMode()">Edit Record</button>
-              <button class="action-btn" onclick="scrollToMeasurements()">View Measurements</button>
-            `}
+            <button class="action-btn primary" onclick="scrollToMeasurements()">Edit Measurements</button>
+            <button class="action-btn" onclick="triggerPhotoInput()">Add / Review Photos</button>
             <button class="action-btn" onclick="openDirections()">Open Directions</button>
             <button class="action-btn" onclick="deleteCurrentRecord()">Delete Record</button>
           </div>
           <input id="record_photoInput" type="file" accept="image/*" multiple class="hidden" onchange="handleRecordPhotos(event)"/>
-          <input id="record_cameraInput" type="file" accept="image/*" capture="environment" class="hidden" onchange="handleRecordPhotos(event)"/>
         </div>
 
         <div class="card section">
           <h2>Location Preview</h2>
           <div class="workflow-item" style="margin-top:14px;">
-            <div style="font-weight:700; margin-bottom:4px;" id="locationPreviewLabel">${escapeHtml(snap.locationLabel || '—')}</div>
-            <div class="list-sub" id="locationPreviewUrl">${snap.mapsUrl ? escapeHtml(snap.mapsUrl) : '—'}</div>
+            <div style="font-weight:700; margin-bottom:4px;" id="locationPreviewLabel">—</div>
+            <div class="list-sub" id="locationPreviewUrl">—</div>
           </div>
-          ${recordEditMode ? `<div class="photo-toolbar"><button class="btn btn-secondary" onclick="triggerCameraInput()">📷 Take Photo</button><button class="btn btn-secondary" onclick="triggerPhotoInput()">🖼 Choose Photos</button></div>` : ``}<div class="photo-grid" id="recordPhotoGrid" style="margin-top:14px;">
+          <div class="photo-grid" id="recordPhotoGrid" style="margin-top:14px;">
             ${photos.length ? photos.map((photo, index) => `
-              <div class="photo-card clickable">
-                <img src="${escapeHtml(photo.url || photo.dataUrl || '')}" alt="Photo ${index + 1}" onclick="openPhotoViewer('${escapeJs(photo.url || photo.dataUrl || '')}')"/>
-                ${recordEditMode ? `
-                  <button class="photo-remove" onclick="removeRecordPhoto(${index}, event)">×</button>
-                  <div class="photo-actions">
-                    <button class="photo-mini-btn" onclick="movePhoto(${index}, -1, event)">←</button>
-                    <button class="photo-mini-btn" onclick="movePhoto(${index}, 1, event)">→</button>
-                  </div>
-                ` : ''}
+              <div class="photo-card">
+                <img src="${escapeHtml(photo.url || photo.dataUrl || '')}" alt="Photo ${index + 1}"/>
+                <button class="photo-remove" onclick="removeRecordPhoto(${index}, event)">×</button>
               </div>
             `).join('') : `
-              <div class="photo-card">No Photo</div>
-              <div class="photo-card">No Photo</div>
+              <div class="photo-card">Photo 1</div>
+              <div class="photo-card">Photo 2</div>
             `}
           </div>
         </div>
@@ -1114,92 +904,61 @@ function renderRecordDetail(record) {
     </div>
 
     <div class="card section calc-section" id="measurementSection" style="margin-top:18px;">
-      <h2>${recordEditMode ? 'Measurements & Calculator' : 'Measurements'}</h2>
-      ${recordEditMode ? `
-        <div id="piecesContainer" style="margin-top:18px;"></div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-          <button class="btn btn-secondary" onclick="addDraftPiece()">Add Piece</button>
+      <h2>Measurements & Calculator</h2>
+      <div class="field-grid" style="margin-top:18px;">
+        <div class="field"><label>Input Mode</label>
+          <select id="record_mode" onchange="renderPiecesForCurrentRecord()">
+            <option value="inches">Inches Only</option>
+            <option value="feetInches">Feet & Inches</option>
+          </select>
         </div>
-        <div class="field-grid" style="margin-top:18px;">
-          <div class="field">
-            <label>Flats</label>
-            <input id="record_numFlats" type="number" min="0"/>
-          </div>
-          <div class="field">
-            <label>Slants</label>
-            <input id="record_numSlants" type="number" min="0"/>
-          </div>
-        </div>
-        <div class="field hidden" id="repointingWrap">
-          <label>Re-pointing LF</label>
-          <input id="record_lfPointing" type="number" min="0" step="0.01"/>
-        </div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-          <button class="btn btn-primary" onclick="calculateCurrentRecord()">Calculate</button>
-        </div>
-      ` : `
-        <div style="margin-top:18px;">${pieceSummary}</div>
-        <div class="field-grid" style="margin-top:18px;">
-          ${staticField('Flats', String(Number(snap.numFlats || 0)))}
-          ${staticField('Slants', String(Number(snap.numSlants || 0)))}
-        </div>
-        ${isMausoleum ? `<div class="field-grid" style="margin-top:6px;">${staticField('Re-pointing LF', Number(snap.lfPointing || 0).toFixed(2))}</div>` : ''}
-      `}
+        <div class="field"><label>Flats</label><input id="record_numFlats" type="number" min="0"/></div>
+        <div class="field"><label>Slants</label><input id="record_numSlants" type="number" min="0"/></div>
+      </div>
+      <div class="field hidden" id="repointingWrap"><label>Re-pointing LF</label><input id="record_lfPointing" type="number" min="0" step="0.01"/></div>
+      <div id="piecesContainer"></div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+        <button class="btn btn-secondary" onclick="addDraftPiece()">Add Piece</button>
+        <button class="btn btn-primary" onclick="calculateCurrentRecord()">Calculate</button>
+      </div>
       <div id="resultsBox" class="result-box" style="margin-top:18px;"></div>
+    </div>
+
+    <div class="card section">
+      <h2>Convenient Field Workflow</h2>
+      <div class="goal-grid" style="margin-top:18px;">
+        <div class="goal">Search or create a record from Home before leaving</div>
+        <div class="goal">Open the saved record on your phone in the field</div>
+        <div class="goal">Edit measurements, notes, issue info, and photos there</div>
+        <div class="goal">Use the saved Google Maps link for directions</div>
+      </div>
     </div>
   `;
 }
 
 function syncDraftIntoDom() {
   if (!currentRecordDraft) return;
-
   const snap = currentRecordDraft.snapshot;
-
-  if (recordEditMode) {
-    renderPlotSelectInto('record_plot', snap.plot || '');
-    setValue('record_ownerName', snap.ownerName);
-    setValue('record_ownerId', snap.ownerId);
-    setValue('record_issueType', snap.issueType);
-    setValue('record_jobType', snap.jobType || 'Monument');
-    setValue('record_status', snap.status);
-    setValue('record_locationLabel', snap.locationLabel);
-    setValue('record_mapsUrl', snap.mapsUrl);
-    setValue('record_issueNote', snap.issueNote);
-    setValue('record_notes', snap.notes);
-    setValue('record_numFlats', snap.numFlats || '');
-    setValue('record_numSlants', snap.numSlants || '');
-    setValue('record_lfPointing', snap.lfPointing || '');
-
-    const repointingWrap = document.getElementById('repointingWrap');
-    if (repointingWrap) {
-      repointingWrap.classList.toggle('hidden', (snap.jobType || 'Monument') !== 'Mausoleum');
-    }
-
-    const jobTypeEl = document.getElementById('record_jobType');
-    if (jobTypeEl && !jobTypeEl.dataset.boundJobTypeChange) {
-      jobTypeEl.addEventListener('change', () => {
-        const selectedType = document.getElementById('record_jobType').value || 'Monument';
-        currentRecordDraft.snapshot.jobType = selectedType;
-
-        if (selectedType !== 'Mausoleum') {
-          currentRecordDraft.snapshot.lfPointing = 0;
-          setValue('record_lfPointing', '');
-        }
-
-        const repointingWrapInner = document.getElementById('repointingWrap');
-        if (repointingWrapInner) {
-          repointingWrapInner.classList.toggle('hidden', selectedType !== 'Mausoleum');
-        }
-        renderPiecesForCurrentRecord();
-        renderResultsBox(currentRecordDraft.results || {});
-      });
-      jobTypeEl.dataset.boundJobTypeChange = '1';
-    }
-
-    updateLocationPreview();
-    renderPiecesForCurrentRecord();
-  }
-
+  renderPlotSelectInto('record_plot', snap.plot || '');
+  setValue('record_ownerName', snap.ownerName);
+  setValue('record_ownerId', snap.ownerId);
+  setValue('record_issueType', snap.issueType);
+  setValue('record_jobType', snap.jobType || 'Monument');
+  setValue('record_status', snap.status);
+  setValue('record_locationLabel', snap.locationLabel);
+  setValue('record_mapsUrl', snap.mapsUrl);
+  setValue('record_issueNote', snap.issueNote);
+  setValue('record_notes', snap.notes);
+  setValue('record_mode', snap.mode || 'inches');
+  setValue('record_numFlats', snap.numFlats || '');
+  setValue('record_numSlants', snap.numSlants || '');
+  setValue('record_lfPointing', snap.lfPointing || '');
+  document.getElementById('repointingWrap').classList.toggle('hidden', (snap.jobType || 'Monument') !== 'Mausoleum');
+  document.getElementById('record_jobType').addEventListener('change', () => {
+    document.getElementById('repointingWrap').classList.toggle('hidden', document.getElementById('record_jobType').value !== 'Mausoleum');
+  });
+  updateLocationPreview();
+  renderPiecesForCurrentRecord();
   renderResultsBox(currentRecordDraft.results || {});
 }
 
@@ -1223,7 +982,6 @@ function openNewJobModal() {
   document.getElementById('newOwnerName').value = '';
   document.getElementById('newOwnerId').value = '';
   document.getElementById('newPlot').value = '';
-  document.getElementById('newJobType').value = '';
   document.getElementById('newMapsUrl').value = '';
   document.getElementById('newLocationLabel').value = '';
   document.getElementById('newJobModalWrap').classList.add('show');
@@ -1237,12 +995,11 @@ async function createRecordFromModal() {
   const ownerName = document.getElementById('newOwnerName').value.trim();
   const ownerId = document.getElementById('newOwnerId').value.trim();
   const plot = document.getElementById('newPlot').value.trim();
-  const jobType = document.getElementById('newJobType').value.trim();
   const mapsUrl = document.getElementById('newMapsUrl').value.trim();
   const locationLabel = document.getElementById('newLocationLabel').value.trim();
 
-  if (!ownerName || !ownerId || !plot || !jobType) {
-    return showToast('Owner Name, Owner ID, Plot, and Job Type are required');
+  if (!ownerName || !ownerId || !plot) {
+    return showToast('Owner Name, Owner ID, and Plot are required');
   }
 
   const record = normalizeRecord({
@@ -1259,8 +1016,8 @@ async function createRecordFromModal() {
       issueNote: '',
       notes: '',
       status: 'Not measured yet',
-      mode: 'feetInches',
-      jobType,
+      mode: 'inches',
+      jobType: 'Monument',
       lfPointing: 0,
       numFlats: 0,
       numSlants: 0,
@@ -1268,22 +1025,7 @@ async function createRecordFromModal() {
       photos: []
     },
     results: {
-      jobType,
-      totalSqFt: 0,
-      hasDimensions: false,
-      mlClean: 0,
-      priceClean: 0,
-      cleanLabel: '',
-      mlExt: 0,
-      priceExt: 0,
-      lfPointing: 0,
-      mlLF: 0,
-      priceLF: 0,
-      numFlats: 0,
-      numSlants: 0,
-      priceFlats: 0,
-      priceSlants: 0,
-      footTotal: 0,
+      jobType: 'Monument',
       finalTotal: 0
     }
   });
@@ -1308,84 +1050,56 @@ async function createRecordFromModal() {
 }
 
 function makePiece(isMain = false) {
-  return {
-    id: 'piece-' + (++pieceIdCounter),
-    isMain,
-    l: '',
-    w: '',
-    h: '',
-    mult: 1,
-    __fi: {
-      lft: '', lin: '', wft: '', win: '', hft: '', hin: ''
-    }
-  };
+  return { id: 'piece-' + (++pieceIdCounter), isMain, l: '', w: '', h: '', mult: isMain ? 1 : '' };
 }
 
 function renderPiecesForCurrentRecord() {
   if (!currentRecordDraft) return;
-
-  currentRecordDraft.snapshot.mode = 'feetInches';
-
+  currentRecordDraft.snapshot.mode = document.getElementById('record_mode')?.value || currentRecordDraft.snapshot.mode || 'inches';
   const container = document.getElementById('piecesContainer');
   const snap = currentRecordDraft.snapshot;
   if (!Array.isArray(snap.pieces) || !snap.pieces.length) snap.pieces = [makePiece(true)];
-
-  container.innerHTML = snap.pieces.map((piece, index) => renderPieceBlock(piece, index)).join('');
+  container.innerHTML = snap.pieces.map((piece, index) => renderPieceBlock(piece, index, snap.mode)).join('');
 }
 
-function renderPieceBlock(piece, index) {
-  const isMausoleum = (currentRecordDraft.snapshot.jobType || 'Monument') === 'Mausoleum';
-  const title = piece.isMain
-    ? (isMausoleum ? 'Main Mausoleum' : 'Main Monument')
-    : `Additional Piece ${index}`;
-
-  const multValue = Number(piece.mult || 1);
-
+function renderPieceBlock(piece, index, mode) {
+  const title = piece.isMain ? ((currentRecordDraft.snapshot.jobType || 'Monument') === 'Mausoleum' ? 'Main Mausoleum' : 'Main Monument') : `Piece ${index}`;
+  if (mode === 'feetInches') {
+    return `
+      <div class="piece-block">
+        <div class="piece-header">
+          <div class="piece-title">${escapeHtml(title)}</div>
+          ${piece.isMain ? '' : `<button class="btn btn-danger" onclick="removeDraftPiece('${escapeJs(piece.id)}')">Remove</button>`}
+        </div>
+        <div class="field-grid three">
+          ${renderFeetInchesInputs(piece, 'l', 'Length')}
+          ${renderFeetInchesInputs(piece, 'w', 'Width')}
+          ${renderFeetInchesInputs(piece, 'h', 'Height')}
+        </div>
+        <div class="field" style="margin-top:12px;"><label>Multiplier</label><input type="number" min="1" value="${escapeHtml(piece.mult || '')}" onchange="updatePieceValue('${escapeJs(piece.id)}','mult',this.value)"/></div>
+      </div>
+    `;
+  }
   return `
     <div class="piece-block">
       <div class="piece-header">
         <div class="piece-title">${escapeHtml(title)}</div>
         ${piece.isMain ? '' : `<button class="btn btn-danger" onclick="removeDraftPiece('${escapeJs(piece.id)}')">Remove</button>`}
       </div>
-
       <div class="field-grid three">
-        ${renderFeetInchesInputs(piece, 'l', 'Length')}
-        ${renderFeetInchesInputs(piece, 'w', 'Width')}
-        ${renderFeetInchesInputs(piece, 'h', 'Height')}
+        <div class="field"><label>Length (in)</label><input type="number" value="${escapeHtml(piece.l || '')}" onchange="updatePieceValue('${escapeJs(piece.id)}','l',this.value)"/></div>
+        <div class="field"><label>Width (in)</label><input type="number" value="${escapeHtml(piece.w || '')}" onchange="updatePieceValue('${escapeJs(piece.id)}','w',this.value)"/></div>
+        <div class="field"><label>Height (in)</label><input type="number" value="${escapeHtml(piece.h || '')}" onchange="updatePieceValue('${escapeJs(piece.id)}','h',this.value)"/></div>
       </div>
-
-      ${piece.isMain ? `
-        <div class="field" style="margin-top:12px;">
-          <label>Multiply Main ${isMausoleum ? 'Mausoleum' : 'Monument'}</label>
-          <input type="number" min="1" value="${multValue}" onchange="updatePieceValue('${escapeJs(piece.id)}','mult',this.value)"/>
-        </div>
-      ` : `
-        <div class="field" style="margin-top:12px;">
-          <label>Multiply This Piece</label>
-          <input type="number" min="1" value="${multValue}" onchange="updatePieceValue('${escapeJs(piece.id)}','mult',this.value)"/>
-        </div>
-      `}
+      <div class="field" style="margin-top:12px;"><label>Multiplier</label><input type="number" min="1" value="${escapeHtml(piece.mult || '')}" onchange="updatePieceValue('${escapeJs(piece.id)}','mult',this.value)"/></div>
     </div>
   `;
 }
 
 function renderFeetInchesInputs(piece, key, label) {
-  piece.__fi = piece.__fi || { lft:'', lin:'', wft:'', win:'', hft:'', hin:'' };
-
-  let feet = piece.__fi[key + 'ft'];
-  let inches = piece.__fi[key + 'in'];
-
-  if ((feet === '' || feet == null) && (inches === '' || inches == null)) {
-    const total = Number(piece[key] || 0);
-    if (total > 0) {
-      feet = Math.floor(total / 12);
-      inches = Number((total - feet * 12).toFixed(2));
-    } else {
-      feet = '';
-      inches = '';
-    }
-  }
-
+  const total = Number(piece[key] || 0);
+  const feet = total ? Math.floor(total / 12) : '';
+  const inches = total ? Number((total - (Math.floor(total / 12) * 12)).toFixed(2)) : '';
   return `
     <div class="field">
       <label>${label}</label>
@@ -1437,7 +1151,7 @@ function hydrateDraftFromForm() {
   snap.mapsUrl = document.getElementById('record_mapsUrl').value.trim();
   snap.issueNote = document.getElementById('record_issueNote').value.trim();
   snap.notes = document.getElementById('record_notes').value.trim();
-  snap.mode = 'feetInches';
+  snap.mode = document.getElementById('record_mode').value || 'inches';
   snap.numFlats = Number(document.getElementById('record_numFlats').value || 0);
   snap.numSlants = Number(document.getElementById('record_numSlants').value || 0);
   snap.lfPointing = snap.jobType === 'Mausoleum' ? Number(document.getElementById('record_lfPointing').value || 0) : 0;
@@ -1450,49 +1164,38 @@ function hydrateDraftFromForm() {
 function calculateCurrentRecord() {
   const record = hydrateDraftFromForm();
   if (!record) return;
-
-  const { length, width, height } = getCombinedMeasurements(record.snapshot.pieces || []);
+  const totals = getCombinedMeasurements(record.snapshot.pieces || []);
+  const length = totals.length;
+  const width = totals.width;
+  const height = totals.height;
   const lfPointing = record.snapshot.jobType === 'Mausoleum' ? Number(record.snapshot.lfPointing || 0) : 0;
   const numFlats = Number(record.snapshot.numFlats || 0);
   const numSlants = Number(record.snapshot.numSlants || 0);
   const hasDimensions = length > 0 && width > 0 && height > 0;
 
-  let top = 0, side = 0, front = 0, totalSqInches = 0, totalSqFt = 0;
-  let mlClean = 0, mlExt = 0, priceClean = 0, priceExt = 0, cleanLabel = '';
-
+  let totalSqFt = 0, mlClean = 0, priceClean = 0, cleanLabel = '', mlExt = 0, priceExt = 0;
   if (hasDimensions) {
-    top = length * width;
-    side = length * height * 2;
-    front = width * height * 2;
-    totalSqInches = top + side + front;
-    totalSqFt = totalSqInches / 144;
-
-    mlClean = parseFloat((totalSqFt / 25).toFixed(2));
-    if (mlClean < 2) mlClean = 2;
-
+    const top = length * width;
+    const side = length * height * 2;
+    const front = width * height * 2;
+    totalSqFt = (top + side + front) / 144;
+    mlClean = Math.max(2, parseFloat((totalSqFt / 25).toFixed(2)));
     mlExt = parseFloat((totalSqFt / 50).toFixed(2));
-
     const isUnderSize = (length < 72 && height < 120);
     const cleanRate = isUnderSize ? 155 : 195;
     cleanLabel = isUnderSize ? 'Standard Upright @ $155' : 'Standard Special @ $195';
     priceClean = parseFloat((mlClean * cleanRate).toFixed(2));
-
-    const exteriorCleaningRate = 159;
-    priceExt = parseFloat((mlExt * exteriorCleaningRate).toFixed(2));
+    priceExt = parseFloat((mlExt * 159).toFixed(2));
   }
 
   const mlLF = parseFloat((lfPointing / 50).toFixed(2));
   const priceLF = parseFloat((mlLF * 564).toFixed(2));
-
-  const flatRate = 155;
-  const priceFlats = numFlats > 0 ? flatRate + (numFlats - 1) * (flatRate / 2) : 0;
-
-  const slantRate = 195;
-  const priceSlants = numSlants > 0 ? slantRate + (numSlants - 1) * (slantRate / 2) : 0;
-
+  const priceFlats = numFlats > 0 ? 155 + (numFlats - 1) * (155 / 2) : 0;
+  const priceSlants = numSlants > 0 ? 195 + (numSlants - 1) * (195 / 2) : 0;
   const footTotal = parseFloat((priceFlats + priceSlants).toFixed(2));
-  const monumentTotal = parseFloat((priceClean + footTotal).toFixed(2));
-  const mausoleumTotal = parseFloat((priceExt + priceLF + footTotal).toFixed(2));
+  const finalTotal = record.snapshot.jobType === 'Monument'
+    ? parseFloat((priceClean + footTotal).toFixed(2))
+    : parseFloat((priceExt + priceLF + footTotal).toFixed(2));
 
   currentRecordDraft.results = {
     jobType: record.snapshot.jobType,
@@ -1511,9 +1214,8 @@ function calculateCurrentRecord() {
     priceFlats,
     priceSlants,
     footTotal,
-    finalTotal: record.snapshot.jobType === 'Monument' ? monumentTotal : mausoleumTotal
+    finalTotal
   };
-
   currentRecordDraft.snapshot.status = computeStatus(currentRecordDraft);
   setValue('record_status', currentRecordDraft.snapshot.status);
   renderResultsBox(currentRecordDraft.results);
@@ -1522,7 +1224,7 @@ function calculateCurrentRecord() {
 
 function getCombinedMeasurements(pieces) {
   return (pieces || []).reduce((acc, piece) => {
-    const mult = Math.max(1, parseInt(piece.mult || 1, 10) || 1);
+    const mult = Math.max(1, Number(piece.mult || 1));
     acc.length += Number(piece.l || 0) * mult;
     acc.width += Number(piece.w || 0) * mult;
     acc.height += Number(piece.h || 0) * mult;
@@ -1533,164 +1235,15 @@ function getCombinedMeasurements(pieces) {
 function renderResultsBox(results) {
   const box = document.getElementById('resultsBox');
   if (!box) return;
-
   const r = results || {};
-  const jobType = currentRecordDraft?.snapshot?.jobType || 'Monument';
-  const isMausoleum = jobType === 'Mausoleum';
-
-  const hasAnything =
-    Number(r.totalSqFt || 0) > 0 ||
-    Number(r.mlClean || 0) > 0 ||
-    Number(r.mlExt || 0) > 0 ||
-    Number(r.mlLF || 0) > 0 ||
-    Number(r.numFlats || 0) > 0 ||
-    Number(r.numSlants || 0) > 0 ||
-    Number(r.finalTotal || 0) > 0;
-
-  if (!hasAnything) {
-    box.innerHTML = `<div class="muted">Enter measurements or footstones to calculate.</div>`;
-    return;
-  }
-
-  let html = `<div class="results-grid">`;
-
-  html += `
-    <div class="result-card">
-      <div class="result-card-title">Square Feet</div>
-      <div class="result-row">
-        <span class="muted">Total Area</span>
-        <span>${Number(r.totalSqFt || 0).toFixed(2)} sq ft</span>
-      </div>
-    </div>
+  box.innerHTML = `
+    <div class="result-row"><strong>Total Area</strong><span>${Number(r.totalSqFt || 0).toFixed(2)} sq ft</span></div>
+    <div class="result-row"><span class="muted">Clean ML</span><span>${Number(r.mlClean || 0).toFixed(2)}</span></div>
+    <div class="result-row"><span class="muted">Exterior ML</span><span>${Number(r.mlExt || 0).toFixed(2)}</span></div>
+    <div class="result-row"><span class="muted">Re-pointing ML</span><span>${Number(r.mlLF || 0).toFixed(2)}</span></div>
+    <div class="result-row"><span class="muted">Flats / Slants</span><span>${Number(r.numFlats || 0)} / ${Number(r.numSlants || 0)}</span></div>
+    <div class="result-row" style="font-size:20px; font-weight:700; padding-top:10px; border-top:1px solid var(--border); margin-top:10px;"><span>Final Total</span><span>$${Number(r.finalTotal || 0).toFixed(2)}</span></div>
   `;
-
-  if (!isMausoleum) {
-    html += `
-      <div class="result-card">
-        <div class="result-card-title">Monument ML</div>
-        <div class="result-row">
-          <span class="muted">Clean ML</span>
-          <span>${Number(r.mlClean || 0).toFixed(2)}</span>
-        </div>
-        <div class="result-row">
-          <span class="muted">${r.cleanLabel || 'Cleaning Total'}</span>
-          <span>$${Number(r.priceClean || 0).toFixed(2)}</span>
-        </div>
-      </div>
-    `;
-  } else {
-    html += `
-      <div class="result-card">
-        <div class="result-card-title">Mausoleum ML</div>
-        <div class="result-row">
-          <span class="muted">Exterior ML</span>
-          <span>${Number(r.mlExt || 0).toFixed(2)}</span>
-        </div>
-        <div class="result-row">
-          <span class="muted">Exterior Cleaning Total</span>
-          <span>$${Number(r.priceExt || 0).toFixed(2)}</span>
-        </div>
-      </div>
-      <div class="result-card">
-        <div class="result-card-title">Re-pointing</div>
-        <div class="result-row">
-          <span class="muted">LF Total</span>
-          <span>${Number(r.lfPointing || 0).toFixed(2)} LF</span>
-        </div>
-        <div class="result-row">
-          <span class="muted">ML Total</span>
-          <span>${Number(r.mlLF || 0).toFixed(2)}</span>
-        </div>
-        <div class="result-row">
-          <span class="muted">Re-pointing Total</span>
-          <span>$${Number(r.priceLF || 0).toFixed(2)}</span>
-        </div>
-      </div>
-    `;
-  }
-
-  html += `
-    <div class="result-card">
-      <div class="result-card-title">Flats / Slants</div>
-      <div class="result-row">
-        <span class="muted">Flats</span>
-        <span>${Number(r.numFlats || 0)} — $${Number(r.priceFlats || 0).toFixed(2)}</span>
-      </div>
-      <div class="result-row">
-        <span class="muted">Slants</span>
-        <span>${Number(r.numSlants || 0)} — $${Number(r.priceSlants || 0).toFixed(2)}</span>
-      </div>
-      <div class="result-row">
-        <span class="muted">Footstones Total</span>
-        <span>$${Number(r.footTotal || 0).toFixed(2)}</span>
-      </div>
-    </div>
-  `;
-
-  if (!isMausoleum) {
-    html += `
-      <div class="result-card result-card-total">
-        <div class="result-card-title">Totals</div>
-        <div class="result-row">
-          <span class="muted">Cleaning Total</span>
-          <span>$${Number(r.priceClean || 0).toFixed(2)}</span>
-        </div>
-        <div class="result-row">
-          <span class="muted">Footstones Total</span>
-          <span>$${Number(r.footTotal || 0).toFixed(2)}</span>
-        </div>
-        <div class="result-row total-row">
-          <span>Total Job Cost</span>
-          <span>$${Number(r.finalTotal || 0).toFixed(2)}</span>
-        </div>
-      </div>
-    `;
-  } else {
-    html += `
-      <div class="result-card result-card-total">
-        <div class="result-card-title">Totals</div>
-        <div class="result-row">
-          <span class="muted">Exterior Cleaning Total</span>
-          <span>$${Number(r.priceExt || 0).toFixed(2)}</span>
-        </div>
-        <div class="result-row">
-          <span class="muted">Re-pointing Total</span>
-          <span>$${Number(r.priceLF || 0).toFixed(2)}</span>
-        </div>
-        <div class="result-row">
-          <span class="muted">Footstones Total</span>
-          <span>$${Number(r.footTotal || 0).toFixed(2)}</span>
-        </div>
-        <div class="result-row total-row">
-          <span>Total Job Cost</span>
-          <span>$${Number(r.finalTotal || 0).toFixed(2)}</span>
-        </div>
-      </div>
-    `;
-  }
-
-  html += `</div>`;
-  box.innerHTML = html;
-}
-
-function enterRecordEditMode() {
-  recordEditMode = true;
-  renderPlotsPage();
-}
-
-function cancelRecordEdit() {
-  const record = getRecordById(selectedRecordId);
-  if (!record) return;
-  currentRecordDraft = cloneRecord(record);
-  recordEditMode = false;
-  renderPlotsPage();
-}
-
-function formatInchesAsFeetInches(totalInches) {
-  const total = Number(totalInches || 0);
-  const feet = Math.floor(total / 12);
-  const inches = Number((total - feet * 12).toFixed(2));
-  return `${feet}' ${inches}"`;
 }
 
 async function saveCurrentRecord() {
@@ -1716,7 +1269,6 @@ async function saveCurrentRecord() {
     recordsCache.unshift(normalizeRecord(record));
     setLocalRecords(recordsCache);
     currentRecordDraft = cloneRecord(normalizeRecord(record));
-    recordEditMode = false;
     showToast('Record saved');
     renderPlotsPage();
     renderHomePage();
@@ -1727,42 +1279,19 @@ async function saveCurrentRecord() {
 }
 
 async function deleteCurrentRecord() {
-  let record = null;
-
-  if (recordEditMode) {
-    record = hydrateDraftFromForm();
-  } else {
-    record = currentRecordDraft || getRecordById(selectedRecordId);
-  }
-
+  const record = hydrateDraftFromForm();
   if (!record) return;
   if (!window.confirm('Delete this record?')) return;
-
   try {
     if (record.airtableRecordId && airtableReady()) {
       await airtableDeleteRecord(record.airtableRecordId);
     }
-
-    recordsCache = recordsCache.filter(r => {
-      const sameAirtable = record.airtableRecordId && r.airtableRecordId === record.airtableRecordId;
-      const sameLocal = r.id === record.id;
-      return !(sameAirtable || sameLocal);
-    });
-
+    recordsCache = recordsCache.filter(r => (r.airtableRecordId || r.id) !== (record.airtableRecordId || record.id));
     setLocalRecords(recordsCache);
-    currentRecordDraft = null;
-    recordEditMode = false;
-    plotsViewMode = selectedPlot ? 'records' : 'list';
+    plotsViewMode = 'records';
     selectedRecordId = '';
-
-    if (currentTab === 'home') {
-      renderHomePage();
-    } else {
-      renderPlotsPage();
-      renderHomePage();
-    }
-
     showToast('Record deleted');
+    renderAll();
   } catch (err) {
     console.error(err);
     showToast(err.message || 'Delete failed');
@@ -1774,131 +1303,70 @@ function scrollToMeasurements() {
 }
 
 function triggerPhotoInput() {
-  syncDraftFromVisibleInputs();
-  const input = document.getElementById('record_photoInput');
-  if (input) {
-    input.value = '';
-    input.click();
-  }
-}
-
-function triggerCameraInput() {
-  syncDraftFromVisibleInputs();
-  const input = document.getElementById('record_cameraInput');
-  if (input) {
-    input.value = '';
-    input.click();
-  }
-}
-
-function syncDraftFromVisibleInputs() {
-  if (!currentRecordDraft || !recordEditMode) return;
-  try {
-    hydrateDraftFromForm();
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-function refreshPhotoUI() {
-  if (!currentRecordDraft) return;
-  const photos = Array.isArray(currentRecordDraft.snapshot.photos) ? currentRecordDraft.snapshot.photos : [];
-  const grid = document.getElementById('recordPhotoGrid');
-  if (grid) {
-    grid.innerHTML = photos.length ? photos.map((photo, index) => `
-      <div class="photo-card clickable">
-        <img src="${escapeHtml(photo.url || photo.dataUrl || '')}" alt="Photo ${index + 1}" onclick="openPhotoViewer('${escapeJs(photo.url || photo.dataUrl || '')}')"/>
-        ${recordEditMode ? `
-          <button class="photo-remove" onclick="removeRecordPhoto(${index}, event)">×</button>
-          <div class="photo-actions">
-            <button class="photo-mini-btn" onclick="movePhoto(${index}, -1, event)">←</button>
-            <button class="photo-mini-btn" onclick="movePhoto(${index}, 1, event)">→</button>
-          </div>
-        ` : ''}
-      </div>
-    `).join('') : `<div class="photo-card">No Photo</div><div class="photo-card">No Photo</div>`;
-  }
-  const metrics = document.querySelectorAll('.metric-value');
-  if (metrics && metrics.length >= 4) metrics[3].textContent = String(photos.length);
+  document.getElementById('record_photoInput')?.click();
 }
 
 function handleRecordPhotos(event) {
   const files = Array.from(event.target.files || []).slice(0, 6);
   if (!currentRecordDraft || !files.length) return;
-  syncDraftFromVisibleInputs();
-  const remaining = Math.max(0, 6 - (currentRecordDraft.snapshot.photos || []).length);
-  const usable = files.slice(0, remaining);
-  if (!usable.length) {
-    showToast('Maximum 6 photos');
-    event.target.value = '';
-    return;
-  }
-  const readers = usable.map(file => new Promise(resolve => {
+  const readers = files.map(file => new Promise(resolve => {
     const fr = new FileReader();
     fr.onload = () => resolve({ name: file.name, filename: file.name, dataUrl: fr.result, url: '' });
     fr.readAsDataURL(file);
   }));
   Promise.all(readers).then(items => {
     currentRecordDraft.snapshot.photos = [...(currentRecordDraft.snapshot.photos || []), ...items].slice(0, 6);
-    refreshPhotoUI();
-    showToast(items.length === 1 ? 'Photo added' : 'Photos added');
-    event.target.value = '';
-  }).catch(err => {
-    console.error(err);
-    showToast('Photo load failed');
-    event.target.value = '';
+    renderPlotsPage();
   });
 }
 
 function removeRecordPhoto(index, event) {
   if (event) event.stopPropagation();
   if (!currentRecordDraft) return;
-  syncDraftFromVisibleInputs();
   currentRecordDraft.snapshot.photos.splice(index, 1);
-  refreshPhotoUI();
+  renderPlotsPage();
 }
 
-function movePhoto(index, direction, event) {
-  if (event) event.stopPropagation();
-  if (!currentRecordDraft) return;
-  syncDraftFromVisibleInputs();
-  const photos = currentRecordDraft.snapshot.photos || [];
-  const newIndex = index + direction;
-  if (newIndex < 0 || newIndex >= photos.length) return;
-  [photos[index], photos[newIndex]] = [photos[newIndex], photos[index]];
-  refreshPhotoUI();
+function getCurrentMapsUrl() {
+  if (recordEditMode) {
+    return document.getElementById('record_mapsUrl')?.value.trim() || '';
+  }
+  if (currentRecordDraft?.snapshot?.mapsUrl) return String(currentRecordDraft.snapshot.mapsUrl).trim();
+  const record = getRecordById(selectedRecordId);
+  return record?.snapshot?.mapsUrl ? String(record.snapshot.mapsUrl).trim() : '';
 }
 
-function openPhotoViewer(src) {
-  if (!src) return;
-  const viewer = document.getElementById('photoViewer');
-  const img = document.getElementById('photoViewerImg');
-  if (!viewer || !img) return;
-  img.src = src;
-  viewer.classList.add('show');
-}
-
-function closePhotoViewer(event) {
-  if (event) event.stopPropagation();
-  const viewer = document.getElementById('photoViewer');
-  const img = document.getElementById('photoViewerImg');
-  if (viewer) viewer.classList.remove('show');
-  if (img) img.src = '';
+function getCurrentLocationLabel() {
+  if (recordEditMode) {
+    return document.getElementById('record_locationLabel')?.value.trim() || '';
+  }
+  if (currentRecordDraft?.snapshot?.locationLabel) return String(currentRecordDraft.snapshot.locationLabel).trim();
+  const record = getRecordById(selectedRecordId);
+  return record?.snapshot?.locationLabel ? String(record.snapshot.locationLabel).trim() : '';
 }
 
 function openDirections() {
-  const url = document.getElementById('record_mapsUrl')?.value.trim();
+  const url = getCurrentMapsUrl();
   if (!url) return showToast('No Google Maps link saved');
-  window.open(url, '_blank', 'noopener');
+  window.open(url, '_blank', 'noopener,noreferrer');
 }
 
 function updateLocationPreview() {
-  const label = document.getElementById('record_locationLabel')?.value || '—';
-  const url = document.getElementById('record_mapsUrl')?.value || '—';
+  const label = getCurrentLocationLabel() || '—';
+  const url = getCurrentMapsUrl();
   const labelEl = document.getElementById('locationPreviewLabel');
   const urlEl = document.getElementById('locationPreviewUrl');
+
   if (labelEl) labelEl.textContent = label;
-  if (urlEl) urlEl.textContent = url;
+
+  if (urlEl) {
+    if (url) {
+      urlEl.innerHTML = `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">Open in Google Maps</a>`;
+    } else {
+      urlEl.textContent = '—';
+    }
+  }
+
   ['record_locationLabel', 'record_mapsUrl'].forEach(id => {
     const el = document.getElementById(id);
     if (el && !el.dataset.boundPreview) {
@@ -2015,22 +1483,30 @@ function toAirtableFields(record) {
   const f = getFieldMap();
   const snap = record.snapshot || {};
   const r = record.results || {};
-  const isMonument = (snap.jobType || 'Monument') === 'Monument';
-  const photoAttachments = Array.isArray(snap.photos) ? snap.photos.filter(p => p.url).map(p => ({ url: p.url, filename: p.filename || 'photo.jpg' })) : [];
-  return {
+  const computedStatus = snap.status || computeStatus(record);
+  const jobType = snap.jobType || 'Monument';
+  const isMonument = jobType === 'Monument';
+
+  const photoAttachments = Array.isArray(snap.photos)
+    ? snap.photos
+        .filter(p => p && p.url)
+        .map(p => ({
+          url: p.url,
+          filename: p.filename || 'photo.jpg'
+        }))
+    : [];
+
+  const fields = {
     [f.ownerName]: snap.ownerName || '',
     [f.ownerId]: snap.ownerId || '',
     [f.plot]: snap.plot || '',
     [f.locationLabel]: snap.locationLabel || '',
     [f.mapsUrl]: snap.mapsUrl || '',
-    [f.status]: snap.status || computeStatus(record),
-    [f.issueType]: snap.issueType || '',
     [f.issueNote]: snap.issueNote || '',
     [f.photos]: photoAttachments,
     [f.photoUrls]: photoAttachments.map(p => p.url).join('\n'),
     [f.jobName]: record.name || '',
     [f.date]: (record.date || new Date().toISOString()).slice(0, 10),
-    [f.jobType]: snap.jobType || 'Monument',
     [f.areaSqFt]: Number(r.totalSqFt || 0),
     [f.cleanML]: isMonument ? Number(r.mlClean || 0) : 0,
     [f.cleanTotal]: isMonument ? Number(r.priceClean || 0) : 0,
@@ -2049,10 +1525,26 @@ function toAirtableFields(record) {
       snapshot: {
         ...snap,
         photos: photoAttachments,
-        status: snap.status || computeStatus(record)
+        status: computedStatus,
+        jobType
       }
     })
   };
+
+  // Only send select/text values when they actually have content
+  if (computedStatus && String(computedStatus).trim()) {
+    fields[f.status] = String(computedStatus).trim();
+  }
+
+  if (jobType && String(jobType).trim()) {
+    fields[f.jobType] = String(jobType).trim();
+  }
+
+  if (snap.issueType && String(snap.issueType).trim()) {
+    fields[f.issueType] = String(snap.issueType).trim();
+  }
+
+  return fields;
 }
 
 async function airtableCreateRecord(record) {
@@ -2134,7 +1626,7 @@ async function airtableFetchRecords() {
         issueType: fields[f.issueType] || '',
         issueNote: fields[f.issueNote] || '',
         notes: fields[f.notes] || '',
-        mode: 'feetInches',
+        mode: 'inches',
         jobType: fields[f.jobType] || 'Monument',
         lfPointing: Number(fields[f.repointingLF] || 0),
         numFlats: Number(fields[f.flats] || 0),
