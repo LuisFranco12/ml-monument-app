@@ -430,17 +430,6 @@
     <div id="page-home" class="page active"></div>
     <div id="page-plots" class="page"></div>
 
-    <div class="card section">
-      <div class="muted" style="font-weight:700; margin-bottom:10px;">Field workflow</div>
-      <div class="goal-grid">
-        <div class="goal">Home can search or create a new record shell</div>
-        <div class="goal">Measurements are not required when creating from Home</div>
-        <div class="goal">Existing records are easy to edit from a phone while in the field</div>
-        <div class="goal">Each record can store a location label and Google Maps link for directions</div>
-      </div>
-    </div>
-  </div>
-
   <div class="modal-backdrop" id="newJobModalWrap">
     <div class="modal">
       <h2 style="margin:0 0 8px; font-size:24px;">Create New Record</h2>
@@ -1064,16 +1053,6 @@ function renderRecordDetail(record) {
         ${isMausoleum ? `<div class="field-grid" style="margin-top:6px;">${staticField('Re-pointing LF', Number(snap.lfPointing || 0).toFixed(2))}</div>` : ''}
       `}
       <div id="resultsBox" class="result-box" style="margin-top:18px;"></div>
-    </div>
-
-    <div class="card section">
-      <h2>Convenient Field Workflow</h2>
-      <div class="goal-grid" style="margin-top:18px;">
-        <div class="goal">Search or create a record from Home before leaving</div>
-        <div class="goal">Open the saved record on your phone in the field</div>
-        <div class="goal">Edit measurements, notes, issue info, and photos there</div>
-        <div class="goal">Use the saved Google Maps link for directions</div>
-      </div>
     </div>
   `;
 }
