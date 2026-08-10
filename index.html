@@ -42,6 +42,7 @@ button{border:0;border-radius:10px;padding:11px 14px;font-weight:700;cursor:poin
 .badge.measured{background:#d9eaf7;color:#1f4e78}
 .badge.flat{background:#e2f0d9;color:#385723}
 .badge.slant{background:#fce4d6;color:#843c0c}
+.badge.largeflat{background:#e4dfec;color:#4f3b68}
 .badge.noteitem{background:#e7e6e6;color:#595959}
 .condition-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
 .condition-btn{padding:9px 12px;border:2px solid transparent;box-shadow:inset 0 0 0 1px #00000010}
@@ -230,6 +231,11 @@ function addMeasured(){
   db.accounts[currentAccount].items.push({type:'Measured',qty:'',lf:'',li:'',wf:'',wi:'',hf:'',hi:'',condition:'',note:''});
   save();
 }
+
+function addLargeFlat(){
+  db.accounts[currentAccount].items.push({type:'Large Flat Measured',qty:'1',lf:'',li:'',wf:'',wi:'',note:''});
+  save();
+}
 function addSimple(type){
   if(!currentAccount) return alert('Add or open an account first.');
   db.accounts[currentAccount].items.push({type:type,qty:'',note:''});
@@ -255,7 +261,7 @@ function conditionLabel(condition){
 function removeItem(i){ db.accounts[currentAccount].items.splice(i,1); save(); }
 
 function calcAccount(acc){
-  let L=0,W=0,H=0, flats=0, slants=0, measured=0;
+  let L=0,W=0,H=0, flats=0, slants=0, measured=0, largeFlatMeasured=0;
   for(const it of acc.items){
     const q = it.type==='Measured'
       ? Math.max(1, Number(it.qty)||1)
@@ -265,6 +271,10 @@ function calcAccount(acc){
       const w=(Number(it.wf)||0)*12+(Number(it.wi)||0);
       const h=(Number(it.hf)||0)*12+(Number(it.hi)||0);
       if(l>0&&w>0&&h>0){ L+=l*q; W+=w*q; H+=h*q; measured+=q; }
+    } else if(it.type==='Large Flat Measured'){
+      const l=(Number(it.lf)||0)*12+(Number(it.li)||0);
+      const w=(Number(it.wf)||0)*12+(Number(it.wi)||0);
+      if(l>0&&w>0) largeFlatMeasured+=q;
     } else if(it.type==='Flat') flats+=q;
     else if(it.type==='Slant') slants+=q;
   }
@@ -283,7 +293,7 @@ function calcAccount(acc){
   const flatPrice=flats>0 ? 155+(flats-1)*77.5 : 0;
   const slantPrice=slants>0 ? 195+(slants-1)*97.5 : 0;
   const foot=round2(flatPrice+slantPrice);
-  return {L,W,H,flats,slants,measured,damaged,leaning,fallen,ml,rate,upright,foot,final:round2(upright+foot)};
+  return {L,W,H,flats,slants,measured,largeFlatMeasured,damaged,leaning,fallen,ml,rate,upright,foot,final:round2(upright+foot)};
 }
 
 function measuredHtml(it,i){
@@ -303,6 +313,24 @@ function measuredHtml(it,i){
     <div style="margin-top:8px"><label>Optional note</label><input value="${esc(it.note||'')}" placeholder="e.g. rear marker / cracked base" onchange="updateItem(${i},'note',this.value)"></div>
   </div>`;
 }
+
+function largeFlatHtml(it,i){
+  return `<div class="item measured">
+    <div class="item-title"><span class="badge largeflat">Large Flat / Ground-Level</span><button class="danger" onclick="removeItem(${i})">Remove</button></div>
+    <div class="row">
+      <div class="field" style="max-width:110px"><label>Qty</label><input type="number" inputmode="numeric" min="1" step="1" value="${it.qty??'1'}" placeholder="1" onchange="updateItem(${i},'qty',this.value)"></div>
+    </div>
+    <div class="dimgrid" style="margin-top:8px">
+      <div class="wide"><label>Length ft</label><input type="number" inputmode="decimal" min="0" step="any" value="${it.lf??''}" onchange="updateItem(${i},'lf',this.value)"></div>
+      <div><label>Length in</label><input type="number" inputmode="decimal" min="0" step="any" value="${it.li??''}" onchange="updateItem(${i},'li',this.value)"></div>
+      <div class="wide"><label>Width ft</label><input type="number" inputmode="decimal" min="0" step="any" value="${it.wf??''}" onchange="updateItem(${i},'wf',this.value)"></div>
+      <div><label>Width in</label><input type="number" inputmode="decimal" min="0" step="any" value="${it.wi??''}" onchange="updateItem(${i},'wi',this.value)"></div>
+    </div>
+    <div class="note" style="margin-top:7px">For oversized flat monuments set deep or flush in the ground. Height is not required.</div>
+    <div style="margin-top:8px"><label>Optional note</label><input value="${esc(it.note||'')}" placeholder="e.g. deep set / flush with ground" onchange="updateItem(${i},'note',this.value)"></div>
+  </div>`;
+}
+
 function simpleHtml(it,i){
   const cls=it.type==='Flat'?'flat':(it.type==='Slant'?'slant':'noteitem');
   return `<div class="item ${cls}">
@@ -352,22 +380,23 @@ function render(){
     w.innerHTML='<div class="card empty">Enter an account number above to start measuring.</div>'; return;
   }
   const acc=db.accounts[currentAccount], c=calcAccount(acc);
-  const items=acc.items.map((it,i)=>it.type==='Measured'?measuredHtml(it,i):simpleHtml(it,i)).join('');
+  const items=acc.items.map((it,i)=>it.type==='Measured'?measuredHtml(it,i):(it.type==='Large Flat Measured'?largeFlatHtml(it,i):simpleHtml(it,i))).join('');
   w.innerHTML=`
     <div class="card">
       <div class="item-title">
-        <div><b style="font-size:20px">Account ${esc(currentAccount)}</b><div class="note">${c.measured} measured marker(s), ${c.flats} flat(s), ${c.slants} slant(s)${(c.damaged+c.leaning+c.fallen)?` · ⚠ ${c.damaged} damaged · ${c.leaning} leaning · ${c.fallen} fallen`:''}</div></div>
+        <div><b style="font-size:20px">Account ${esc(currentAccount)}</b><div class="note">${c.measured} measured marker(s), ${c.largeFlatMeasured||0} large flat measurement(s), ${c.flats} flat(s), ${c.slants} slant(s)${(c.damaged+c.leaning+c.fallen)?` · ⚠ ${c.damaged} damaged · ${c.leaning} leaning · ${c.fallen} fallen`:''}</div></div>
         <button class="danger" onclick="deleteAccount()">Delete Account</button>
       </div>
       <div class="actions">
         <button class="primary" onclick="addMeasured()">+ Headstone Measurement</button>
+        <button class="secondary" onclick="addLargeFlat()">+ Large Flat Measurement</button>
         <button class="secondary" onclick="addSimple('Flat')">+ Flat</button>
         <button class="secondary" onclick="addSimple('Slant')">+ Slant</button>
         <button class="secondary" onclick="addSimple('Note')">+ Note</button>
       </div>
 
       <div class="condition-panel">
-        <div class="condition-panel-title">Monument Condition</div>
+        <div class="condition-panel-title">Monument Condition / Safety Flag</div>
         <div class="note">Use this even when the monument cannot be measured. You can still add measurements separately if possible.</div>
         <div class="condition-row">
           <button class="condition-btn damaged" onclick="addCondition('Damaged')">⚠ Damaged</button>
@@ -379,7 +408,7 @@ function render(){
     </div>
 
     <div class="card">
-      ${items || '<div class="empty">No measurements/items yet. You can still save a condition flag above without measuring.</div>'}
+      ${items || '<div class="empty">No measurements/items yet. You can still save a condition flag above without measuring. Use Large Flat Measurement when only length and width are needed.</div>'}
     </div>
 
     <div class="card">
@@ -516,6 +545,7 @@ function exportXlsx(){
     const acc=db.accounts[acct];
     if(!acc) continue;
     const measured = acc.items.filter(it=>it.type==='Measured');
+    const largeFlatMeasured = acc.items.filter(it=>it.type==='Large Flat Measured');
     if(measured.length > maxMeasured) maxMeasured = measured.length;
   }
 
@@ -574,6 +604,14 @@ function exportXlsx(){
     for(const it of notes){ if(it.note) noteParts.push(it.note); }
     for(const it of flats){ if(it.note) noteParts.push(`Flat: ${it.note}`); }
     for(const it of slants){ if(it.note) noteParts.push(`Slant: ${it.note}`); }
+    for(const it of largeFlatMeasured){
+      const q=Math.max(1,Number(it.qty)||1);
+      const lft=Number(it.lf)||0, lin=Number(it.li)||0, wft=Number(it.wf)||0, win=Number(it.wi)||0;
+      let t=`LARGE FLAT: ${fmtDim(lft,lin)} x ${fmtDim(wft,win)}`;
+      if(q>1) t+=` (Qty ${q})`;
+      if(it.note) t+=` — ${it.note}`;
+      noteParts.push(t);
+    }
     const conditionRecords=Array.isArray(acc.conditions)?acc.conditions:[];
     const conditionParts=conditionRecords.map(c=>{
       const reason=(c.type||'').toUpperCase();
