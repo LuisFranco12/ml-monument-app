@@ -1,0 +1,10 @@
+{
+  "name": "Monument Measure",
+  "short_name": "Monument",
+  "description": "Field monument measurement and Standard Upright / Special pricing calculator.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7fa",
+  "theme_color": "#1f4e78"
+}
