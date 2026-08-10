@@ -262,38 +262,76 @@ function removeItem(i){ db.accounts[currentAccount].items.splice(i,1); save(); }
 
 function calcAccount(acc){
   let L=0,W=0,H=0, flats=0, slants=0, measured=0, largeFlatMeasured=0;
+  let monumentSqFt=0;
+  let firstMeasuredMaxDim=null;
+  let firstLargeFlatMaxDim=null;
+
   for(const it of acc.items){
-    const q = it.type==='Measured'
+    const isMeasured = it.type==='Measured' || it.type==='Large Flat Measured';
+    const q = isMeasured
       ? Math.max(1, Number(it.qty)||1)
       : Math.max(0, Number(it.qty)||0);
+
     if(it.type==='Measured'){
       const l=(Number(it.lf)||0)*12+(Number(it.li)||0);
       const w=(Number(it.wf)||0)*12+(Number(it.wi)||0);
       const h=(Number(it.hf)||0)*12+(Number(it.hi)||0);
-      if(l>0&&w>0&&h>0){ L+=l*q; W+=w*q; H+=h*q; measured+=q; }
+
+      if(l>0 && w>0 && h>0){
+        // Workbook formula: top + 2 fronts/backs + 2 sides.
+        const pieceSqFt=(l*w + 2*l*h + 2*w*h)/144;
+        monumentSqFt += pieceSqFt*q;
+        L += l*q;
+        W += w*q;
+        H += h*q;
+        measured += q;
+        if(firstMeasuredMaxDim===null) firstMeasuredMaxDim=Math.max(l,w,h);
+      }
     } else if(it.type==='Large Flat Measured'){
       const l=(Number(it.lf)||0)*12+(Number(it.li)||0);
       const w=(Number(it.wf)||0)*12+(Number(it.wi)||0);
-      if(l>0&&w>0) largeFlatMeasured+=q;
+
+      if(l>0 && w>0){
+        // Same workbook monument-area formula with height = 0:
+        // only the top/ground-level face remains, so area = length × width.
+        const pieceSqFt=(l*w)/144;
+        monumentSqFt += pieceSqFt*q;
+        largeFlatMeasured += q;
+        if(firstLargeFlatMaxDim===null) firstLargeFlatMaxDim=Math.max(l,w);
+      }
     } else if(it.type==='Flat') flats+=q;
     else if(it.type==='Slant') slants+=q;
   }
+
   const conditions=Array.isArray(acc.conditions)?acc.conditions:[];
   const damaged=conditions.filter(c=>c.type==='Damaged').length;
   const leaning=conditions.filter(c=>c.type==='Leaning').length;
   const fallen=conditions.filter(c=>c.type==='Fallen').length;
 
   let ml=null, rate=null, upright=0;
-  if(L>0&&W>0&&H>0){
-    const sqft=(L*W + 2*L*H + 2*W*H)/144;
-    ml=Math.max(2,round2(sqft/25));
-    rate=(L<72 && H<120)?155:195;
+  if(monumentSqFt>0){
+    // Workbook: total monument square feet ÷ 25, with a 2 ML minimum.
+    ml=Math.max(2, round2(monumentSqFt/25));
+
+    // Workbook reset-point formula uses the maximum dimension of the main monument.
+    // In the app, the first normal measured headstone is treated as the main monument.
+    // If the account only has a large flat, that flat becomes the main monument.
+    const resetDim = firstMeasuredMaxDim!==null ? firstMeasuredMaxDim : firstLargeFlatMaxDim;
+    rate=(resetDim!==null && resetDim<72) ? 155 : 195;
+
     upright=round2(ml*rate);
   }
+
   const flatPrice=flats>0 ? 155+(flats-1)*77.5 : 0;
   const slantPrice=slants>0 ? 195+(slants-1)*97.5 : 0;
   const foot=round2(flatPrice+slantPrice);
-  return {L,W,H,flats,slants,measured,largeFlatMeasured,damaged,leaning,fallen,ml,rate,upright,foot,final:round2(upright+foot)};
+
+  return {
+    L,W,H,flats,slants,measured,largeFlatMeasured,
+    monumentSqFt:round2(monumentSqFt),
+    damaged,leaning,fallen,ml,rate,upright,foot,
+    final:round2(upright+foot)
+  };
 }
 
 function measuredHtml(it,i){
@@ -326,7 +364,7 @@ function largeFlatHtml(it,i){
       <div class="wide"><label>Width ft</label><input type="number" inputmode="decimal" min="0" step="any" value="${it.wf??''}" onchange="updateItem(${i},'wf',this.value)"></div>
       <div><label>Width in</label><input type="number" inputmode="decimal" min="0" step="any" value="${it.wi??''}" onchange="updateItem(${i},'wi',this.value)"></div>
     </div>
-    <div class="note" style="margin-top:7px">For oversized flat monuments set deep or flush in the ground. Height is not required.</div>
+    <div class="note" style="margin-top:7px">For oversized flat monuments set deep or flush in the ground. Height is not required. Length × Width is converted to square feet and included in monument ML/pricing.</div>
     <div style="margin-top:8px"><label>Optional note</label><input value="${esc(it.note||'')}" placeholder="e.g. deep set / flush with ground" onchange="updateItem(${i},'note',this.value)"></div>
   </div>`;
 }
@@ -413,9 +451,10 @@ function render(){
 
     <div class="card">
       <div class="summary">
-        <div class="metric"><b>Total Length</b><strong>${c.L.toFixed(2)} in</strong></div>
-        <div class="metric"><b>Total Width</b><strong>${c.W.toFixed(2)} in</strong></div>
-        <div class="metric"><b>Total Height</b><strong>${c.H.toFixed(2)} in</strong></div>
+        <div class="metric"><b>Monument Sq Ft</b><strong>${c.monumentSqFt.toFixed(2)}</strong></div>
+        <div class="metric"><b>Normal Headstone Length Total</b><strong>${c.L.toFixed(2)} in</strong></div>
+        <div class="metric"><b>Normal Headstone Width Total</b><strong>${c.W.toFixed(2)} in</strong></div>
+        <div class="metric"><b>Normal Headstone Height Total</b><strong>${c.H.toFixed(2)} in</strong></div>
         <div class="metric ${c.rate===195?'special':''}"><b>Rate</b><strong>${c.rate?('$'+c.rate+'/ML'):'—'}</strong></div>
         <div class="metric"><b>Standard ML</b><strong>${c.ml===null?'—':c.ml.toFixed(2)}</strong></div>
         <div class="metric"><b>Upright / Special</b><strong>${money(c.upright)}</strong></div>
@@ -541,20 +580,23 @@ function stylesXml(){
 function exportXlsx(){
   // Determine the maximum number of measured headstone columns needed across all accounts.
   let maxMeasured = 1;
+  let maxLargeFlat = 0;
   for(const acct of db.accountOrder){
     const acc=db.accounts[acct];
     if(!acc) continue;
     const measured = acc.items.filter(it=>it.type==='Measured');
     const largeFlatMeasured = acc.items.filter(it=>it.type==='Large Flat Measured');
     if(measured.length > maxMeasured) maxMeasured = measured.length;
+    if(largeFlatMeasured.length > maxLargeFlat) maxLargeFlat = largeFlatMeasured.length;
   }
 
   // Office-facing layout:
   // Account -> all measured headstones -> Flats -> Slants -> ML -> Rate -> prices
   const headers = ['Account #'];
   for(let i=1;i<=maxMeasured;i++) headers.push(`Headstone ${i}`);
+  for(let i=1;i<=maxLargeFlat;i++) headers.push(`Large Flat ${i}`);
   headers.push(
-    'Flats','Slants','Standard ML','Rate / ML',
+    'Flats','Slants','Monument Sq Ft','Standard ML','Rate / ML',
     'Upright / Special Price','Flats + Slants Price','FINAL PRICE',
     'Condition Alerts','Account / Field Notes'
   );
@@ -567,6 +609,7 @@ function exportXlsx(){
     // Export order is always:
     // 1) measured headstones, 2) flats, 3) slants, regardless of entry order in app.
     const measured = acc.items.filter(it=>it.type==='Measured');
+    const largeFlatMeasured = acc.items.filter(it=>it.type==='Large Flat Measured');
     const flats = acc.items.filter(it=>it.type==='Flat');
     const slants = acc.items.filter(it=>it.type==='Slant');
     const notes = acc.items.filter(it=>it.type==='Note');
@@ -586,6 +629,19 @@ function exportXlsx(){
       }
     }
 
+    for(let i=0;i<maxLargeFlat;i++){
+      if(i < largeFlatMeasured.length){
+        const it=largeFlatMeasured[i];
+        let flatText=`${oneDim(it.lf,it.li)} × ${oneDim(it.wf,it.wi)}`;
+        const q=Number(it.qty)||1;
+        if(q>1) flatText += ` (Qty ${q})`;
+        if(it.note) flatText += ` — ${it.note}`;
+        row.push(flatText);
+      } else {
+        row.push('');
+      }
+    }
+
     const flatQty = flats.reduce((s,it)=>s+(Number(it.qty)||0),0);
     const slantQty = slants.reduce((s,it)=>s+(Number(it.qty)||0),0);
     const c=calcAccount(acc);
@@ -593,6 +649,7 @@ function exportXlsx(){
     row.push(
       flatQty,
       slantQty,
+      c.monumentSqFt,
       c.ml??'',
       c.rate??'',
       c.upright,
@@ -604,14 +661,6 @@ function exportXlsx(){
     for(const it of notes){ if(it.note) noteParts.push(it.note); }
     for(const it of flats){ if(it.note) noteParts.push(`Flat: ${it.note}`); }
     for(const it of slants){ if(it.note) noteParts.push(`Slant: ${it.note}`); }
-    for(const it of largeFlatMeasured){
-      const q=Math.max(1,Number(it.qty)||1);
-      const lft=Number(it.lf)||0, lin=Number(it.li)||0, wft=Number(it.wf)||0, win=Number(it.wi)||0;
-      let t=`LARGE FLAT: ${fmtDim(lft,lin)} x ${fmtDim(wft,win)}`;
-      if(q>1) t+=` (Qty ${q})`;
-      if(it.note) t+=` — ${it.note}`;
-      noteParts.push(t);
-    }
     const conditionRecords=Array.isArray(acc.conditions)?acc.conditions:[];
     const conditionParts=conditionRecords.map(c=>{
       const reason=(c.type||'').toUpperCase();
@@ -623,9 +672,10 @@ function exportXlsx(){
     rows.push(row);
   }
 
-  const flatCol = 1 + maxMeasured;
+  const flatCol = 1 + maxMeasured + maxLargeFlat;
   const slantCol = flatCol + 1;
-  const mlCol = slantCol + 1;
+  const sqftCol = slantCol + 1;
+  const mlCol = sqftCol + 1;
   const rateCol = mlCol + 1;
   const uprightCol = rateCol + 1;
   const flatSlantPriceCol = uprightCol + 1;
@@ -652,9 +702,11 @@ function exportXlsx(){
 
   const widths=[14];
   for(let i=0;i<maxMeasured;i++) widths.push(28);
+  for(let i=0;i<maxLargeFlat;i++) widths.push(24);
   widths.push(
     9,   // Flats
     9,   // Slants
+    16,  // Monument Sq Ft
     13,  // ML
     12,  // Rate
     22,  // Upright/Special
@@ -676,7 +728,7 @@ function exportXlsx(){
   const blob=new Blob([zipStore(files)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download='Monument_Account_Summary_Conditions_'+new Date().toISOString().slice(0,10)+'.xlsx';
+  a.download='Monument_Account_Summary_ML_Aligned_'+new Date().toISOString().slice(0,10)+'.xlsx';
   a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
