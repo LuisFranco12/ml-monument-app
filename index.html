@@ -263,8 +263,6 @@ function removeItem(i){ db.accounts[currentAccount].items.splice(i,1); save(); }
 function calcAccount(acc){
   let L=0,W=0,H=0, flats=0, slants=0, measured=0, largeFlatMeasured=0;
   let monumentSqFt=0;
-  let firstMeasuredMaxDim=null;
-  let firstLargeFlatMaxDim=null;
 
   for(const it of acc.items){
     const isMeasured = it.type==='Measured' || it.type==='Large Flat Measured';
@@ -285,7 +283,6 @@ function calcAccount(acc){
         W += w*q;
         H += h*q;
         measured += q;
-        if(firstMeasuredMaxDim===null) firstMeasuredMaxDim=Math.max(l,w,h);
       }
     } else if(it.type==='Large Flat Measured'){
       const l=(Number(it.lf)||0)*12+(Number(it.li)||0);
@@ -297,7 +294,6 @@ function calcAccount(acc){
         const pieceSqFt=(l*w)/144;
         monumentSqFt += pieceSqFt*q;
         largeFlatMeasured += q;
-        if(firstLargeFlatMaxDim===null) firstLargeFlatMaxDim=Math.max(l,w);
       }
     } else if(it.type==='Flat') flats+=q;
     else if(it.type==='Slant') slants+=q;
@@ -313,11 +309,26 @@ function calcAccount(acc){
     // Workbook: total monument square feet ÷ 25, with a 2 ML minimum.
     ml=Math.max(2, round2(monumentSqFt/25));
 
-    // Workbook reset-point formula uses the maximum dimension of the main monument.
-    // In the app, the first normal measured headstone is treated as the main monument.
-    // If the account only has a large flat, that flat becomes the main monument.
-    const resetDim = firstMeasuredMaxDim!==null ? firstMeasuredMaxDim : firstLargeFlatMaxDim;
-    rate=(resetDim!==null && resetDim<72) ? 155 : 195;
+    // Business rule from the spreadsheet label:
+    // "Clean Reset Point (under 6'L or 10'H)"
+    // Use $155/ML if the main monument length is under 72 inches
+    // OR its height is under 120 inches. Otherwise use $195/ML.
+    let mainLength=null;
+    let mainHeight=null;
+
+    const firstNormal=acc.items.find(it=>it.type==='Measured');
+    if(firstNormal){
+      mainLength=(Number(firstNormal.lf)||0)*12+(Number(firstNormal.li)||0);
+      mainHeight=(Number(firstNormal.hf)||0)*12+(Number(firstNormal.hi)||0);
+    } else {
+      const firstLarge=acc.items.find(it=>it.type==='Large Flat Measured');
+      if(firstLarge){
+        mainLength=(Number(firstLarge.lf)||0)*12+(Number(firstLarge.li)||0);
+        mainHeight=0; // ground-level large flat
+      }
+    }
+
+    rate=(mainLength!==null && mainHeight!==null && (mainLength<72 || mainHeight<120)) ? 155 : 195;
 
     upright=round2(ml*rate);
   }
@@ -455,7 +466,7 @@ function render(){
         <div class="metric"><b>Normal Headstone Length Total</b><strong>${c.L.toFixed(2)} in</strong></div>
         <div class="metric"><b>Normal Headstone Width Total</b><strong>${c.W.toFixed(2)} in</strong></div>
         <div class="metric"><b>Normal Headstone Height Total</b><strong>${c.H.toFixed(2)} in</strong></div>
-        <div class="metric ${c.rate===195?'special':''}"><b>Rate</b><strong>${c.rate?('$'+c.rate+'/ML'):'—'}</strong></div>
+        <div class="metric ${c.rate===195?'special':''}"><b>Rate (under 6' L or 10' H = $155)</b><strong>${c.rate?('$'+c.rate+'/ML'):'—'}</strong></div>
         <div class="metric"><b>Standard ML</b><strong>${c.ml===null?'—':c.ml.toFixed(2)}</strong></div>
         <div class="metric"><b>Upright / Special</b><strong>${money(c.upright)}</strong></div>
         <div class="metric"><b>Flats + Slants</b><strong>${money(c.foot)}</strong></div>
@@ -728,7 +739,7 @@ function exportXlsx(){
   const blob=new Blob([zipStore(files)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download='Monument_Account_Summary_ML_Aligned_'+new Date().toISOString().slice(0,10)+'.xlsx';
+  a.download='Monument_Account_Summary_Label_Rule_'+new Date().toISOString().slice(0,10)+'.xlsx';
   a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
