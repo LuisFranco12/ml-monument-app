@@ -54,6 +54,12 @@ button{border:0;border-radius:10px;padding:11px 14px;font-weight:700;cursor:poin
 .condition-alert.damaged{background:#fff2cc;color:#7f6000}
 .condition-alert.leaning{background:#fce4d6;color:#843c0c}
 .condition-alert.fallen{background:#f4cccc;color:#8a1c1c}
+.condition-panel{border:1px solid #d9e1e8;background:#fbfcfd;border-radius:12px;padding:12px;margin-top:10px}
+.condition-panel-title{font-weight:800;margin-bottom:3px}
+.condition-entry{margin-top:10px;padding:10px;border-radius:10px;border-left:6px solid #a5a5a5;background:#f8f9fa}
+.condition-entry.damaged{border-left-color:#d6b656;background:#fff8df}
+.condition-entry.leaning{border-left-color:#ed7d31;background:#fff0e6}
+.condition-entry.fallen{border-left-color:#c00000;background:#fde9e7}
 .dimgrid{display:grid;grid-template-columns:repeat(6,minmax(62px,1fr));gap:7px}
 .dimgrid .wide{grid-column:span 2}
 .summary{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
@@ -135,6 +141,20 @@ let db = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{"accounts":{},"accountO
 if(!db.accounts) db.accounts={};
 if(!Array.isArray(db.accountOrder)) db.accountOrder=[];
 for(const a of Object.keys(db.accounts)){ if(!db.accountOrder.includes(a)) db.accountOrder.push(a); }
+// Migrate v8 condition flags that were stored inside measured headstones.
+for(const a of Object.keys(db.accounts)){
+  const acc=db.accounts[a];
+  if(!Array.isArray(acc.conditions)) acc.conditions=[];
+  if(Array.isArray(acc.items)){
+    for(const it of acc.items){
+      if(it && it.type==='Measured' && it.condition){
+        acc.conditions.push({type:it.condition,note:it.note?`Previously attached to measured headstone: ${it.note}`:''});
+        delete it.condition;
+      }
+    }
+  }
+}
+localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
 let currentAccount = db.accountOrder[0] || '';
 
 function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); render(); }
@@ -161,6 +181,48 @@ function deleteAccount(){
   db.accountOrder=db.accountOrder.filter(a=>a!==currentAccount);
   currentAccount=db.accountOrder[0]||'';
   save();
+}
+
+
+function addCondition(condition){
+  const acc=db.accounts[currentAccount];
+  if(!acc) return;
+  if(!Array.isArray(acc.conditions)) acc.conditions=[];
+  acc.conditions.push({type:condition,note:''});
+  save();
+}
+function updateCondition(i,field,value){
+  const acc=db.accounts[currentAccount];
+  if(!acc || !Array.isArray(acc.conditions) || !acc.conditions[i]) return;
+  acc.conditions[i][field]=value;
+  save();
+}
+function removeCondition(i){
+  const acc=db.accounts[currentAccount];
+  if(!acc || !Array.isArray(acc.conditions)) return;
+  acc.conditions.splice(i,1);
+  save();
+}
+function conditionSeverity(type){
+  if(type==='Fallen') return 3;
+  if(type==='Leaning') return 2;
+  if(type==='Damaged') return 1;
+  return 0;
+}
+function conditionEntriesHtml(acc){
+  const conditions=Array.isArray(acc.conditions)?acc.conditions:[];
+  if(!conditions.length) return '';
+  return conditions.map((c,i)=>{
+    const cls=(c.type||'').toLowerCase();
+    return `<div class="condition-entry ${cls}">
+      <div class="item-title">
+        <b>${esc((c.type||'Condition').toUpperCase())}</b>
+        <button class="danger" onclick="removeCondition(${i})">Remove</button>
+      </div>
+      <label>Reason / details (optional)</label>
+      <input value="${esc(c.note||'')}" placeholder="e.g. base broken, unsafe to measure" onchange="updateCondition(${i},'note',this.value)">
+    </div>`;
+  }).join('');
 }
 
 function addMeasured(){
@@ -193,7 +255,7 @@ function conditionLabel(condition){
 function removeItem(i){ db.accounts[currentAccount].items.splice(i,1); save(); }
 
 function calcAccount(acc){
-  let L=0,W=0,H=0, flats=0, slants=0, measured=0, damaged=0, leaning=0, fallen=0;
+  let L=0,W=0,H=0, flats=0, slants=0, measured=0;
   for(const it of acc.items){
     const q = it.type==='Measured'
       ? Math.max(1, Number(it.qty)||1)
@@ -203,12 +265,14 @@ function calcAccount(acc){
       const w=(Number(it.wf)||0)*12+(Number(it.wi)||0);
       const h=(Number(it.hf)||0)*12+(Number(it.hi)||0);
       if(l>0&&w>0&&h>0){ L+=l*q; W+=w*q; H+=h*q; measured+=q; }
-      if(it.condition==='Damaged') damaged+=q;
-      else if(it.condition==='Leaning') leaning+=q;
-      else if(it.condition==='Fallen') fallen+=q;
     } else if(it.type==='Flat') flats+=q;
     else if(it.type==='Slant') slants+=q;
   }
+  const conditions=Array.isArray(acc.conditions)?acc.conditions:[];
+  const damaged=conditions.filter(c=>c.type==='Damaged').length;
+  const leaning=conditions.filter(c=>c.type==='Leaning').length;
+  const fallen=conditions.filter(c=>c.type==='Fallen').length;
+
   let ml=null, rate=null, upright=0;
   if(L>0&&W>0&&H>0){
     const sqft=(L*W + 2*L*H + 2*W*H)/144;
@@ -223,11 +287,6 @@ function calcAccount(acc){
 }
 
 function measuredHtml(it,i){
-  const condition=it.condition||'';
-  const cclass=condition.toLowerCase();
-  const alert=condition
-    ? `<div class="condition-alert ${cclass}">${conditionLabel(condition)}</div>`
-    : '';
   return `<div class="item measured">
     <div class="item-title"><span class="badge measured">Measured Headstone</span><button class="danger" onclick="removeItem(${i})">Remove</button></div>
     <div class="row">
@@ -240,17 +299,6 @@ function measuredHtml(it,i){
       <div><label>Width in</label><input type="number" inputmode="decimal" min="0" step="any" value="${it.wi??''}" onchange="updateItem(${i},'wi',this.value)"></div>
       <div><label>Height ft</label><input type="number" inputmode="decimal" min="0" step="any" value="${it.hf??''}" onchange="updateItem(${i},'hf',this.value)"></div>
       <div><label>Height in</label><input type="number" inputmode="decimal" min="0" step="any" value="${it.hi??''}" onchange="updateItem(${i},'hi',this.value)"></div>
-    </div>
-    <div style="margin-top:10px">
-      <label>Monument Condition</label>
-      <div class="condition-row">
-        <button class="condition-btn damaged ${condition==='Damaged'?'active':''}" onclick="setCondition(${i},'Damaged')">⚠ Damaged</button>
-        <button class="condition-btn leaning ${condition==='Leaning'?'active':''}" onclick="setCondition(${i},'Leaning')">⚠ Leaning</button>
-        <button class="condition-btn fallen ${condition==='Fallen'?'active':''}" onclick="setCondition(${i},'Fallen')">⛔ Fallen</button>
-        <button class="condition-btn normal" onclick="setCondition(${i},'')">Clear</button>
-      </div>
-      ${alert}
-      <div class="note" style="margin-top:6px">Yellow = damaged/caution · Orange = leaning/high concern · Red = fallen/severe.</div>
     </div>
     <div style="margin-top:8px"><label>Optional note</label><input value="${esc(it.note||'')}" placeholder="e.g. rear marker / cracked base" onchange="updateItem(${i},'note',this.value)"></div>
   </div>`;
@@ -312,15 +360,26 @@ function render(){
         <button class="danger" onclick="deleteAccount()">Delete Account</button>
       </div>
       <div class="actions">
-        <button class="primary" onclick="addMeasured()">+ Headstone</button>
+        <button class="primary" onclick="addMeasured()">+ Headstone Measurement</button>
         <button class="secondary" onclick="addSimple('Flat')">+ Flat</button>
         <button class="secondary" onclick="addSimple('Slant')">+ Slant</button>
         <button class="secondary" onclick="addSimple('Note')">+ Note</button>
       </div>
+
+      <div class="condition-panel">
+        <div class="condition-panel-title">Monument Condition</div>
+        <div class="note">Use this even when the monument cannot be measured. You can still add measurements separately if possible.</div>
+        <div class="condition-row">
+          <button class="condition-btn damaged" onclick="addCondition('Damaged')">⚠ Damaged</button>
+          <button class="condition-btn leaning" onclick="addCondition('Leaning')">⚠ Leaning</button>
+          <button class="condition-btn fallen" onclick="addCondition('Fallen')">⛔ Fallen</button>
+        </div>
+        ${conditionEntriesHtml(acc)}
+      </div>
     </div>
 
     <div class="card">
-      ${items || '<div class="empty">No entries yet. Tap + Headstone, + Flat, or + Slant.</div>'}
+      ${items || '<div class="empty">No measurements/items yet. You can still save a condition flag above without measuring.</div>'}
     </div>
 
     <div class="card">
@@ -415,7 +474,7 @@ function stylesXml(){
  <font><b/><color rgb="FFFFFFFF"/><sz val="11"/><name val="Calibri"/></font>
  <font><b/><sz val="11"/><name val="Calibri"/></font>
 </fonts>
-<fills count="8">
+<fills count="11">
  <fill><patternFill patternType="none"/></fill>
  <fill><patternFill patternType="gray125"/></fill>
  <fill><patternFill patternType="solid"><fgColor rgb="FF1F4E78"/></patternFill></fill>
@@ -424,13 +483,16 @@ function stylesXml(){
  <fill><patternFill patternType="solid"><fgColor rgb="FFFCE4D6"/></patternFill></fill>
  <fill><patternFill patternType="solid"><fgColor rgb="FFE7E6E6"/></patternFill></fill>
  <fill><patternFill patternType="solid"><fgColor rgb="FFC6E0B4"/></patternFill></fill>
+ <fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CC"/></patternFill></fill>
+ <fill><patternFill patternType="solid"><fgColor rgb="FFFCE4D6"/></patternFill></fill>
+ <fill><patternFill patternType="solid"><fgColor rgb="FFF4CCCC"/></patternFill></fill>
 </fills>
 <borders count="2">
  <border><left/><right/><top/><bottom/><diagonal/></border>
  <border><left style="thin"><color rgb="FFD9E1F2"/></left><right style="thin"><color rgb="FFD9E1F2"/></right><top style="thin"><color rgb="FFD9E1F2"/></top><bottom style="thin"><color rgb="FFD9E1F2"/></bottom><diagonal/></border>
 </borders>
 <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
-<cellXfs count="10">
+<cellXfs count="13">
  <xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>
  <xf numFmtId="0" fontId="1" fillId="2" borderId="1" applyFill="1" applyFont="1" applyBorder="1"><alignment horizontal="center" vertical="center"/></xf>
  <xf numFmtId="0" fontId="0" fillId="3" borderId="1" applyFill="1" applyBorder="1"/>
@@ -441,6 +503,9 @@ function stylesXml(){
  <xf numFmtId="164" fontId="2" fillId="7" borderId="1" applyNumberFormat="1" applyFill="1" applyFont="1" applyBorder="1"/>
  <xf numFmtId="0" fontId="2" fillId="5" borderId="1" applyFill="1" applyFont="1" applyBorder="1"/>
  <xf numFmtId="0" fontId="0" fillId="0" borderId="1" applyBorder="1"/>
+ <xf numFmtId="0" fontId="2" fillId="8" borderId="1" applyFill="1" applyFont="1" applyBorder="1"/>
+ <xf numFmtId="0" fontId="2" fillId="9" borderId="1" applyFill="1" applyFont="1" applyBorder="1"/>
+ <xf numFmtId="0" fontId="2" fillId="10" borderId="1" applyFill="1" applyFont="1" applyBorder="1"/>
 </cellXfs>
 </styleSheet>`;
 }
@@ -484,7 +549,6 @@ function exportXlsx(){
         let text = `${oneDim(it.lf,it.li)} × ${oneDim(it.wf,it.wi)} × ${oneDim(it.hf,it.hi)}`;
         const q = Number(it.qty)||1;
         if(q>1) text += ` (Qty ${q})`;
-        if(it.condition) text += ` — ${it.condition.toUpperCase()}`;
         if(it.note) text += ` — ${it.note}`;
         row.push(text);
       } else {
@@ -510,10 +574,11 @@ function exportXlsx(){
     for(const it of notes){ if(it.note) noteParts.push(it.note); }
     for(const it of flats){ if(it.note) noteParts.push(`Flat: ${it.note}`); }
     for(const it of slants){ if(it.note) noteParts.push(`Slant: ${it.note}`); }
-    const conditionParts=[];
-    for(const it of measured){
-      if(it.condition) conditionParts.push(it.condition.toUpperCase());
-    }
+    const conditionRecords=Array.isArray(acc.conditions)?acc.conditions:[];
+    const conditionParts=conditionRecords.map(c=>{
+      const reason=(c.type||'').toUpperCase();
+      return c.note ? `${reason} — ${c.note}` : reason;
+    });
     row.push(conditionParts.join(' | '));
     row.push(noteParts.join(' | '));
 
@@ -527,6 +592,7 @@ function exportXlsx(){
   const uprightCol = rateCol + 1;
   const flatSlantPriceCol = uprightCol + 1;
   const finalCol = flatSlantPriceCol + 1;
+  const conditionCol = finalCol + 1;
 
   const styleFn=(r,c,row)=>{
     if(r===0) return 1;
@@ -536,6 +602,13 @@ function exportXlsx(){
     if(c===rateCol && Number(row[c])===195) return 8; // special rate highlight
     if(c===uprightCol || c===flatSlantPriceCol) return 6; // currency
     if(c===finalCol) return 7;              // final price currency + green
+    if(c===conditionCol){
+      const value=String(row[c]||'').toUpperCase();
+      if(value.includes('FALLEN')) return 12;  // red: severe
+      if(value.includes('LEANING')) return 11; // orange: high concern
+      if(value.includes('DAMAGED')) return 10; // yellow: caution
+      return 9;
+    }
     return 9;
   };
 
@@ -565,7 +638,7 @@ function exportXlsx(){
   const blob=new Blob([zipStore(files)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download='Monument_Account_Summary_'+new Date().toISOString().slice(0,10)+'.xlsx';
+  a.download='Monument_Account_Summary_Conditions_'+new Date().toISOString().slice(0,10)+'.xlsx';
   a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
