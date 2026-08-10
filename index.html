@@ -4,11 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1f4e78">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Monument Measure">
-<meta name="mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.webmanifest">
 <title>Monument Measure</title>
 <style>
 :root{
@@ -48,6 +43,17 @@ button{border:0;border-radius:10px;padding:11px 14px;font-weight:700;cursor:poin
 .badge.flat{background:#e2f0d9;color:#385723}
 .badge.slant{background:#fce4d6;color:#843c0c}
 .badge.noteitem{background:#e7e6e6;color:#595959}
+.condition-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.condition-btn{padding:9px 12px;border:2px solid transparent;box-shadow:inset 0 0 0 1px #00000010}
+.condition-btn.normal{background:#e7eef6;color:#173854}
+.condition-btn.damaged{background:#fff2cc;color:#7f6000}
+.condition-btn.leaning{background:#fce4d6;color:#843c0c}
+.condition-btn.fallen{background:#f4cccc;color:#8a1c1c}
+.condition-btn.active{border-color:#1c2733;box-shadow:0 0 0 2px #ffffff inset,0 0 0 1px #1c2733}
+.condition-alert{margin-top:8px;padding:9px 11px;border-radius:9px;font-size:13px;font-weight:700}
+.condition-alert.damaged{background:#fff2cc;color:#7f6000}
+.condition-alert.leaning{background:#fce4d6;color:#843c0c}
+.condition-alert.fallen{background:#f4cccc;color:#8a1c1c}
 .dimgrid{display:grid;grid-template-columns:repeat(6,minmax(62px,1fr));gap:7px}
 .dimgrid .wide{grid-column:span 2}
 .summary{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
@@ -159,7 +165,7 @@ function deleteAccount(){
 
 function addMeasured(){
   if(!currentAccount) return alert('Add or open an account first.');
-  db.accounts[currentAccount].items.push({type:'Measured',qty:'',lf:'',li:'',wf:'',wi:'',hf:'',hi:'',note:''});
+  db.accounts[currentAccount].items.push({type:'Measured',qty:'',lf:'',li:'',wf:'',wi:'',hf:'',hi:'',condition:'',note:''});
   save();
 }
 function addSimple(type){
@@ -173,10 +179,21 @@ function updateItem(i,key,val){
   else item[key]=val;
   save();
 }
+function setCondition(i,condition){
+  const item=db.accounts[currentAccount].items[i];
+  item.condition=(item.condition===condition?'':condition);
+  save();
+}
+function conditionLabel(condition){
+  if(condition==='Damaged') return 'DAMAGED — Caution';
+  if(condition==='Leaning') return 'LEANING — High Concern';
+  if(condition==='Fallen') return 'FALLEN — Severe';
+  return '';
+}
 function removeItem(i){ db.accounts[currentAccount].items.splice(i,1); save(); }
 
 function calcAccount(acc){
-  let L=0,W=0,H=0, flats=0, slants=0, measured=0;
+  let L=0,W=0,H=0, flats=0, slants=0, measured=0, damaged=0, leaning=0, fallen=0;
   for(const it of acc.items){
     const q = it.type==='Measured'
       ? Math.max(1, Number(it.qty)||1)
@@ -186,6 +203,9 @@ function calcAccount(acc){
       const w=(Number(it.wf)||0)*12+(Number(it.wi)||0);
       const h=(Number(it.hf)||0)*12+(Number(it.hi)||0);
       if(l>0&&w>0&&h>0){ L+=l*q; W+=w*q; H+=h*q; measured+=q; }
+      if(it.condition==='Damaged') damaged+=q;
+      else if(it.condition==='Leaning') leaning+=q;
+      else if(it.condition==='Fallen') fallen+=q;
     } else if(it.type==='Flat') flats+=q;
     else if(it.type==='Slant') slants+=q;
   }
@@ -199,24 +219,40 @@ function calcAccount(acc){
   const flatPrice=flats>0 ? 155+(flats-1)*77.5 : 0;
   const slantPrice=slants>0 ? 195+(slants-1)*97.5 : 0;
   const foot=round2(flatPrice+slantPrice);
-  return {L,W,H,flats,slants,measured,ml,rate,upright,foot,final:round2(upright+foot)};
+  return {L,W,H,flats,slants,measured,damaged,leaning,fallen,ml,rate,upright,foot,final:round2(upright+foot)};
 }
 
 function measuredHtml(it,i){
+  const condition=it.condition||'';
+  const cclass=condition.toLowerCase();
+  const alert=condition
+    ? `<div class="condition-alert ${cclass}">${conditionLabel(condition)}</div>`
+    : '';
   return `<div class="item measured">
     <div class="item-title"><span class="badge measured">Measured Headstone</span><button class="danger" onclick="removeItem(${i})">Remove</button></div>
     <div class="row">
-      <div class="field" style="max-width:110px"><label>Qty</label><input type="number" min="1" value="${it.qty??''}" placeholder="1" onchange="updateItem(${i},'qty',this.value)"></div>
+      <div class="field" style="max-width:110px"><label>Qty</label><input type="number" inputmode="numeric" min="1" step="1" value="${it.qty??''}" placeholder="1" onchange="updateItem(${i},'qty',this.value)"></div>
     </div>
     <div class="dimgrid" style="margin-top:8px">
-      <div><label>Length ft</label><input type="number" min="0" value="${it.lf??''}" onchange="updateItem(${i},'lf',this.value)"></div>
-      <div><label>Length in</label><input type="number" min="0" value="${it.li??''}" onchange="updateItem(${i},'li',this.value)"></div>
-      <div><label>Width ft</label><input type="number" min="0" value="${it.wf??''}" onchange="updateItem(${i},'wf',this.value)"></div>
-      <div><label>Width in</label><input type="number" min="0" value="${it.wi??''}" onchange="updateItem(${i},'wi',this.value)"></div>
-      <div><label>Height ft</label><input type="number" min="0" value="${it.hf??''}" onchange="updateItem(${i},'hf',this.value)"></div>
-      <div><label>Height in</label><input type="number" min="0" value="${it.hi??''}" onchange="updateItem(${i},'hi',this.value)"></div>
+      <div><label>Length ft</label><input type="number" inputmode="decimal" min="0" step="any" value="${it.lf??''}" onchange="updateItem(${i},'lf',this.value)"></div>
+      <div><label>Length in</label><input type="number" inputmode="decimal" min="0" step="any" value="${it.li??''}" onchange="updateItem(${i},'li',this.value)"></div>
+      <div><label>Width ft</label><input type="number" inputmode="decimal" min="0" step="any" value="${it.wf??''}" onchange="updateItem(${i},'wf',this.value)"></div>
+      <div><label>Width in</label><input type="number" inputmode="decimal" min="0" step="any" value="${it.wi??''}" onchange="updateItem(${i},'wi',this.value)"></div>
+      <div><label>Height ft</label><input type="number" inputmode="decimal" min="0" step="any" value="${it.hf??''}" onchange="updateItem(${i},'hf',this.value)"></div>
+      <div><label>Height in</label><input type="number" inputmode="decimal" min="0" step="any" value="${it.hi??''}" onchange="updateItem(${i},'hi',this.value)"></div>
     </div>
-    <div style="margin-top:8px"><label>Optional note</label><input value="${esc(it.note||'')}" placeholder="e.g. rear marker / damaged" onchange="updateItem(${i},'note',this.value)"></div>
+    <div style="margin-top:10px">
+      <label>Monument Condition</label>
+      <div class="condition-row">
+        <button class="condition-btn damaged ${condition==='Damaged'?'active':''}" onclick="setCondition(${i},'Damaged')">⚠ Damaged</button>
+        <button class="condition-btn leaning ${condition==='Leaning'?'active':''}" onclick="setCondition(${i},'Leaning')">⚠ Leaning</button>
+        <button class="condition-btn fallen ${condition==='Fallen'?'active':''}" onclick="setCondition(${i},'Fallen')">⛔ Fallen</button>
+        <button class="condition-btn normal" onclick="setCondition(${i},'')">Clear</button>
+      </div>
+      ${alert}
+      <div class="note" style="margin-top:6px">Yellow = damaged/caution · Orange = leaning/high concern · Red = fallen/severe.</div>
+    </div>
+    <div style="margin-top:8px"><label>Optional note</label><input value="${esc(it.note||'')}" placeholder="e.g. rear marker / cracked base" onchange="updateItem(${i},'note',this.value)"></div>
   </div>`;
 }
 function simpleHtml(it,i){
@@ -224,7 +260,7 @@ function simpleHtml(it,i){
   return `<div class="item ${cls}">
     <div class="item-title"><span class="badge ${cls}">${esc(it.type)}</span><button class="danger" onclick="removeItem(${i})">Remove</button></div>
     <div class="row">
-      <div class="field" style="max-width:110px"><label>Qty</label><input type="number" min="1" value="${it.qty??''}" placeholder="1" onchange="updateItem(${i},'qty',this.value)"></div>
+      <div class="field" style="max-width:110px"><label>Qty</label><input type="number" inputmode="numeric" min="1" step="1" value="${it.qty??''}" placeholder="1" onchange="updateItem(${i},'qty',this.value)"></div>
       <div class="field"><label>Optional note</label><input value="${esc(it.note||'')}" onchange="updateItem(${i},'note',this.value)"></div>
     </div>
   </div>`;
@@ -272,7 +308,7 @@ function render(){
   w.innerHTML=`
     <div class="card">
       <div class="item-title">
-        <div><b style="font-size:20px">Account ${esc(currentAccount)}</b><div class="note">${c.measured} measured marker(s), ${c.flats} flat(s), ${c.slants} slant(s)</div></div>
+        <div><b style="font-size:20px">Account ${esc(currentAccount)}</b><div class="note">${c.measured} measured marker(s), ${c.flats} flat(s), ${c.slants} slant(s)${(c.damaged+c.leaning+c.fallen)?` · ⚠ ${c.damaged} damaged · ${c.leaning} leaning · ${c.fallen} fallen`:''}</div></div>
         <button class="danger" onclick="deleteAccount()">Delete Account</button>
       </div>
       <div class="actions">
@@ -301,13 +337,6 @@ function render(){
     </div>`;
 }
 render();
-
-// Register offline support when hosted over HTTPS.
-if('serviceWorker' in navigator && location.protocol.startsWith('http')){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
-  });
-}
 
 // ---------- Minimal XLSX writer (no external libraries) ----------
 function crc32(bytes){
@@ -432,7 +461,7 @@ function exportXlsx(){
   headers.push(
     'Flats','Slants','Standard ML','Rate / ML',
     'Upright / Special Price','Flats + Slants Price','FINAL PRICE',
-    'Account / Field Notes'
+    'Condition Alerts','Account / Field Notes'
   );
 
   const rows=[headers];
@@ -455,6 +484,7 @@ function exportXlsx(){
         let text = `${oneDim(it.lf,it.li)} × ${oneDim(it.wf,it.wi)} × ${oneDim(it.hf,it.hi)}`;
         const q = Number(it.qty)||1;
         if(q>1) text += ` (Qty ${q})`;
+        if(it.condition) text += ` — ${it.condition.toUpperCase()}`;
         if(it.note) text += ` — ${it.note}`;
         row.push(text);
       } else {
@@ -480,6 +510,11 @@ function exportXlsx(){
     for(const it of notes){ if(it.note) noteParts.push(it.note); }
     for(const it of flats){ if(it.note) noteParts.push(`Flat: ${it.note}`); }
     for(const it of slants){ if(it.note) noteParts.push(`Slant: ${it.note}`); }
+    const conditionParts=[];
+    for(const it of measured){
+      if(it.condition) conditionParts.push(it.condition.toUpperCase());
+    }
+    row.push(conditionParts.join(' | '));
     row.push(noteParts.join(' | '));
 
     rows.push(row);
@@ -514,6 +549,7 @@ function exportXlsx(){
     22,  // Upright/Special
     22,  // Flats+Slants
     18,  // Final
+    24,  // Condition Alerts
     34   // Notes
   );
 
